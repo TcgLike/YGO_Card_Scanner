@@ -23,6 +23,8 @@ interface InventoryDao {
     )
     suspend fun updateQuantity(entryId: String, quantity: Int, updatedAtEpochMillis: Long): Int
 
+    @Query("UPDATE inventory_entries SET condition_code = :conditionCode, updated_at_epoch_millis = :updatedAtEpochMillis WHERE entry_id = :entryId")
+    suspend fun updateCondition(entryId: String, conditionCode: String, updatedAtEpochMillis: Long): Int
     @Query("DELETE FROM inventory_entries WHERE entry_id = :entryId")
     suspend fun deleteById(entryId: String): Int
 

@@ -17,6 +17,8 @@ interface InventoryRepository {
     suspend fun addUnknownPrinting(draft: UnknownPrintingDraft): String
 
     /** Sets a positive quantity; zero removes the entry and negative quantities are rejected. */
+    suspend fun setCondition(entryId: String, condition: com.ygocardscanner.model.CardCondition)
+
     suspend fun setQuantity(entryId: String, quantity: Int)
 
     suspend fun deleteEntry(entryId: String)

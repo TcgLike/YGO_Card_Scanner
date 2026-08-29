@@ -39,6 +39,7 @@ import com.ygocardscanner.data.artwork.CardArtworkFileStore
 import com.ygocardscanner.model.CardArtworkDetail
 import com.ygocardscanner.model.CardArtworkDownloadState
 import com.ygocardscanner.model.InventoryEntryDetail
+import com.ygocardscanner.model.CardCondition
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.ygocardscanner.ui.components.EmptyState
@@ -54,6 +55,7 @@ fun CardDetailScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     var showDeleteConfirmation by remember { mutableStateOf(false) }
+    var showConditionPicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
@@ -84,12 +86,22 @@ fun CardDetailScreen(
                 errorMessage = state.errorMessage,
                 modifier = Modifier.fillMaxSize().padding(innerPadding),
                 onQuantityChanged = viewModel::updateQuantity,
+                onEditCondition = { showConditionPicker = true },
                 onRequestArtwork = viewModel::requestArtwork,
                 onDelete = { showDeleteConfirmation = true },
             )
         }
     }
 
+    if (showConditionPicker) {
+        val entry = state.entry
+        AlertDialog(
+            onDismissRequest = { showConditionPicker = false },
+            title = { Text("Card condition") },
+            text = { Column { CardCondition.entries.forEach { condition -> TextButton(onClick = { showConditionPicker = false; viewModel.updateCondition(condition) }) { Text(condition.label) } } } },
+            confirmButton = { TextButton(onClick = { showConditionPicker = false }) { Text("Cancel") } },
+        )
+    }
     if (showDeleteConfirmation) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirmation = false },
@@ -112,6 +124,7 @@ private fun EntryDetailContent(
     errorMessage: String?,
     modifier: Modifier,
     onQuantityChanged: (Int) -> Unit,
+    onEditCondition: () -> Unit,
     onRequestArtwork: () -> Unit,
     onDelete: () -> Unit,
 ) {
@@ -136,6 +149,7 @@ private fun EntryDetailContent(
                 DetailLine("Rarity", entry.rarity ?: "Not recorded")
                 DetailLine("Edition", entry.edition.label)
                 DetailLine("Condition", entry.condition.label)
+                TextButton(onClick = onEditCondition, enabled = !isSaving) { Text("Edit condition") }
                 entry.passcode?.let { DetailLine("Passcode", it) }
                 if (entry.printingKind.code == "unknown") {
                     DetailLine("Printing", "Unknown printing")

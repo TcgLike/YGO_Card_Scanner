@@ -56,6 +56,16 @@ class CardDetailViewModel(
         }
     }
 
+    fun updateCondition(condition: com.ygocardscanner.model.CardCondition) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSaving = true, errorMessage = null) }
+            try { inventoryRepository.setCondition(entryId, condition); _uiState.update { it.copy(isSaving = false) } }
+            catch (error: Throwable) {
+                if (error is CancellationException) throw error
+                _uiState.update { it.copy(isSaving = false, errorMessage = error.message ?: "The condition could not be updated.") }
+            }
+        }
+    }
     fun updateQuantity(quantity: Int) {
         viewModelScope.launch {
             if (quantity < 0) {

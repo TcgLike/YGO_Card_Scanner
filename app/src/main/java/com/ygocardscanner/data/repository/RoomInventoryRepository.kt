@@ -187,6 +187,11 @@ class RoomInventoryRepository(
         }
     }
 
+    override suspend fun setCondition(entryId: String, condition: CardCondition) {
+        require(inventoryDao.updateCondition(entryId, condition.code, now()) == 1) {
+            "Inventory entry '$entryId' does not exist."
+        }
+    }
     override suspend fun setQuantity(entryId: String, quantity: Int) {
         require(quantity >= 0) { "Quantity cannot be negative." }
         if (quantity == 0) {
