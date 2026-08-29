@@ -58,6 +58,7 @@ import com.ygocardscanner.ui.components.ErrorState
 import com.ygocardscanner.ui.components.LoadingState
 import com.ygocardscanner.ui.localization.appText
 import com.ygocardscanner.ui.localization.localizedLabel
+import com.ygocardscanner.ui.localization.formattedAmount
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -239,7 +240,23 @@ private fun CatalogPicker(
                                 listOfNotNull(printing.setCode, printing.setName, printing.rarity).joinToString(" · "),
                                 modifier = Modifier.padding(top = 4.dp),
                             )
-                        }
+                            printing.referencePrice?.let { price ->
+                                Text(
+                                    if (price.isPrintingSpecific) {
+                                        appText(
+                                            "Set price: ${price.formattedAmount()}",
+                                            "Set-Preis: ${price.formattedAmount()}",
+                                        )
+                                    } else {
+                                        appText(
+                                            "Cardmarket reference (card): ${price.formattedAmount()}",
+                                            "Cardmarket-Referenz (Karte): ${price.formattedAmount()}",
+                                        )
+                                    },
+                                    modifier = Modifier.padding(top = 4.dp),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                            }                        }
                     }
                 }
             }

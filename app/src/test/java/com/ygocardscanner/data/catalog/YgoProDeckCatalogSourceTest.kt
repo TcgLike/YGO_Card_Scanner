@@ -198,6 +198,26 @@ class YgoProDeckCatalogSourceTest {
         assertEquals("146.68", records.single().databaseVersion?.content)
         assertEquals("2026-08-21 00:00:28", records.single().lastUpdate)
     }
+    @Test
+    fun `provider set and vendor price fields parse without entering Room models`() {
+        val page = json.decodeFromString<YgoProDeckCardPageDto>(
+            """
+            {
+              "data": [{
+                "id": 89631139,
+                "name": "Blue-Eyes White Dragon",
+                "card_sets": [{"set_code": "LOB-EN001", "set_price": "4.50"}],
+                "card_prices": [{"cardmarket_price": "1.23", "tcgplayer_price": "2.50"}]
+              }]
+            }
+            """.trimIndent(),
+        )
+
+        val card = page.data.single()
+        assertEquals("4.50", card.cardSets?.single()?.setPrice)
+        assertEquals("1.23", card.cardPrices?.single()?.cardmarketPrice)
+        assertEquals("2.50", card.cardPrices?.single()?.tcgplayerPrice)
+    }
     private class FakeYgoProDeckApiClient(
         private val pages: Map<YgoProDeckLanguage, Map<Int, YgoProDeckCardPageDto>>,
         private val databaseVersion: YgoProDeckDatabaseVersionDto = YgoProDeckDatabaseVersionDto(

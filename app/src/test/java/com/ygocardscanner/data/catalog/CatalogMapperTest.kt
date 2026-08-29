@@ -4,6 +4,7 @@ import com.ygocardscanner.data.catalog.network.CatalogCardDto
 import com.ygocardscanner.data.catalog.network.CatalogCardTextDto
 import com.ygocardscanner.data.catalog.network.CatalogPayload
 import com.ygocardscanner.data.catalog.network.CatalogPrintingDto
+import com.ygocardscanner.data.catalog.network.CatalogPriceDto
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Test
@@ -48,6 +49,34 @@ class CatalogMapperTest {
         assertEquals("test:artwork:blue-eyes", artwork.artworkId)
         assertEquals("89631139", artwork.providerArtworkId)
         assertEquals("https://images.ygoprodeck.com/images/cards/89631139.jpg", artwork.remoteUrl)
+    }
+    @Test
+    fun mapsPositiveCardAndPrintingPricesAsSeparateSnapshots() {
+        val original = samplePayload().cards.single()
+        val payload = samplePayload().copy(
+            cards = listOf(
+                original.copy(
+                    prices = listOf(
+                        CatalogPriceDto("cardmarket", "EUR", "1.23"),
+                        CatalogPriceDto("tcgplayer", "USD", "2.50"),
+                        CatalogPriceDto("ebay", "USD", "not-a-price"),
+                    ),
+                    printings = original.printings.map { it.copy(setPriceUsd = "4.50") },
+                ),
+            ),
+        )
+
+        val prices = CatalogMapper.map(payload, updatedAtEpochMillis = 77L).priceSnapshots
+
+        assertEquals(3, prices.size)
+        assertEquals(123L, prices.single { it.providerId == "cardmarket" }.amountMinor)
+        assertEquals("EUR", prices.single { it.providerId == "cardmarket" }.currencyCode)
+        assertEquals(250L, prices.single { it.providerId == "tcgplayer" }.amountMinor)
+        val setPrice = prices.single { it.providerId == "set_price" }
+        assertEquals(450L, setPrice.amountMinor)
+        assertEquals("USD", setPrice.currencyCode)
+        assertEquals("test:printing:lob-en-001", setPrice.printingId)
+        assertEquals(77L, setPrice.observedAtEpochMillis)
     }
     private fun samplePayload() = CatalogPayload(
         sourceId = "test",

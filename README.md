@@ -37,6 +37,16 @@ The app currently uses the documented public [YGOPRODeck API v7](https://ygoprod
 - English responses provide the canonical name and available printing/set-code rows. German responses contribute localized card names and text only.
 - No image URL is exposed to the UI, and only a user-viewed card's English artwork is downloaded to local app-private storage. Price fields, account data, and analytics data are not requested or stored.
 
+## Local price references
+
+A normal user-requested **Download / refresh English + German catalog** also refreshes locally cached public price references. No price lookup runs from the UI and no card, collection, camera image, or personal data is sent to a pricing service.
+
+- English catalog printings show YGOPRODeck's public `set_price` in USD when supplied for that exact set code.
+- Card detail also lists public card-level vendor references: Cardmarket in EUR and TCGplayer, eBay, Amazon, and CoolStuffInc in USD when supplied. The provider defines these vendor values as the lowest price across versions of the card.
+- Price records are stored as app-private Room `PriceSnapshot` rows with the time of the successful catalog mapping. They are estimates, not purchase offers or collection valuations, and they do not account for card condition, language, edition, grading, or a particular listing unless specifically marked for the set code.
+- German printing-backup rows have no invented set price. Their catalog-result fallback, if present, is explicitly labelled as a card-level Cardmarket reference.
+
+Prices are optional catalog metadata. Refreshing catalog/price data upserts those snapshots but never deletes or overwrites inventory entries.
 ### Important language and printing assumption
 
 YGOPRODeck provides current English catalog data and the German localizations it has available. Its German `card_sets` responses repeat English-style set codes and do not provide verified German physical set codes or edition data. The app therefore does **not** invent German printing records: imported catalog printings are English/provider printings with an explicit `unknown` edition. German localized search and display work where the provider supplies a German text; English is the fallback otherwise.

@@ -27,6 +27,8 @@ data class YgoProDeckCardDto(
     val cardSets: List<YgoProDeckCardSetDto>? = null,
     @SerialName("card_images")
     val cardImages: List<YgoProDeckCardImageDto>? = null,
+    @SerialName("card_prices")
+    val cardPrices: List<YgoProDeckCardPricesDto>? = null,
 )
 
 /** Only the English primary artwork is used; localized card pages are never queried for images. */
@@ -47,6 +49,23 @@ data class YgoProDeckCardSetDto(
     val setRarity: String? = null,
     @SerialName("set_rarity_code")
     val setRarityCode: String? = null,
+    @SerialName("set_price")
+    val setPrice: String? = null,
+)
+
+/** Provider-reported lowest card price across versions, not a valuation of a physical printing. */
+@Serializable
+data class YgoProDeckCardPricesDto(
+    @SerialName("cardmarket_price")
+    val cardmarketPrice: String? = null,
+    @SerialName("coolstuffinc_price")
+    val coolstuffincPrice: String? = null,
+    @SerialName("tcgplayer_price")
+    val tcgplayerPrice: String? = null,
+    @SerialName("ebay_price")
+    val ebayPrice: String? = null,
+    @SerialName("amazon_price")
+    val amazonPrice: String? = null,
 )
 
 @Serializable
@@ -56,4 +75,4 @@ data class YgoProDeckDatabaseVersionDto(
     val date: String? = null,
     @SerialName("last_update")
     val lastUpdate: String? = null,
-)
+)

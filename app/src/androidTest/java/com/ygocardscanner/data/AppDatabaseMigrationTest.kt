@@ -141,4 +141,22 @@ class AppDatabaseMigrationTest {
             }
         }
     }
-}
+
+    @Test
+    fun migratesV5ToPriceSnapshotsSchemaWithoutDestructiveFallback() {
+        helper.createDatabase(databaseName, 5).close()
+
+        helper.runMigrationsAndValidate(
+            databaseName,
+            6,
+            true,
+            AppDatabaseMigrations.MIGRATION_5_6,
+        ).use { database ->
+            database.query(
+                "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'price_snapshots'",
+            ).use { cursor ->
+                assertTrue(cursor.moveToFirst())
+                assertEquals("price_snapshots", cursor.getString(0))
+            }
+        }
+    }}

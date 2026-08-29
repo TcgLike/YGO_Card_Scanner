@@ -49,6 +49,9 @@ import com.ygocardscanner.ui.components.LoadingState
 import com.ygocardscanner.ui.components.LocalArtworkViewer
 import com.ygocardscanner.ui.localization.appText
 import com.ygocardscanner.ui.localization.localizedLabel
+import com.ygocardscanner.ui.localization.formattedAmount
+import com.ygocardscanner.ui.localization.formattedObservedAt
+import com.ygocardscanner.ui.localization.providerLabel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -166,6 +169,7 @@ private fun EntryDetailContent(
                 if (entry.printingKind.code == "unknown") {
                     DetailLine(appText("Printing", "Druck"), appText("Unknown printing", "Unbekannter Druck"))
                 }
+                PriceOverview(entry.prices)
                 OutlinedTextField(
                     value = quantityText,
                     onValueChange = { quantityText = it },
@@ -218,6 +222,49 @@ private fun EntryDetailContent(
     }
 }
 
+@Composable
+private fun PriceOverview(prices: List<com.ygocardscanner.model.PriceQuote>) {
+    Text(
+        appText("Price references", "Preisreferenzen"),
+        modifier = Modifier.padding(top = 20.dp),
+        style = MaterialTheme.typography.titleSmall,
+    )
+    if (prices.isEmpty()) {
+        Text(
+            appText(
+                "No local price data yet. Refresh the catalog to update public reference prices.",
+                "Noch keine lokalen Preisdaten. Aktualisiere den Katalog für öffentliche Preisreferenzen.",
+            ),
+            modifier = Modifier.padding(top = 4.dp),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        return
+    }
+
+    prices.forEach { price ->
+        val label = if (price.isPrintingSpecific) {
+            appText("${price.providerLabel()} (this set code)", "${price.providerLabel()} (dieser Set-Code)")
+        } else {
+            appText("${price.providerLabel()} (card-level)", "${price.providerLabel()} (kartenweit)")
+        }
+        DetailLine(label, price.formattedAmount())
+        Text(
+            appText(
+                "Observed ${price.formattedObservedAt()}",
+                "Abgerufen ${price.formattedObservedAt()}",
+            ),
+            style = MaterialTheme.typography.bodySmall,
+        )
+    }
+    Text(
+        appText(
+            "Public reference prices are approximate. They do not account for the card's condition, edition, language, or a specific listing unless marked for this set code.",
+            "Öffentliche Preisreferenzen sind nur Näherungswerte. Sie berücksichtigen Zustand, Auflage, Sprache oder ein bestimmtes Angebot nicht, außer sie sind für diesen Set-Code markiert.",
+        ),
+        modifier = Modifier.padding(top = 8.dp),
+        style = MaterialTheme.typography.bodySmall,
+    )
+}
 @Composable
 private fun DetailLine(label: String, value: String) {
     Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {

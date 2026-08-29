@@ -47,6 +47,16 @@ enum class PrintingKind(val code: String) {
     }
 }
 
+data class PriceQuote(
+    val providerId: String,
+    val currencyCode: String,
+    /** Stored as integer minor units; formatting stays in the UI layer. */
+    val amountMinor: Long,
+    val observedAtEpochMillis: Long,
+    /** True only for the provider's set-code-specific public reference. */
+    val isPrintingSpecific: Boolean,
+)
+
 data class CatalogPrintingSummary(
     val printingId: String,
     val cardId: String,
@@ -56,6 +66,7 @@ data class CatalogPrintingSummary(
     val language: CardLanguage,
     val rarity: String?,
     val edition: CardEdition,
+    val referencePrice: PriceQuote? = null,
 )
 
 data class CollectionEntrySummary(
@@ -88,6 +99,7 @@ data class InventoryEntryDetail(
     val notes: String,
     val printingKind: PrintingKind,
     val artwork: CardArtworkDetail?,
+    val prices: List<PriceQuote>,
 )
 
 data class KnownPrintingDraft(

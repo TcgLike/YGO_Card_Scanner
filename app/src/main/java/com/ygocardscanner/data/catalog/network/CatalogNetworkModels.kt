@@ -30,6 +30,8 @@ data class CatalogCardDto(
     val canonicalName: String,
     val texts: List<CatalogCardTextDto>,
     val printings: List<CatalogPrintingDto>,
+    /** Current provider price observations, kept separate from the canonical card and printing. */
+    val prices: List<CatalogPriceDto> = emptyList(),
     /** Optional English canonical artwork metadata. The URL is never exposed to the UI. */
     val artwork: CatalogCardArtworkDto? = null,
 )
@@ -56,6 +58,19 @@ data class CatalogPrintingDto(
     val rarityCode: String? = null,
     @SerialName("edition_code")
     val editionCode: String,
+    /** Current public set-code reference price. Null means the provider supplied none. */
+    val setPriceUsd: String? = null,
+)
+
+@Serializable
+data class CatalogPriceDto(
+    /** Stable provider/vendor key. */
+    @SerialName("provider_id")
+    val providerId: String,
+    @SerialName("currency_code")
+    val currencyCode: String,
+    /** Decimal string as supplied by the public source; conversion happens before Room. */
+    val amount: String,
 )
 
 @Serializable
@@ -64,4 +79,4 @@ data class CatalogCardArtworkDto(
     val providerArtworkId: String,
     @SerialName("image_url")
     val imageUrl: String,
-)
+)

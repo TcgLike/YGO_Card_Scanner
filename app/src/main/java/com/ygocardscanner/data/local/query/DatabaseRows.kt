@@ -10,9 +10,19 @@ data class CatalogPrintingRow(
     val printing: Printing,
     @ColumnInfo(name = "display_name")
     val displayName: String,
+    @ColumnInfo(name = "printing_price_amount_minor")
+    val printingPriceAmountMinor: Long? = null,
+    @ColumnInfo(name = "printing_price_currency_code")
+    val printingPriceCurrencyCode: String? = null,
+    @ColumnInfo(name = "printing_price_observed_at_epoch_millis")
+    val printingPriceObservedAtEpochMillis: Long? = null,
+    @ColumnInfo(name = "fallback_price_amount_minor")
+    val fallbackPriceAmountMinor: Long? = null,
+    @ColumnInfo(name = "fallback_price_currency_code")
+    val fallbackPriceCurrencyCode: String? = null,
+    @ColumnInfo(name = "fallback_price_observed_at_epoch_millis")
+    val fallbackPriceObservedAtEpochMillis: Long? = null,
 )
-
-
 data class CardPasscodeRow(
     @ColumnInfo(name = "card_id")
     val cardId: String,

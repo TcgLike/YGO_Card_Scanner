@@ -11,6 +11,7 @@ import com.ygocardscanner.data.util.CatalogNormalizers
 import com.ygocardscanner.model.CardEdition
 import com.ygocardscanner.model.CardLanguage
 import com.ygocardscanner.model.CatalogPrintingSummary
+import com.ygocardscanner.model.PriceQuote
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -23,6 +24,7 @@ class RoomCatalogRepository(
 ) : CatalogRepository {
     private val catalogDao = database.catalogDao()
     private val artworkDao = database.artworkDao()
+    private val priceDao = database.priceDao()
     private val updateStateDao = database.catalogUpdateStateDao()
 
     override fun observePrintings(
@@ -48,6 +50,7 @@ class RoomCatalogRepository(
                     language = CardLanguage.fromCode(row.printing.languageCode),
                     rarity = row.printing.rarityCode,
                     edition = CardEdition.fromCode(row.printing.editionCode),
+                    referencePrice = row.toReferencePrice(),
                 )
             }
         }
@@ -125,6 +128,7 @@ class RoomCatalogRepository(
             catalogDao.upsertCardTexts(mappedCatalog.cardTexts)
             artworkDao.upsertArtworks(mappedCatalog.artworks)
             catalogDao.upsertPrintings(mappedCatalog.printings)
+            priceDao.upsertSnapshots(mappedCatalog.priceSnapshots)
             catalogDao.upsertMetadata(mappedCatalog.metadata)
 
             // The old tiny seed is retired only as part of a successful public import. It remains
@@ -191,6 +195,34 @@ class RoomCatalogRepository(
         )
     }
 
+    private fun com.ygocardscanner.data.local.query.CatalogPrintingRow.toReferencePrice(): PriceQuote? =
+        if (
+            printingPriceAmountMinor != null &&
+            printingPriceCurrencyCode != null &&
+            printingPriceObservedAtEpochMillis != null
+        ) {
+            PriceQuote(
+                providerId = "set_price",
+                currencyCode = printingPriceCurrencyCode,
+                amountMinor = printingPriceAmountMinor,
+                observedAtEpochMillis = printingPriceObservedAtEpochMillis,
+                isPrintingSpecific = true,
+            )
+        } else if (
+            fallbackPriceAmountMinor != null &&
+            fallbackPriceCurrencyCode != null &&
+            fallbackPriceObservedAtEpochMillis != null
+        ) {
+            PriceQuote(
+                providerId = "cardmarket",
+                currencyCode = fallbackPriceCurrencyCode,
+                amountMinor = fallbackPriceAmountMinor,
+                observedAtEpochMillis = fallbackPriceObservedAtEpochMillis,
+                isPrintingSpecific = false,
+            )
+        } else {
+            null
+        }
     private companion object {
         const val SEARCH_RESULT_LIMIT = 100
     }

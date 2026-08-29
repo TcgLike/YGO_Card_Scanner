@@ -55,7 +55,25 @@ interface CatalogDao {
 
     @Query(
         """
-        SELECT p.*, COALESCE(requested.name, english.name, c.canonical_name) AS display_name
+        SELECT p.printing_id,
+            p.card_id,
+            p.source_id,
+            p.provider_printing_id,
+            p.set_code,
+            p.normalized_set_code,
+            p.set_name,
+            p.language_code,
+            p.rarity_code,
+            p.edition_code,
+            p.is_active,
+            p.catalog_revision,
+            p.updated_at_epoch_millis, COALESCE(requested.name, english.name, c.canonical_name) AS display_name,
+            set_price.amount_minor AS printing_price_amount_minor,
+            set_price.currency_code AS printing_price_currency_code,
+            set_price.observed_at_epoch_millis AS printing_price_observed_at_epoch_millis,
+            cardmarket_price.amount_minor AS fallback_price_amount_minor,
+            cardmarket_price.currency_code AS fallback_price_currency_code,
+            cardmarket_price.observed_at_epoch_millis AS fallback_price_observed_at_epoch_millis
         FROM printings AS p
         INNER JOIN cards AS c ON c.card_id = p.card_id
         LEFT JOIN card_texts AS requested
@@ -66,6 +84,13 @@ interface CatalogDao {
             ON english.card_id = c.card_id
             AND english.language_code = 'en'
             AND english.is_active = 1
+        LEFT JOIN price_snapshots AS set_price
+            ON set_price.printing_id = p.printing_id
+            AND set_price.provider_id = 'set_price'
+        LEFT JOIN price_snapshots AS cardmarket_price
+            ON cardmarket_price.card_id = c.card_id
+            AND cardmarket_price.printing_id IS NULL
+            AND cardmarket_price.provider_id = 'cardmarket'
         WHERE p.is_active = 1
             AND c.is_active = 1
             AND :hasQuery = 1
@@ -98,7 +123,25 @@ interface CatalogDao {
 
     @Query(
         """
-        SELECT p.*, COALESCE(requested.name, english.name, c.canonical_name) AS display_name
+        SELECT p.printing_id,
+            p.card_id,
+            p.source_id,
+            p.provider_printing_id,
+            p.set_code,
+            p.normalized_set_code,
+            p.set_name,
+            p.language_code,
+            p.rarity_code,
+            p.edition_code,
+            p.is_active,
+            p.catalog_revision,
+            p.updated_at_epoch_millis, COALESCE(requested.name, english.name, c.canonical_name) AS display_name,
+            set_price.amount_minor AS printing_price_amount_minor,
+            set_price.currency_code AS printing_price_currency_code,
+            set_price.observed_at_epoch_millis AS printing_price_observed_at_epoch_millis,
+            cardmarket_price.amount_minor AS fallback_price_amount_minor,
+            cardmarket_price.currency_code AS fallback_price_currency_code,
+            cardmarket_price.observed_at_epoch_millis AS fallback_price_observed_at_epoch_millis
         FROM printings AS p
         INNER JOIN cards AS c ON c.card_id = p.card_id
         LEFT JOIN card_texts AS requested
@@ -107,6 +150,13 @@ interface CatalogDao {
         LEFT JOIN card_texts AS english
             ON english.card_id = c.card_id
             AND english.language_code = 'en'
+        LEFT JOIN price_snapshots AS set_price
+            ON set_price.printing_id = p.printing_id
+            AND set_price.provider_id = 'set_price'
+        LEFT JOIN price_snapshots AS cardmarket_price
+            ON cardmarket_price.card_id = c.card_id
+            AND cardmarket_price.printing_id IS NULL
+            AND cardmarket_price.provider_id = 'cardmarket'
         WHERE p.printing_id = :printingId
         LIMIT 1
         """,
@@ -114,13 +164,38 @@ interface CatalogDao {
     suspend fun getPrintingRow(printingId: String, languageCode: String): CatalogPrintingRow?
     @Query(
         """
-        SELECT p.*, COALESCE(requested.name, english.name, c.canonical_name) AS display_name
+        SELECT p.printing_id,
+            p.card_id,
+            p.source_id,
+            p.provider_printing_id,
+            p.set_code,
+            p.normalized_set_code,
+            p.set_name,
+            p.language_code,
+            p.rarity_code,
+            p.edition_code,
+            p.is_active,
+            p.catalog_revision,
+            p.updated_at_epoch_millis, COALESCE(requested.name, english.name, c.canonical_name) AS display_name,
+            set_price.amount_minor AS printing_price_amount_minor,
+            set_price.currency_code AS printing_price_currency_code,
+            set_price.observed_at_epoch_millis AS printing_price_observed_at_epoch_millis,
+            cardmarket_price.amount_minor AS fallback_price_amount_minor,
+            cardmarket_price.currency_code AS fallback_price_currency_code,
+            cardmarket_price.observed_at_epoch_millis AS fallback_price_observed_at_epoch_millis
         FROM printings AS p
         INNER JOIN cards AS c ON c.card_id = p.card_id
         LEFT JOIN card_texts AS requested ON requested.card_id = c.card_id
             AND requested.language_code = :languageCode AND requested.is_active = 1
         LEFT JOIN card_texts AS english ON english.card_id = c.card_id
             AND english.language_code = 'en' AND english.is_active = 1
+        LEFT JOIN price_snapshots AS set_price
+            ON set_price.printing_id = p.printing_id
+            AND set_price.provider_id = 'set_price'
+        LEFT JOIN price_snapshots AS cardmarket_price
+            ON cardmarket_price.card_id = c.card_id
+            AND cardmarket_price.printing_id IS NULL
+            AND cardmarket_price.provider_id = 'cardmarket'
         WHERE p.is_active = 1 AND c.is_active = 1 AND p.normalized_set_code = :normalizedSetCode
         ORDER BY p.set_code COLLATE NOCASE
         """,
@@ -132,13 +207,38 @@ interface CatalogDao {
 
     @Query(
         """
-        SELECT p.*, COALESCE(requested.name, english.name, c.canonical_name) AS display_name
+        SELECT p.printing_id,
+            p.card_id,
+            p.source_id,
+            p.provider_printing_id,
+            p.set_code,
+            p.normalized_set_code,
+            p.set_name,
+            p.language_code,
+            p.rarity_code,
+            p.edition_code,
+            p.is_active,
+            p.catalog_revision,
+            p.updated_at_epoch_millis, COALESCE(requested.name, english.name, c.canonical_name) AS display_name,
+            set_price.amount_minor AS printing_price_amount_minor,
+            set_price.currency_code AS printing_price_currency_code,
+            set_price.observed_at_epoch_millis AS printing_price_observed_at_epoch_millis,
+            cardmarket_price.amount_minor AS fallback_price_amount_minor,
+            cardmarket_price.currency_code AS fallback_price_currency_code,
+            cardmarket_price.observed_at_epoch_millis AS fallback_price_observed_at_epoch_millis
         FROM printings AS p
         INNER JOIN cards AS c ON c.card_id = p.card_id
         LEFT JOIN card_texts AS requested ON requested.card_id = c.card_id
             AND requested.language_code = :languageCode AND requested.is_active = 1
         LEFT JOIN card_texts AS english ON english.card_id = c.card_id
             AND english.language_code = 'en' AND english.is_active = 1
+        LEFT JOIN price_snapshots AS set_price
+            ON set_price.printing_id = p.printing_id
+            AND set_price.provider_id = 'set_price'
+        LEFT JOIN price_snapshots AS cardmarket_price
+            ON cardmarket_price.card_id = c.card_id
+            AND cardmarket_price.printing_id IS NULL
+            AND cardmarket_price.provider_id = 'cardmarket'
         WHERE p.is_active = 1 AND c.is_active = 1 AND c.passcode = :passcode
         ORDER BY p.set_code COLLATE NOCASE
         LIMIT :resultLimit
@@ -152,7 +252,19 @@ interface CatalogDao {
 
     @Query(
         """
-        SELECT p.*, COALESCE(requested.name, english.name, c.canonical_name) AS display_name,
+        SELECT p.printing_id,
+            p.card_id,
+            p.source_id,
+            p.provider_printing_id,
+            p.set_code,
+            p.normalized_set_code,
+            p.set_name,
+            p.language_code,
+            p.rarity_code,
+            p.edition_code,
+            p.is_active,
+            p.catalog_revision,
+            p.updated_at_epoch_millis, COALESCE(requested.name, english.name, c.canonical_name) AS display_name,
             (SELECT matching.name FROM card_texts AS matching
                 WHERE matching.card_id = c.card_id AND matching.is_active = 1
                     AND (matching.normalized_name LIKE '%' || :normalizedName || '%'
@@ -164,6 +276,13 @@ interface CatalogDao {
             AND requested.language_code = :languageCode AND requested.is_active = 1
         LEFT JOIN card_texts AS english ON english.card_id = c.card_id
             AND english.language_code = 'en' AND english.is_active = 1
+        LEFT JOIN price_snapshots AS set_price
+            ON set_price.printing_id = p.printing_id
+            AND set_price.provider_id = 'set_price'
+        LEFT JOIN price_snapshots AS cardmarket_price
+            ON cardmarket_price.card_id = c.card_id
+            AND cardmarket_price.printing_id IS NULL
+            AND cardmarket_price.provider_id = 'cardmarket'
         WHERE p.is_active = 1 AND c.is_active = 1
             AND EXISTS (
                 SELECT 1 FROM card_texts AS searchable

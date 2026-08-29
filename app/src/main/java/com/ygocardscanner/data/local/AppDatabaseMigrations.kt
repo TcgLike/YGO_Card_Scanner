@@ -100,4 +100,35 @@ object AppDatabaseMigrations {
             )
         }
     }
-}
+
+    val MIGRATION_5_6 = object : Migration(5, 6) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS `price_snapshots` (
+                    `price_snapshot_id` TEXT NOT NULL,
+                    `card_id` TEXT NOT NULL,
+                    `printing_id` TEXT,
+                    `source_id` TEXT NOT NULL,
+                    `provider_id` TEXT NOT NULL,
+                    `currency_code` TEXT NOT NULL,
+                    `amount_minor` INTEGER NOT NULL,
+                    `observed_at_epoch_millis` INTEGER NOT NULL,
+                    PRIMARY KEY(`price_snapshot_id`),
+                    FOREIGN KEY(`card_id`) REFERENCES `cards`(`card_id`) ON UPDATE NO ACTION ON DELETE RESTRICT,
+                    FOREIGN KEY(`printing_id`) REFERENCES `printings`(`printing_id`) ON UPDATE NO ACTION ON DELETE RESTRICT
+                )
+                """.trimIndent(),
+            )
+            database.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_price_snapshots_card_id` ON `price_snapshots` (`card_id`)",
+            )
+            database.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_price_snapshots_printing_id` ON `price_snapshots` (`printing_id`)",
+            )
+            database.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_price_snapshots_source_id_provider_id` ON `price_snapshots` (`source_id`, `provider_id`)",
+            )
+        }
+    }
+}

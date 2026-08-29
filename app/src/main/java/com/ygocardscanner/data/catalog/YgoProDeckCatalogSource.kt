@@ -2,12 +2,14 @@ package com.ygocardscanner.data.catalog
 
 import com.ygocardscanner.data.catalog.network.CatalogCardArtworkDto
 import com.ygocardscanner.data.catalog.network.CatalogCardDto
+import com.ygocardscanner.data.catalog.network.CatalogPriceDto
 import com.ygocardscanner.data.catalog.network.CatalogCardTextDto
 import com.ygocardscanner.data.catalog.network.CatalogPayload
 import com.ygocardscanner.data.catalog.network.CatalogPrintingDto
 import com.ygocardscanner.data.catalog.network.YgoProDeckApiClient
 import com.ygocardscanner.data.catalog.network.YgoProDeckCardDto
 import com.ygocardscanner.data.catalog.network.YgoProDeckCardImageDto
+import com.ygocardscanner.data.catalog.network.YgoProDeckCardPricesDto
 import com.ygocardscanner.data.catalog.network.YgoProDeckCardSetDto
 import com.ygocardscanner.data.catalog.network.YgoProDeckDatabaseVersionDto
 import com.ygocardscanner.data.catalog.network.YgoProDeckLanguage
@@ -108,6 +110,7 @@ class YgoProDeckCatalogSource(
                     canonicalName = canonicalName,
                     texts = texts,
                     printings = english?.cardSets.orEmpty().toEnglishPrintings(passcode),
+                    prices = english?.cardPrices.orEmpty().toCardPrices(),
                     artwork = english?.cardImages.orEmpty().toEnglishArtwork(passcode),
                 )
             }
@@ -127,6 +130,7 @@ class YgoProDeckCatalogSource(
             name = namedRecord.name.trim(),
             description = firstNotNullOfOrNull { it.desc?.trim()?.takeIf(String::isNotEmpty) },
             cardSets = flatMap { it.cardSets.orEmpty() },
+            cardPrices = flatMap { it.cardPrices.orEmpty() },
             cardImages = flatMap { it.cardImages.orEmpty() },
         )
     }
@@ -153,8 +157,32 @@ class YgoProDeckCatalogSource(
                 languageCode = ENGLISH_LANGUAGE_CODE,
                 rarityCode = rarity,
                 editionCode = UNKNOWN_EDITION_CODE,
+                setPriceUsd = set.setPrice?.trim()?.takeIf(String::isNotEmpty),
             )
         }.distinctBy { it.providerPrintingId }
+
+    private fun List<YgoProDeckCardPricesDto>.toCardPrices(): List<CatalogPriceDto> =
+        asSequence()
+            .flatMap { prices ->
+                sequenceOf(
+                    CARDMARKET to prices.cardmarketPrice,
+                    COOL_STUFF_INC to prices.coolstuffincPrice,
+                    TCGPLAYER to prices.tcgplayerPrice,
+                    EBAY to prices.ebayPrice,
+                    AMAZON to prices.amazonPrice,
+                )
+            }
+            .mapNotNull { (providerId, amount) ->
+                amount?.trim()?.takeIf(String::isNotEmpty)?.let {
+                    CatalogPriceDto(
+                        providerId = providerId,
+                        currencyCode = if (providerId == CARDMARKET) EUR else USD,
+                        amount = it,
+                    )
+                }
+            }
+            .distinctBy(CatalogPriceDto::providerId)
+            .toList()
 
     /** The first artwork in the English response is the provider default artwork. */
     private fun List<YgoProDeckCardImageDto>.toEnglishArtwork(
@@ -193,6 +221,7 @@ class YgoProDeckCatalogSource(
         val name: String,
         val description: String?,
         val cardSets: List<YgoProDeckCardSetDto>,
+        val cardPrices: List<YgoProDeckCardPricesDto>,
         val cardImages: List<YgoProDeckCardImageDto>,
     )
 
@@ -203,6 +232,13 @@ class YgoProDeckCatalogSource(
         const val UNKNOWN_EDITION_CODE = "unknown"
         const val PROVIDER_IMAGE_HOST = "images.ygoprodeck.com"
         const val PASSCODE_LENGTH = 8
+        const val USD = "USD"
+        const val EUR = "EUR"
+        const val CARDMARKET = "cardmarket"
+        const val COOL_STUFF_INC = "coolstuffinc"
+        const val TCGPLAYER = "tcgplayer"
+        const val EBAY = "ebay"
+        const val AMAZON = "amazon"
         const val DEFAULT_PAGE_SIZE = 1000
         const val DEFAULT_PAGE_REQUEST_DELAY_MILLIS = 75L
     }
