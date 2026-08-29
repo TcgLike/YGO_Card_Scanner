@@ -1,0 +1,33 @@
+# Gradle and build outputs
+.gradle/
+build/
+**/build/
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Local machine configuration and signing material
+local.properties
+*.jks
+*.keystore
+keystore.properties
+
+# Android package outputs
+*.apk
+*.aab
+
+# Local collection data and backups
+*.db
+*.db-shm
+*.db-wal
+*.json.backup
+collection-export*.json
+collection-export*.csv
+
+# OS files
+.DS_Store
+Thumbs.db

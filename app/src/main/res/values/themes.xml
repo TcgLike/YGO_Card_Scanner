@@ -1,0 +1,5 @@
+<resources>
+    <style name="Theme.YgoCardScanner" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowLightStatusBar">?android:attr/isLightTheme</item>
+    </style>
+</resources>

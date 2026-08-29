@@ -1,0 +1,147 @@
+{
+  "source_id": "development-seed",
+  "catalog_revision": "2026.08.29.1",
+  "content_hash": "development-seed-v1",
+  "cards": [
+    {
+      "provider_card_id": "blue-eyes-white-dragon",
+      "passcode": "89631139",
+      "canonical_name": "Blue-Eyes White Dragon",
+      "texts": [
+        {
+          "language_code": "en",
+          "name": "Blue-Eyes White Dragon",
+          "description": "This legendary dragon is a powerful engine of destruction."
+        },
+        {
+          "language_code": "de",
+          "name": "Blauäugiger w. Drache",
+          "description": "Dieser legendäre Drache ist eine mächtige Maschine der Zerstörung."
+        }
+      ],
+      "printings": [
+        {
+          "provider_printing_id": "lob-en-001-1e",
+          "set_code": "LOB-001",
+          "set_name": "Legend of Blue Eyes White Dragon",
+          "language_code": "en",
+          "rarity_code": "ultra_rare",
+          "edition_code": "first_edition"
+        },
+        {
+          "provider_printing_id": "lob-de-001-unl",
+          "set_code": "LOB-DE001",
+          "set_name": "Legend of Blue Eyes White Dragon",
+          "language_code": "de",
+          "rarity_code": "ultra_rare",
+          "edition_code": "unlimited"
+        }
+      ]
+    },
+    {
+      "provider_card_id": "dark-magician",
+      "passcode": "46986414",
+      "canonical_name": "Dark Magician",
+      "texts": [
+        {
+          "language_code": "en",
+          "name": "Dark Magician",
+          "description": "The ultimate wizard in terms of attack and defense."
+        },
+        {
+          "language_code": "de",
+          "name": "Dunkler Magier",
+          "description": "Der ultimative Zauberer in Sachen Angriff und Verteidigung."
+        }
+      ],
+      "printings": [
+        {
+          "provider_printing_id": "lob-en-005-1e",
+          "set_code": "LOB-005",
+          "set_name": "Legend of Blue Eyes White Dragon",
+          "language_code": "en",
+          "rarity_code": "ultra_rare",
+          "edition_code": "first_edition"
+        },
+        {
+          "provider_printing_id": "lob-de-005-unl",
+          "set_code": "LOB-DE005",
+          "set_name": "Legend of Blue Eyes White Dragon",
+          "language_code": "de",
+          "rarity_code": "ultra_rare",
+          "edition_code": "unlimited"
+        }
+      ]
+    },
+    {
+      "provider_card_id": "ash-blossom-and-joyous-spring",
+      "passcode": "14558127",
+      "canonical_name": "Ash Blossom & Joyous Spring",
+      "texts": [
+        {
+          "language_code": "en",
+          "name": "Ash Blossom & Joyous Spring",
+          "description": "When a card or effect is activated that includes any of these effects: add a card from the Deck to the hand; Special Summon from the Deck; or send a card from the Deck to the GY: You can discard this card; negate that effect."
+        },
+        {
+          "language_code": "de",
+          "name": "Aschenblüte & Freudiger Frühling",
+          "description": "Wenn eine Karte oder ein Effekt aktiviert wird, die bzw. der einen der folgenden Effekte enthält: Du kannst diese Karte abwerfen; annulliere jenen Effekt."
+        }
+      ],
+      "printings": [
+        {
+          "provider_printing_id": "macr-en-036-1e",
+          "set_code": "MACR-EN036",
+          "set_name": "Maximum Crisis",
+          "language_code": "en",
+          "rarity_code": "secret_rare",
+          "edition_code": "first_edition"
+        },
+        {
+          "provider_printing_id": "macr-de-036-unl",
+          "set_code": "MACR-DE036",
+          "set_name": "Maximum Crisis",
+          "language_code": "de",
+          "rarity_code": "secret_rare",
+          "edition_code": "unlimited"
+        }
+      ]
+    },
+    {
+      "provider_card_id": "kuriboh",
+      "passcode": "40640057",
+      "canonical_name": "Kuriboh",
+      "texts": [
+        {
+          "language_code": "en",
+          "name": "Kuriboh",
+          "description": "During damage calculation, if your opponent's monster attacks: You can discard this card; you take no battle damage from that battle."
+        },
+        {
+          "language_code": "de",
+          "name": "Kuriboh",
+          "description": "Während der Schadensberechnung, falls ein Monster deines Gegners angreift: Du kannst diese Karte abwerfen; du erhältst aus diesem Kampf keinen Kampfschaden."
+        }
+      ],
+      "printings": [
+        {
+          "provider_printing_id": "lob-en-007-unl",
+          "set_code": "LOB-007",
+          "set_name": "Legend of Blue Eyes White Dragon",
+          "language_code": "en",
+          "rarity_code": "super_rare",
+          "edition_code": "unlimited"
+        },
+        {
+          "provider_printing_id": "lob-de-007-unl",
+          "set_code": "LOB-DE007",
+          "set_name": "Legend of Blue Eyes White Dragon",
+          "language_code": "de",
+          "rarity_code": "super_rare",
+          "edition_code": "unlimited"
+        }
+      ]
+    }
+  ]
+}
