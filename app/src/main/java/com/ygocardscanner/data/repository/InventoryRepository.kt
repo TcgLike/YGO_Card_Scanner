@@ -1,13 +1,14 @@
 package com.ygocardscanner.data.repository
 
 import com.ygocardscanner.model.CollectionEntrySummary
+import com.ygocardscanner.model.CardLanguage
 import com.ygocardscanner.model.InventoryEntryDetail
 import com.ygocardscanner.model.KnownPrintingDraft
 import com.ygocardscanner.model.UnknownPrintingDraft
 import kotlinx.coroutines.flow.Flow
 
 interface InventoryRepository {
-    fun observeCollection(query: String): Flow<List<CollectionEntrySummary>>
+    fun observeCollection(query: String, displayLanguage: CardLanguage = CardLanguage.ENGLISH): Flow<List<CollectionEntrySummary>>
 
     fun observeEntry(entryId: String): Flow<InventoryEntryDetail?>
 

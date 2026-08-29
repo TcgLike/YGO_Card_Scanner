@@ -52,7 +52,7 @@ interface InventoryDao {
         
         LEFT JOIN card_texts AS preferred
             ON preferred.card_id = c.card_id
-            AND preferred.language_code = e.language_code
+            AND preferred.language_code = :displayLanguageCode
         LEFT JOIN card_texts AS english
             ON english.card_id = c.card_id
             AND english.language_code = 'en'
@@ -74,6 +74,7 @@ interface InventoryDao {
         rawQuery: String,
         nameQuery: String,
         compactQuery: String,
+        displayLanguageCode: String,
     ): Flow<List<CollectionEntryRow>>
 
     @Query(

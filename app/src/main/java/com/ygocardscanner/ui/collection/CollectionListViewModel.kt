@@ -3,11 +3,13 @@ package com.ygocardscanner.ui.collection
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ygocardscanner.data.repository.InventoryRepository
+import com.ygocardscanner.data.settings.AppLanguageSettings
 import com.ygocardscanner.model.CollectionEntrySummary
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -21,6 +23,7 @@ data class CollectionUiState(
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class CollectionListViewModel(
     private val inventoryRepository: InventoryRepository,
+    private val languageSettings: AppLanguageSettings,
 ) : ViewModel() {
     private val query = MutableStateFlow("")
     private val _uiState = MutableStateFlow(CollectionUiState())
@@ -44,8 +47,8 @@ class CollectionListViewModel(
         collectionJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             try {
-                query
-                    .flatMapLatest { inventoryRepository.observeCollection(it) }
+                combine(query, languageSettings.language) { currentQuery, language -> currentQuery to language }
+                    .flatMapLatest { (currentQuery, language) -> inventoryRepository.observeCollection(currentQuery, language) }
                     .collect { entries ->
                         _uiState.update { it.copy(isLoading = false, entries = entries, errorMessage = null) }
                     }

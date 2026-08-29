@@ -27,11 +27,12 @@ class RoomInventoryRepository(
     private val catalogDao = database.catalogDao()
     private val inventoryDao = database.inventoryDao()
 
-    override fun observeCollection(query: String): Flow<List<CollectionEntrySummary>> =
+    override fun observeCollection(query: String, displayLanguage: CardLanguage): Flow<List<CollectionEntrySummary>> =
         inventoryDao.observeCollection(
             rawQuery = query.trim(),
             nameQuery = CatalogNormalizers.name(query),
             compactQuery = CatalogNormalizers.setCode(query).orEmpty(),
+            displayLanguageCode = displayLanguage.code,
         ).map { rows ->
             rows.map { row ->
                 CollectionEntrySummary(

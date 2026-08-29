@@ -32,7 +32,7 @@ fun InventoryApp(container: AppContainer) {
     val navController = rememberNavController()
     val appLanguage by container.languageSettings.language.collectAsState()
     val collectionFactory = remember(container) {
-        viewModelFactory { CollectionListViewModel(container.inventoryRepository) }
+        viewModelFactory { CollectionListViewModel(container.inventoryRepository, container.languageSettings) }
     }
     val addFactory = remember(container) {
         viewModelFactory {
