@@ -15,7 +15,7 @@ class FullArtworkDownloadScheduler(
         try {
             workManager.enqueueUniqueWork(
                 FullArtworkDownloadWorker.UNIQUE_WORK_NAME,
-                ExistingWorkPolicy.KEEP,
+                ExistingWorkPolicy.REPLACE,
                 FullArtworkDownloadWorker.request(),
             )
         } catch (error: CancellationException) {
