@@ -6,6 +6,7 @@ import com.ygocardscanner.data.repository.CardArtworkRepository
 import com.ygocardscanner.data.repository.CatalogRepository
 import com.ygocardscanner.data.repository.CatalogUpdateStatus
 import com.ygocardscanner.data.repository.InventoryRepository
+import com.ygocardscanner.data.settings.AppLanguageSettings
 import com.ygocardscanner.data.work.CardArtworkUpdateScheduler
 import com.ygocardscanner.data.work.CatalogUpdateScheduler
 import com.ygocardscanner.data.work.FullArtworkDownloadScheduler
@@ -48,9 +49,10 @@ class AddToCollectionViewModel(
     private val artworkRepository: CardArtworkRepository,
     private val artworkUpdateScheduler: CardArtworkUpdateScheduler,
     private val artworkPackScheduler: FullArtworkDownloadScheduler,
+    private val languageSettings: AppLanguageSettings,
 ) : ViewModel() {
     private val query = MutableStateFlow("")
-    private val displayLanguage = MutableStateFlow(CardLanguage.ENGLISH)
+    private val displayLanguage = languageSettings.language
     private val _uiState = MutableStateFlow(AddToCollectionUiState())
     val uiState = _uiState
     private val _events = MutableSharedFlow<AddToCollectionEvent>()
@@ -67,7 +69,7 @@ class AddToCollectionViewModel(
     }
 
     fun updateDisplayLanguage(value: CardLanguage) {
-        displayLanguage.value = value
+        languageSettings.setLanguage(value)
         _uiState.update { it.copy(displayLanguage = value, isLoading = it.query.isNotBlank(), printings = if (it.query.isBlank()) emptyList() else it.printings, errorMessage = null) }
     }
 
@@ -95,7 +97,7 @@ class AddToCollectionViewModel(
         if (state.isRequestingCatalogUpdate || state.catalogUpdateStatus?.phase?.isInProgress == true) return
         viewModelScope.launch {
             _uiState.update { it.copy(isRequestingCatalogUpdate = true, errorMessage = null) }
-            try { catalogUpdateScheduler.enqueue() }
+            try { catalogUpdateScheduler.enqueue(force = true) }
             catch (error: Throwable) {
                 if (error is CancellationException) throw error
                 _uiState.update { it.copy(errorMessage = error.message ?: "The catalog update could not be scheduled.") }
@@ -137,7 +139,7 @@ class AddToCollectionViewModel(
             try {
                 combine(query, displayLanguage) { currentQuery, language -> currentQuery.trim() to language }
                     .flatMapLatest { (currentQuery, language) -> if (currentQuery.isBlank()) flowOf(emptyList()) else catalogRepository.observePrintings(currentQuery, language) }
-                    .collect { printings -> _uiState.update { it.copy(isLoading = false, printings = printings, errorMessage = null) } }
+                    .collect { printings -> _uiState.update { it.copy(isLoading = false, displayLanguage = displayLanguage.value, printings = printings, errorMessage = null) } }
             } catch (error: Throwable) {
                 if (error is CancellationException) throw error
                 _uiState.update { it.copy(isLoading = false, errorMessage = error.message ?: "The local card catalog could not be loaded.") }

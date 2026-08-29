@@ -47,6 +47,13 @@ The old development seed remains only as a test fixture. After a successful publ
 
 Before any public release, re-check the provider's availability, data quality, attribution requirements, and terms of use.
 
+## Settings, language, and downloads
+
+Open **Settings** from the Collection screen to choose English or Deutsch for the app UI, refresh the catalog, or start/resume the optional offline artwork pack. The language choice is stored only in the app-private preference store and immediately changes the catalog-search language used by Room.
+
+**Download / refresh English + German catalog** always schedules a forced provider refresh. It downloads both provider languages and is the repair action for installations whose catalog was created before German localized card text was available. A refresh never deletes or overwrites collection entries.
+
+The artwork control is resumable WorkManager work. It can continue while the app is not open, subject to Android's normal background-work, battery, storage, and network constraints. Selecting it again safely starts or resumes the saved download state.
 ## Privacy and data handling
 
 - Personal collection data remains in the app-private Room database on the device.
@@ -94,8 +101,8 @@ The debug APK is written to `app/build/outputs/apk/debug/app-debug.apk`.
 1. Open the repository root and allow Gradle sync to finish.
 2. Create/select an API 26+ emulator or connect a device.
 3. Select the `app` configuration and press **Run**.
-4. Open **Add to collection**, select **Download catalog**, wait for the status to report completion, then search locally.
-5. Optionally choose **Download offline card images** to cache one English image per catalog card. Select a search result to preview its cached image while adding; all cached images remain available offline.
+4. Open **Settings**, select **Download / refresh English + German catalog**, wait for the status to report completion, then search locally.
+5. Optionally choose **Download offline card images** in Settings to cache one English image per catalog card. Select a search result to preview its cached image while adding; all cached images remain available offline.
 6. Choose **Scan a card** from Add to collection and grant camera permission. Keep one card in view; review the local match before adding it. Use **Bulk** for continuous one-card-at-a-time scanning.
 
 ## Verification and project hygiene

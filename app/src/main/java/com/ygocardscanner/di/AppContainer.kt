@@ -3,6 +3,7 @@ package com.ygocardscanner.di
 import android.content.Context
 import androidx.work.WorkManager
 import com.ygocardscanner.data.artwork.CardArtworkFileStore
+import com.ygocardscanner.data.settings.AppLanguageSettings
 import com.ygocardscanner.data.catalog.YgoProDeckCatalogSource
 import com.ygocardscanner.data.catalog.network.HttpYgoProDeckApiClient
 import com.ygocardscanner.data.local.AppDatabase
@@ -22,6 +23,8 @@ import com.ygocardscanner.data.work.CatalogUpdateScheduler
 /** Small, explicit dependency graph for local inventory and public catalog updates. */
 class AppContainer(context: Context) {
     private val applicationContext = context.applicationContext
+
+    val languageSettings: AppLanguageSettings by lazy { AppLanguageSettings(applicationContext) }
 
     val database: AppDatabase by lazy {
         AppDatabase.create(applicationContext)

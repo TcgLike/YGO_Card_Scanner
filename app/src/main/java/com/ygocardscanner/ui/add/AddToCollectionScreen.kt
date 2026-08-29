@@ -56,6 +56,8 @@ import com.ygocardscanner.model.KnownPrintingDraft
 import com.ygocardscanner.ui.components.EmptyState
 import com.ygocardscanner.ui.components.ErrorState
 import com.ygocardscanner.ui.components.LoadingState
+import com.ygocardscanner.ui.localization.appText
+import com.ygocardscanner.ui.localization.localizedLabel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,8 +87,8 @@ fun AddToCollectionScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (selected == null) "Add to collection" else "Confirm card") },
-                navigationIcon = { TextButton(onClick = { if (selected == null) onBack() else { selected = null; viewModel.clearSelectedArtwork() } }) { Text("Back") } },
+                title = { Text(if (selected == null) appText("Add to collection", "Zur Sammlung hinzufügen") else appText("Confirm card", "Karte bestätigen")) },
+                navigationIcon = { TextButton(onClick = { if (selected == null) onBack() else { selected = null; viewModel.clearSelectedArtwork() } }) { Text(appText("Back", "Zurück")) } },
             )
         },
     ) { innerPadding ->
@@ -105,11 +107,6 @@ fun AddToCollectionScreen(
                 onManualUnknownPrinting = onManualUnknownPrinting,
                 onScanCard = onScanCard,
                 onRetry = viewModel::retry,
-                onDisplayLanguageChange = viewModel::updateDisplayLanguage,
-                onRequestCatalogUpdate = viewModel::requestCatalogUpdate,
-                artworkPackStatus = state.artworkPackStatus,
-                isRequestingArtworkPack = state.isRequestingArtworkPack,
-                onRequestArtworkPack = viewModel::requestArtworkPack,
             )
         } else {
             val printing = selected ?: return@Scaffold
@@ -182,7 +179,7 @@ fun AddToCollectionScreen(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                         enabled = !state.isSaving,
                     ) {
-                        Text(if (state.isSaving) "Adding…" else "Add to collection")
+                        Text(if (state.isSaving) "Adding…" else appText("Add to collection", "Zur Sammlung hinzufügen"))
                     }
                 }
             }
@@ -199,50 +196,35 @@ private fun CatalogPicker(
     onManualUnknownPrinting: () -> Unit,
     onScanCard: () -> Unit,
     onRetry: () -> Unit,
-    onDisplayLanguageChange: (CardLanguage) -> Unit,
-    onRequestCatalogUpdate: () -> Unit,
-    artworkPackStatus: ArtworkPackStatus?,
-    isRequestingArtworkPack: Boolean,
-    onRequestArtworkPack: () -> Unit,
 ) {
     Column(modifier = modifier) {
         OutlinedTextField(
             value = state.query,
             onValueChange = onQueryChange,
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-            label = { Text("Search card catalog") },
-            supportingText = { Text("Search name, passcode, or set code") },
+            label = { Text(appText("Search card catalog", "Kartenkatalog durchsuchen")) },
+            supportingText = { Text(appText("Search name, passcode, or set code", "Name, Passcode oder Set-Code suchen")) },
             singleLine = true,
         )
-        CatalogDisplayLanguageSelector(
-            selectedLanguage = state.displayLanguage,
-            onLanguageChange = onDisplayLanguageChange,
-        )
-        CatalogUpdateControls(
-            status = state.catalogUpdateStatus,
-            isRequestingUpdate = state.isRequestingCatalogUpdate,
-            onRequestUpdate = onRequestCatalogUpdate,
-        )
-        ArtworkPackControls(artworkPackStatus, isRequestingArtworkPack, onRequestArtworkPack)
         Row(modifier = Modifier.padding(horizontal = 8.dp)) {
             TextButton(onClick = onScanCard) {
-                Text("Scan a card")
+                Text(appText("Scan a card", "Karte scannen"))
             }
             TextButton(onClick = onManualUnknownPrinting) {
-                Text("Add an unknown printing manually")
+                Text(appText("Add an unknown printing manually", "Unbekannten Druck manuell hinzufügen"))
             }
         }
         when {
             state.isLoading -> LoadingState("Searching your local card catalog...")
             state.errorMessage != null -> ErrorState(state.errorMessage, onRetry)
             state.query.isBlank() -> EmptyState(
-                title = "Search the card catalog",
+                title = appText("Search the card catalog", "Kartenkatalog durchsuchen"),
                 message = "Enter a card name, passcode, or set code. Download the catalog if it is not available yet.",
             )
             state.printings.isEmpty() -> EmptyState(
-                title = "No catalog cards found",
+                title = appText("No catalog cards found", "Keine Katalogkarten gefunden"),
                 message = "Try another local search, download an update, or add an unknown printing manually.",
-                actionLabel = "Add unknown printing",
+                actionLabel = appText("Add unknown printing", "Unbekannten Druck hinzufügen"),
                 onAction = onManualUnknownPrinting,
             )
             else -> LazyColumn {
@@ -298,11 +280,11 @@ fun InventoryFields(
         label = { Text("Rarity (optional)") },
         singleLine = true,
     )
-    ChoiceRow("Edition", edition.label) {
+    ChoiceRow("Edition", edition.localizedLabel()) {
         val options = CardEdition.entries
         onEditionChange(options[(options.indexOf(edition) + 1) % options.size])
     }
-    ChoiceRow("Condition", condition.label) {
+    ChoiceRow("Condition", condition.localizedLabel()) {
         val options = CardCondition.entries
         onConditionChange(options[(options.indexOf(condition) + 1) % options.size])
     }
@@ -417,7 +399,7 @@ private fun AddArtworkPreview(
         }
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
             Text(message, style = MaterialTheme.typography.bodyMedium)
-            TextButton(onClick = onRefresh) { Text("Refresh image") }
+            TextButton(onClick = onRefresh) { Text(appText("Refresh image", "Bild aktualisieren")) }
         }
     }
 }

@@ -26,6 +26,7 @@ import com.ygocardscanner.model.CardEdition
 import com.ygocardscanner.model.CardLanguage
 import com.ygocardscanner.model.UnknownPrintingDraft
 import com.ygocardscanner.ui.add.InventoryFields
+import com.ygocardscanner.ui.localization.appText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,6 +45,8 @@ fun ManualAddScreen(
     var condition by rememberSaveable { mutableStateOf(CardCondition.NEAR_MINT) }
     var notes by rememberSaveable { mutableStateOf("") }
     var validationMessage by rememberSaveable { mutableStateOf<String?>(null) }
+    val cardNameRequiredMessage = appText("Enter a card name.", "Gib einen Kartennamen ein.")
+    val quantityRequiredMessage = appText("Quantity must be at least 1.", "Die Anzahl muss mindestens 1 sein.")
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
@@ -54,15 +57,15 @@ fun ManualAddScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Unknown printing") },
-                navigationIcon = { TextButton(onClick = onBack) { Text("Back") } },
+                title = { Text(appText("Unknown printing", "Unbekannter Druck")) },
+                navigationIcon = { TextButton(onClick = onBack) { Text(appText("Back", "Zurück")) } },
             )
         },
     ) { innerPadding ->
         LazyColumn(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
             item {
                 Text(
-                    "Record a card when its printing is not in the local catalog. You can match it later without losing these details.",
+                    appText("Record a card when its printing is not in the local catalog. You can match it later without losing these details.", "Erfasse eine Karte, wenn ihr Druck nicht im lokalen Katalog ist. Du kannst sie später zuordnen, ohne diese Angaben zu verlieren."),
                     modifier = Modifier.padding(16.dp),
                     style = MaterialTheme.typography.bodyMedium,
                 )
@@ -70,14 +73,14 @@ fun ManualAddScreen(
                     value = cardName,
                     onValueChange = { cardName = it },
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
-                    label = { Text("Card name") },
+                    label = { Text(appText("Card name", "Kartenname")) },
                     singleLine = true,
                 )
                 OutlinedTextField(
                     value = setCode,
                     onValueChange = { setCode = it },
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
-                    label = { Text("Set code (optional)") },
+                    label = { Text(appText("Set code (optional)", "Set-Code (optional)")) },
                     singleLine = true,
                 )
                 InventoryFields(
@@ -112,9 +115,9 @@ fun ManualAddScreen(
                     onClick = {
                         val parsedQuantity = quantity.toIntOrNull()
                         when {
-                            cardName.isBlank() -> validationMessage = "Enter a card name."
+                            cardName.isBlank() -> validationMessage = cardNameRequiredMessage
                             parsedQuantity == null || parsedQuantity <= 0 -> {
-                                validationMessage = "Quantity must be at least 1."
+                                validationMessage = quantityRequiredMessage
                             }
                             else -> viewModel.addUnknownPrinting(
                                 UnknownPrintingDraft(
@@ -133,7 +136,7 @@ fun ManualAddScreen(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     enabled = !state.isSaving,
                 ) {
-                    Text(if (state.isSaving) "Saving…" else "Save unknown printing")
+                    Text(if (state.isSaving) "Saving…" else appText("Save unknown printing", "Unbekannten Druck speichern"))
                 }
             }
         }

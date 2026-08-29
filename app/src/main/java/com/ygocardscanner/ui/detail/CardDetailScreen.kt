@@ -45,6 +45,8 @@ import kotlinx.coroutines.withContext
 import com.ygocardscanner.ui.components.EmptyState
 import com.ygocardscanner.ui.components.ErrorState
 import com.ygocardscanner.ui.components.LoadingState
+import com.ygocardscanner.ui.localization.appText
+import com.ygocardscanner.ui.localization.localizedLabel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,8 +68,8 @@ fun CardDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Card detail") },
-                navigationIcon = { TextButton(onClick = onBack) { Text("Back") } },
+                title = { Text(appText("Card detail", "Kartendetails")) },
+                navigationIcon = { TextButton(onClick = onBack) { Text(appText("Back", "Zurück")) } },
             )
         },
     ) { innerPadding ->
@@ -75,9 +77,9 @@ fun CardDetailScreen(
             state.isLoading -> LoadingState()
             state.errorMessage != null && state.entry == null -> ErrorState(state.errorMessage.orEmpty(), viewModel::retry)
             state.entry == null -> EmptyState(
-                title = "Entry not found",
-                message = "It may have been removed from this device.",
-                actionLabel = "Back to collection",
+                title = appText("Entry not found", "Eintrag nicht gefunden"),
+                message = appText("It may have been removed from this device.", "Er wurde möglicherweise von diesem Gerät entfernt."),
+                actionLabel = appText("Back to collection", "Zurück zur Sammlung"),
                 onAction = onBack,
             )
             else -> EntryDetailContent(
@@ -97,22 +99,22 @@ fun CardDetailScreen(
         val entry = state.entry
         AlertDialog(
             onDismissRequest = { showConditionPicker = false },
-            title = { Text("Card condition") },
-            text = { Column { CardCondition.entries.forEach { condition -> TextButton(onClick = { showConditionPicker = false; viewModel.updateCondition(condition) }) { Text(condition.label) } } } },
-            confirmButton = { TextButton(onClick = { showConditionPicker = false }) { Text("Cancel") } },
+            title = { Text(appText("Card condition", "Kartenzustand")) },
+            text = { Column { CardCondition.entries.forEach { condition -> TextButton(onClick = { showConditionPicker = false; viewModel.updateCondition(condition) }) { Text(condition.localizedLabel()) } } } },
+            confirmButton = { TextButton(onClick = { showConditionPicker = false }) { Text(appText("Cancel", "Abbrechen")) } },
         )
     }
     if (showDeleteConfirmation) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirmation = false },
-            title = { Text("Remove card entry?") },
-            text = { Text("This removes this inventory entry from this device. It does not alter the catalog.") },
+            title = { Text(appText("Remove card entry?", "Karteneintrag entfernen?")) },
+            text = { Text(appText("This removes this inventory entry from this device. It does not alter the catalog.", "Dies entfernt diesen Sammlungseintrag von diesem Gerät. Der Katalog bleibt unverändert.")) },
             confirmButton = {
                 TextButton(onClick = { showDeleteConfirmation = false; viewModel.deleteEntry() }) {
-                    Text("Remove")
+                    Text(appText("Remove", "Entfernen"))
                 }
             },
-            dismissButton = { TextButton(onClick = { showDeleteConfirmation = false }) { Text("Cancel") } },
+            dismissButton = { TextButton(onClick = { showDeleteConfirmation = false }) { Text(appText("Cancel", "Abbrechen")) } },
         )
     }
 }
@@ -143,22 +145,22 @@ private fun EntryDetailContent(
                 if (entry.canonicalName != entry.cardName) {
                     Text(entry.canonicalName, style = MaterialTheme.typography.bodyMedium)
                 }
-                DetailLine("Set code", entry.setCode ?: "Not recorded")
-                DetailLine("Set", entry.setName ?: "Unknown")
-                DetailLine("Language", entry.language.label)
-                DetailLine("Rarity", entry.rarity ?: "Not recorded")
-                DetailLine("Edition", entry.edition.label)
-                DetailLine("Condition", entry.condition.label)
-                TextButton(onClick = onEditCondition, enabled = !isSaving) { Text("Edit condition") }
-                entry.passcode?.let { DetailLine("Passcode", it) }
+                DetailLine(appText("Set code", "Set-Code"), entry.setCode ?: appText("Not recorded", "Nicht erfasst"))
+                DetailLine(appText("Set", "Set"), entry.setName ?: "Unknown")
+                DetailLine(appText("Language", "Sprache"), entry.language.label)
+                DetailLine(appText("Rarity", "Seltenheit"), entry.rarity ?: appText("Not recorded", "Nicht erfasst"))
+                DetailLine(appText("Edition", "Auflage"), entry.edition.localizedLabel())
+                DetailLine(appText("Condition", "Zustand"), entry.condition.localizedLabel())
+                TextButton(onClick = onEditCondition, enabled = !isSaving) { Text(appText("Edit condition", "Zustand bearbeiten")) }
+                entry.passcode?.let { DetailLine(appText("Passcode", "Passcode"), it) }
                 if (entry.printingKind.code == "unknown") {
-                    DetailLine("Printing", "Unknown printing")
+                    DetailLine(appText("Printing", "Druck"), appText("Unknown printing", "Unbekannter Druck"))
                 }
                 OutlinedTextField(
                     value = quantityText,
                     onValueChange = { quantityText = it },
                     modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
-                    label = { Text("Quantity") },
+                    label = { Text(appText("Quantity", "Anzahl")) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 )
@@ -185,10 +187,10 @@ private fun EntryDetailContent(
                         },
                         modifier = Modifier.padding(start = 8.dp),
                         enabled = !isSaving,
-                    ) { Text("Save") }
+                    ) { Text(appText("Save", "Speichern")) }
                 }
                 if (entry.notes.isNotBlank()) {
-                    Text("Notes", modifier = Modifier.padding(top = 20.dp), style = MaterialTheme.typography.titleSmall)
+                    Text(appText("Notes", "Notizen"), modifier = Modifier.padding(top = 20.dp), style = MaterialTheme.typography.titleSmall)
                     Text(entry.notes, modifier = Modifier.padding(top = 4.dp))
                 }
                 errorMessage?.let {
@@ -199,7 +201,7 @@ private fun EntryDetailContent(
                     modifier = Modifier.padding(top = 20.dp),
                     enabled = !isSaving,
                 ) {
-                    Text("Remove from collection", color = MaterialTheme.colorScheme.error)
+                    Text(appText("Remove from collection", "Aus Sammlung entfernen"), color = MaterialTheme.colorScheme.error)
                 }
             }
         }
@@ -264,7 +266,7 @@ private fun ArtworkContent(
         ) {
             Text(if (artwork.downloadState == CardArtworkDownloadState.FAILED ||
                 artwork.downloadState == CardArtworkDownloadState.AVAILABLE
-            ) "Retry image download" else "Download image")
+            ) appText("Retry image download", "Bilddownload erneut versuchen") else appText("Download image", "Bild herunterladen"))
         }
     }
 }
