@@ -43,6 +43,8 @@ sealed interface ScanMatchResult {
         val kind: ScanMatchKind,
         val candidates: List<ScanCandidate>,
         val observedFingerprint: String,
+        /** Normalized set codes recognized for this result. */
+        val observedSetCodes: List<String> = emptyList(),
     ) : ScanMatchResult {
         val isAmbiguous: Boolean get() = candidates.size != 1
     }

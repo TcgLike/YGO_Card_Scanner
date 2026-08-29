@@ -14,6 +14,13 @@ class ScanTextExtractorTest {
     }
 
     @Test
+    fun extractsModernLocalizedSetCode() {
+        val observation = ScanTextExtractor.extract("Geschwindigkeitsroid Taketomborg HSRD-EN006")
+
+        assertEquals(listOf("HSRDEN006"), observation.setCodeCandidates)
+    }
+
+    @Test
     fun retainsGermanAndEnglishNameLinesWithoutPersistingRawFrameData() {
         val observation = ScanTextExtractor.extract("Blue-Eyes White Dragon\nBlauäugiger w. Drache\nSDK-001")
 

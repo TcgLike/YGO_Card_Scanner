@@ -1,6 +1,8 @@
 package com.ygocardscanner.ui.settings
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -8,6 +10,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -42,6 +45,18 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
             }
             SettingsCard(title = appText("Card catalog", "Kartenkatalog")) {
                 Text(catalogMessage(state.catalogStatus?.phase, state.catalogStatus?.message))
+                if (state.catalogStatus?.phase?.isInProgress == true) {
+                    Spacer(Modifier.height(12.dp))
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                    Text(
+                        appText(
+                            "The download is still working. This may take several minutes for both languages.",
+                            "Der Download läuft weiter. Für beide Sprachen kann das einige Minuten dauern.",
+                        ),
+                        modifier = Modifier.padding(top = 6.dp),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
                 Button(onClick = viewModel::refreshBilingualCatalog, enabled = !state.isSchedulingCatalog && state.catalogStatus?.phase?.isInProgress != true) {
                     Text(if (state.isSchedulingCatalog) appText("Scheduling…", "Wird geplant…") else appText("Download / refresh English + German catalog", "Englischen + deutschen Katalog herunterladen / aktualisieren"))
                 }

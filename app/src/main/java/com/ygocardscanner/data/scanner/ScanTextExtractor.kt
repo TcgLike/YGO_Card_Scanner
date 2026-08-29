@@ -5,7 +5,7 @@ import com.ygocardscanner.data.util.CatalogNormalizers
 /** Extracts likely printed identifiers and title lines from ML Kit's plain-text output. */
 object ScanTextExtractor {
     private val passcodePattern = Regex("\\b\\d{8}\\b")
-    private val setCodePattern = Regex("\\b[A-Za-z]{2,6}[ -]?[A-Za-z0-9]{1,5}[ -]?[0-9]{2,4}\\b")
+    private val setCodePattern = Regex("\\b[A-Za-z]{2,6}(?:[ -]?[A-Za-z]{1,3})?[ -]?\\d{2,4}\\b")
 
     fun extract(rawText: String): ScanTextObservation {
         val lines = rawText.lines().map(String::trim).filter(String::isNotBlank)

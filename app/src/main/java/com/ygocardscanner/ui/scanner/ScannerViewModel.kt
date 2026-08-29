@@ -3,6 +3,7 @@ package com.ygocardscanner.ui.scanner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ygocardscanner.data.repository.InventoryRepository
+import com.ygocardscanner.data.settings.AppLanguageSettings
 import com.ygocardscanner.data.scanner.BulkPhotoQueueItem
 import com.ygocardscanner.data.scanner.CardScannerRepository
 import com.ygocardscanner.data.scanner.OcrTextBlock
@@ -44,6 +45,7 @@ sealed interface ScannerEvent { data object AddedSingleCard : ScannerEvent }
 class ScannerViewModel(
     private val scannerRepository: CardScannerRepository,
     private val inventoryRepository: InventoryRepository,
+    private val languageSettings: AppLanguageSettings,
 ) : ViewModel() {
     private val isMatching = AtomicBoolean(false)
     private val _uiState = MutableStateFlow(ScannerUiState())
@@ -77,7 +79,7 @@ class ScannerViewModel(
         _uiState.update { it.copy(isMatching = true, errorMessage = null) }
         viewModelScope.launch {
             try {
-                updateLiveMatch(scannerRepository.match(observation))
+                updateLiveMatch(scannerRepository.match(observation, languageSettings.language.value))
             } catch (error: Throwable) {
                 if (error is CancellationException) throw error
                 _uiState.update { it.copy(errorMessage = "The local card catalog could not be searched.") }
@@ -94,7 +96,7 @@ class ScannerViewModel(
         viewModelScope.launch {
             try {
                 val matches = ScanTextRegionGrouper.group(blocks).mapNotNull { region ->
-                    (scannerRepository.match(ScanTextExtractor.extract(region.rawText)) as? ScanMatchResult.Candidates)
+                    (scannerRepository.match(ScanTextExtractor.extract(region.rawText), languageSettings.language.value) as? ScanMatchResult.Candidates)
                         ?.let { BulkPhotoQueueItem(region, it) }
                 }
                 val regionCount = ScanTextRegionGrouper.group(blocks).size

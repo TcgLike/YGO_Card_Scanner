@@ -26,6 +26,7 @@ import androidx.core.content.ContextCompat
 import com.ygocardscanner.data.scanner.ScanCandidate
 import com.ygocardscanner.data.scanner.ScanMatchResult
 import com.ygocardscanner.data.scanner.ScannerMode
+import com.ygocardscanner.data.util.CatalogNormalizers
 import com.ygocardscanner.ui.localization.appText
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
@@ -53,5 +54,27 @@ import java.util.concurrent.atomic.AtomicBoolean
  val context=LocalContext.current; val owner=LocalLifecycleOwner.current; val view=remember { PreviewView(context) }; DisposableEffect(owner,view,live) { val recognizer=MlKitLatinTextRecognizer(); val executor=Executors.newSingleThreadExecutor(); val busy=AtomicBoolean(false); val future=ProcessCameraProvider.getInstance(context); future.addListener({ val provider=future.get(); val preview=Preview.Builder().build().also { it.surfaceProvider=view.surfaceProvider }; val capture=ImageCapture.Builder().build(); val analysis=ImageAnalysis.Builder().setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST).build().also { a -> a.setAnalyzer(executor) { proxy -> if(!live) proxy.close() else analyzeImageProxy(proxy,recognizer,busy,onText) } }; provider.unbindAll(); if(live) provider.bindToLifecycle(owner,CameraSelector.DEFAULT_BACK_CAMERA,preview,analysis,capture) else provider.bindToLifecycle(owner,CameraSelector.DEFAULT_BACK_CAMERA,preview,capture); onReady { capture.takePicture(executor, object: ImageCapture.OnImageCapturedCallback(){ override fun onCaptureSuccess(proxy: androidx.camera.core.ImageProxy){ val image=proxy.image; if(image==null) proxy.close() else recognizer.recognizeBlocks(image,proxy.imageInfo.rotationDegrees,onBlocks){ proxy.close() } } }) } },ContextCompat.getMainExecutor(context)); onDispose { runCatching { future.get().unbindAll() }; recognizer.close(); executor.shutdown() } }; AndroidView({view},Modifier.fillMaxSize()) }
 @ExperimentalGetImage private fun analyzeImageProxy(proxy: androidx.camera.core.ImageProxy, recognizer: MlKitLatinTextRecognizer, busy: AtomicBoolean, onText:(String)->Unit){ val image=proxy.image; if(image==null||!busy.compareAndSet(false,true)) proxy.close() else recognizer.recognize(image,proxy.imageInfo.rotationDegrees,onText,{}, {busy.set(false);proxy.close()}) }
 @Composable private fun BoxScope.Status(state: ScannerUiState, capture:()->Unit, select:(ScanCandidate)->Unit, confirm:()->Unit, dismiss:()->Unit, undo:()->Unit){ Column(Modifier.fillMaxWidth().align(Alignment.BottomCenter).background(MaterialTheme.colorScheme.surface.copy(alpha=.94f)).padding(16.dp)){ if(state.isBulkPhotoMode){ Text(appText("Photo queue: ${state.queueRemaining} remaining; ${state.acceptedCount} added", "Foto-Warteschlange: ${state.queueRemaining} verbleibend; ${state.acceptedCount} hinzugefügt")); Button(onClick=capture,enabled=!state.isProcessingPhoto&&!state.isSaving){Text(if(state.isProcessingPhoto)appText("Reading photo…", "Foto wird gelesen…") else appText("Take bulk photo", "Foto mit mehreren Karten aufnehmen"))}; state.lastAcceptedEntryId?.let { TextButton(onClick=undo){Text(appText("Undo last add", "Letztes Hinzufügen rückgängig"))} } }; Text(state.message); state.errorMessage?.let{Text(it,color=MaterialTheme.colorScheme.error)}; state.match?.let{ Review(it,state.selectedCandidate,select,confirm,dismiss,state.isSaving,state.isBulkPhotoMode) } } }
-@Composable private fun Review(match:ScanMatchResult.Candidates, selected:ScanCandidate?, select:(ScanCandidate)->Unit, confirm:()->Unit, dismiss:()->Unit, saving:Boolean, bulk:Boolean){ Card(Modifier.fillMaxWidth().padding(top=8.dp)){Column(Modifier.padding(12.dp)){Text(if(match.isAmbiguous)appText("Choose a match", "Treffer auswählen") else appText("Local match", "Lokaler Treffer")); match.candidates.forEach{c->OutlinedButton(onClick={select(c)},modifier=Modifier.fillMaxWidth()){Text(c.printing.displayName+" · "+c.printing.setCode)}}; Row(Modifier.padding(top=8.dp)){Button(onClick=confirm,enabled=selected!=null&&!saving){Text(if(saving)appText("Adding…", "Wird hinzugefügt…") else appText("Confirm and add", "Bestätigen und hinzufügen"))}; TextButton(onClick=dismiss,enabled=!saving){Text(if(bulk)appText("Skip", "Überspringen") else appText("Scan again", "Erneut scannen"))}}}}}
+@Composable
+private fun Review(match: ScanMatchResult.Candidates, selected: ScanCandidate?, select: (ScanCandidate) -> Unit, confirm: () -> Unit, dismiss: () -> Unit, saving: Boolean, bulk: Boolean) {
+    val candidates = match.candidates.sortedByDescending { candidate -> CatalogNormalizers.setCode(candidate.printing.setCode) in match.observedSetCodes }
+    Card(Modifier.fillMaxWidth().padding(top = 8.dp)) {
+        Column(Modifier.padding(12.dp)) {
+            Text(if (match.isAmbiguous) appText("Choose a match", "Treffer auswählen") else appText("Local match", "Lokaler Treffer"))
+            match.observedSetCodes.firstOrNull()?.let { code -> Text(appText("Detected set code: $code", "Erkannter Set-Code: $code"), color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 4.dp)) }
+            candidates.forEach { candidate ->
+                val detectedCode = CatalogNormalizers.setCode(candidate.printing.setCode) in match.observedSetCodes
+                OutlinedButton(onClick = { select(candidate) }, modifier = Modifier.fillMaxWidth()) {
+                    Column(Modifier.fillMaxWidth()) {
+                        Text(candidate.printing.displayName + " · " + candidate.printing.setCode)
+                        if (detectedCode) Text(appText("Detected code match", "Erkannter Code stimmt überein"), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall)
+                    }
+                }
+            }
+            Row(Modifier.padding(top = 8.dp)) {
+                Button(onClick = confirm, enabled = selected != null && !saving) { Text(if (saving) appText("Adding…", "Wird hinzugefügt…") else appText("Confirm and add", "Bestätigen und hinzufügen")) }
+                TextButton(onClick = dismiss, enabled = !saving) { Text(if (bulk) appText("Skip", "Überspringen") else appText("Scan again", "Erneut scannen")) }
+            }
+        }
+    }
+}
 private fun Context.hasCameraPermission()=ContextCompat.checkSelfPermission(this,Manifest.permission.CAMERA)==PackageManager.PERMISSION_GRANTED

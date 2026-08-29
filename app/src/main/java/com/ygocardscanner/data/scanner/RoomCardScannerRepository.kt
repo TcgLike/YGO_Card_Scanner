@@ -12,31 +12,31 @@ import kotlin.math.max
 class RoomCardScannerRepository(database: AppDatabase) : CardScannerRepository {
     private val catalogDao = database.catalogDao()
 
-    override suspend fun match(observation: ScanTextObservation): ScanMatchResult {
+    override suspend fun match(observation: ScanTextObservation, displayLanguage: CardLanguage): ScanMatchResult {
         observation.setCodeCandidates.forEach { code ->
-            val matches = catalogDao.getActivePrintingsByNormalizedSetCode(code, DISPLAY_LANGUAGE)
-            if (matches.isNotEmpty()) return candidates(ScanMatchKind.EXACT_SET_CODE, matches, code, EXACT_SCORE)
+            val matches = catalogDao.getActivePrintingsByNormalizedSetCode(code, displayLanguage.code)
+            if (matches.isNotEmpty()) return candidates(ScanMatchKind.EXACT_SET_CODE, matches, code, EXACT_SCORE, observation.setCodeCandidates)
         }
         observation.passcodeCandidates.forEach { passcode ->
-            val matches = catalogDao.getActivePrintingsByPasscode(passcode, DISPLAY_LANGUAGE)
-            if (matches.isNotEmpty()) return candidates(ScanMatchKind.EXACT_PASSCODE, matches, passcode, EXACT_SCORE)
+            val matches = catalogDao.getActivePrintingsByPasscode(passcode, displayLanguage.code)
+            if (matches.isNotEmpty()) return candidates(ScanMatchKind.EXACT_PASSCODE, matches, passcode, EXACT_SCORE, observation.setCodeCandidates)
         }
 
         val ranked = observation.nameCandidates.flatMap { observedName ->
             val normalized = CatalogNormalizers.name(observedName)
             if (normalized.length < MIN_NAME_LENGTH) emptyList() else {
-                catalogDao.getActivePrintingsByNameFragment(normalized, DISPLAY_LANGUAGE, NAME_SEARCH_LIMIT)
+                catalogDao.getActivePrintingsByNameFragment(normalized, displayLanguage.code, NAME_SEARCH_LIMIT)
                     .map { row -> ScanCandidate(row.toSummary(), ScanMatchKind.FUZZY_LOCALIZED_NAME, similarity(normalized, CatalogNormalizers.name(row.matchedName ?: row.displayName))) }
             }
         }.distinctBy { it.printing.printingId }.sortedByDescending(ScanCandidate::score)
 
         val qualified = ranked.filter { it.score >= FUZZY_SCORE_THRESHOLD }.take(MAX_CANDIDATES)
         return if (qualified.isEmpty()) ScanMatchResult.NoMatch
-        else ScanMatchResult.Candidates(ScanMatchKind.FUZZY_LOCALIZED_NAME, qualified, observation.nameCandidates.first())
+        else ScanMatchResult.Candidates(ScanMatchKind.FUZZY_LOCALIZED_NAME, qualified, observation.nameCandidates.first(), observation.setCodeCandidates)
     }
 
-    private fun candidates(kind: ScanMatchKind, rows: List<CatalogPrintingRow>, fingerprint: String, score: Int) =
-        ScanMatchResult.Candidates(kind, rows.map { ScanCandidate(it.toSummary(), kind, score) }, fingerprint)
+    private fun candidates(kind: ScanMatchKind, rows: List<CatalogPrintingRow>, fingerprint: String, score: Int, observedSetCodes: List<String>) =
+        ScanMatchResult.Candidates(kind, rows.map { ScanCandidate(it.toSummary(), kind, score) }, fingerprint, observedSetCodes)
 
     private fun CatalogPrintingRow.toSummary() = CatalogPrintingSummary(
         printingId = printing.printingId,

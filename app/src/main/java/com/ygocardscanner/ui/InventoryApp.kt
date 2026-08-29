@@ -48,7 +48,7 @@ fun InventoryApp(container: AppContainer) {
         }
     }
     val scannerFactory = remember(container) {
-        viewModelFactory { ScannerViewModel(container.scannerRepository, container.inventoryRepository) }
+        viewModelFactory { ScannerViewModel(container.scannerRepository, container.inventoryRepository, container.languageSettings) }
     }
     val manualFactory = remember(container) {
         viewModelFactory { ManualAddViewModel(container.inventoryRepository) }
