@@ -12,6 +12,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -61,6 +62,38 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
                     Text(if (state.isSchedulingCatalog) appText("Scheduling…", "Wird geplant…") else appText("Download / refresh English + German catalog", "Englischen + deutschen Katalog herunterladen / aktualisieren"))
                 }
             }
+            SettingsCard(title = appText("German printing backup", "Deutsche Drucke (Zusatzquelle)")) {
+                Text(appText(
+                    "Optional community source for German physical set codes. It downloads about 35 MB and only runs when enabled.",
+                    "Optionale Community-Quelle für deutsche physische Set-Codes. Der Download umfasst etwa 35 MB und läuft nur wenn aktiviert.",
+                ))
+                Switch(
+                    checked = state.germanPrintingSourceEnabled,
+                    onCheckedChange = viewModel::setGermanPrintingSourceEnabled,
+                    enabled = !state.isSchedulingGermanPrintings,
+                )
+                if (state.germanPrintingSourceEnabled) {
+                    Text(germanPrintingMessage(state.germanPrintingStatus?.phase, state.germanPrintingStatus?.message))
+                    if (state.germanPrintingStatus?.phase?.isInProgress == true) {
+                        Spacer(Modifier.height(12.dp))
+                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                    }
+                    Button(
+                        onClick = viewModel::refreshGermanPrintings,
+                        enabled = !state.isSchedulingGermanPrintings && state.germanPrintingStatus?.phase?.isInProgress != true,
+                    ) {
+                        Text(if (state.isSchedulingGermanPrintings) appText("Scheduling…", "Wird geplant…") else appText("Download / refresh German codes", "Deutsche Codes herunterladen / aktualisieren"))
+                    }
+                } else {
+                    Text(
+                        appText(
+                            "Disabled: this source contributes no search or scanner results. Stored catalog and inventory records are retained.",
+                            "Deaktiviert: Diese Quelle liefert keine Such- oder Scanner-Ergebnisse. Gespeicherte Katalog- und Inventareinträge bleiben erhalten.",
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }
             SettingsCard(title = appText("Offline card images", "Offline-Kartenbilder")) {
                 Text(artworkMessage(state.artworkStatus?.phase, state.artworkStatus?.completedArtworkCount, state.artworkStatus?.totalArtworkCount, state.artworkStatus?.message))
                 Button(onClick = viewModel::resumeArtworkDownload, enabled = !state.isSchedulingArtwork) {
@@ -91,6 +124,14 @@ private fun catalogMessage(phase: CatalogUpdatePhase?, message: String?): String
     CatalogUpdatePhase.FAILED -> message ?: appText("Catalog download stopped.", "Katalogdownload wurde angehalten.")
 }
 
+@Composable
+private fun germanPrintingMessage(phase: CatalogUpdatePhase?, message: String?): String = when (phase) {
+    null -> appText("Enabled. Download the optional German physical printing catalog when you are ready.", "Aktiviert. Lade den optionalen Katalog deutscher physischer Drucke herunter, wenn du bereit bist.")
+    CatalogUpdatePhase.QUEUED, CatalogUpdatePhase.RUNNING -> appText("German printing update is running.", "Update der deutschen Drucke läuft.")
+    CatalogUpdatePhase.RETRYING -> appText("German printing update will resume when connected.", "Update der deutschen Drucke wird bei Verbindung fortgesetzt.")
+    CatalogUpdatePhase.SUCCEEDED -> appText("German physical printing codes are ready.", "Deutsche physische Druckcodes sind bereit.")
+    CatalogUpdatePhase.FAILED -> message ?: appText("German printing update stopped.", "Update der deutschen Drucke wurde angehalten.")
+}
 @Composable
 private fun artworkMessage(phase: ArtworkPackPhase?, completed: Int?, total: Int?, message: String?): String = when (phase) {
     null -> appText("Optional: download one English image for every catalog card. The app requires 3.5 GiB free space and limits the cache to 4 GiB.", "Optional: Lädt ein englisches Bild für jede Katalogkarte herunter. Die App benötigt 3,5 GiB freien Speicher und begrenzt den Cache auf 4 GiB.")

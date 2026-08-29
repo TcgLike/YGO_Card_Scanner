@@ -8,6 +8,7 @@ import com.ygocardscanner.data.local.entity.CardText
 import com.ygocardscanner.data.local.entity.CatalogMetadata
 import com.ygocardscanner.data.local.entity.Printing
 import com.ygocardscanner.data.local.query.CatalogPrintingRow
+import com.ygocardscanner.data.local.query.CardPasscodeRow
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -37,6 +38,17 @@ interface CatalogDao {
 
     @Query("UPDATE printings SET is_active = 0 WHERE source_id = :sourceId")
     suspend fun deactivatePrintings(sourceId: String)
+
+    @Query("UPDATE printings SET is_active = 1 WHERE source_id = :sourceId")
+    suspend fun activatePrintings(sourceId: String)
+
+    @Query(
+        """
+        SELECT card_id, passcode FROM cards
+        WHERE source_id = :sourceId AND is_active = 1 AND passcode IS NOT NULL
+        """,
+    )
+    suspend fun getActiveCardPasscodes(sourceId: String): List<CardPasscodeRow>
 
     @Query("SELECT * FROM catalog_metadata WHERE source_id = :sourceId LIMIT 1")
     suspend fun getMetadata(sourceId: String): CatalogMetadata?
@@ -168,4 +180,4 @@ interface CatalogDao {
         languageCode: String,
         resultLimit: Int,
     ): List<com.ygocardscanner.data.local.query.ScannerPrintingRow>
-}
+}

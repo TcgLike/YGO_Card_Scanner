@@ -13,6 +13,13 @@ data class CatalogPrintingRow(
 )
 
 
+data class CardPasscodeRow(
+    @ColumnInfo(name = "card_id")
+    val cardId: String,
+    @ColumnInfo(name = "passcode")
+    val passcode: String,
+)
+
 data class ScannerPrintingRow(
     @Embedded
     val printing: Printing,
@@ -62,4 +69,4 @@ data class InventoryEntryDetailRow(
     val artworkDownloadState: String?,
     @ColumnInfo(name = "artwork_message")
     val artworkMessage: String?,
-)
+)

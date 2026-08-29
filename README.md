@@ -47,6 +47,15 @@ The old development seed remains only as a test fixture. After a successful publ
 
 Before any public release, re-check the provider's availability, data quality, attribution requirements, and terms of use.
 
+## Optional German printing backup source
+
+The default YGOPRODeck catalog remains the primary source. Users may opt in under **Settings** to the separate **German printing backup** source when they need verified German physical set codes such as `HSRD-DE006`.
+
+- The optional source is YGOJSON's public `aggregate.zip` release. It is about 35 MB compressed at the time this was implemented and is downloaded only after the user explicitly enables it and selects its update action.
+- It reads only passcodes plus German set prefixes, printing suffixes, rarity, and edition metadata. It does not import community card images, prices, or replace the primary card/text catalog.
+- Its rows are joined only to active primary-catalog cards by passcode. A malformed download or a source card that cannot be matched is rejected/skipped; inventory is never modified.
+- Disabling the setting removes this source from new local search and scanner candidates. Its retained catalog rows and any collection entries that use them are not deleted.
+- YGOJSON is an independent community dataset assembled from YGOPRODeck, YAML Yugi, and Yugipedia. The project is MIT-licensed, while upstream/community content can carry separate terms and attribution requirements. Re-check its current release, data quality, and licensing before a public release: <https://github.com/iconmaster5326/YGOJSON>.
 ## Settings, language, and downloads
 
 Open **Settings** from the Collection screen to choose English or Deutsch for the app UI, refresh the catalog, or start/resume the optional offline artwork pack. The language choice is stored only in the app-private preference store and immediately changes the catalog-search language used by Room.

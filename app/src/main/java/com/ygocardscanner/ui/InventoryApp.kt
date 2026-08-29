@@ -60,6 +60,8 @@ fun InventoryApp(container: AppContainer) {
                 catalogRepository = container.catalogRepository,
                 artworkRepository = container.artworkRepository,
                 catalogScheduler = container.catalogUpdateScheduler,
+                germanPrintingRepository = container.germanPrintingRepository,
+                germanPrintingScheduler = container.germanPrintingUpdateScheduler,
                 artworkScheduler = container.artworkPackScheduler,
             )
         }
@@ -130,4 +132,4 @@ fun InventoryApp(container: AppContainer) {
             }
         }
     }
-}
+}

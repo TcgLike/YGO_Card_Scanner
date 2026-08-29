@@ -5,9 +5,11 @@ import androidx.lifecycle.viewModelScope
 import com.ygocardscanner.data.repository.CardArtworkRepository
 import com.ygocardscanner.data.repository.CatalogRepository
 import com.ygocardscanner.data.repository.CatalogUpdateStatus
+import com.ygocardscanner.data.repository.GermanPrintingEnrichmentRepository
 import com.ygocardscanner.data.settings.AppLanguageSettings
 import com.ygocardscanner.data.work.CatalogUpdateScheduler
 import com.ygocardscanner.data.work.FullArtworkDownloadScheduler
+import com.ygocardscanner.data.work.GermanPrintingUpdateScheduler
 import com.ygocardscanner.model.ArtworkPackStatus
 import com.ygocardscanner.model.CardLanguage
 import kotlinx.coroutines.CancellationException
@@ -19,8 +21,11 @@ import kotlinx.coroutines.launch
 data class SettingsUiState(
     val language: CardLanguage = CardLanguage.ENGLISH,
     val catalogStatus: CatalogUpdateStatus? = null,
+    val germanPrintingSourceEnabled: Boolean = false,
+    val germanPrintingStatus: CatalogUpdateStatus? = null,
     val artworkStatus: ArtworkPackStatus? = null,
     val isSchedulingCatalog: Boolean = false,
+    val isSchedulingGermanPrintings: Boolean = false,
     val isSchedulingArtwork: Boolean = false,
     val errorMessage: String? = null,
 )
@@ -30,6 +35,8 @@ class SettingsViewModel(
     private val catalogRepository: CatalogRepository,
     private val artworkRepository: CardArtworkRepository,
     private val catalogScheduler: CatalogUpdateScheduler,
+    private val germanPrintingRepository: GermanPrintingEnrichmentRepository,
+    private val germanPrintingScheduler: GermanPrintingUpdateScheduler,
     private val artworkScheduler: FullArtworkDownloadScheduler,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -38,12 +45,26 @@ class SettingsViewModel(
     init {
         viewModelScope.launch {
             combine(
-                languageSettings.language,
-                catalogRepository.observeCatalogUpdateStatus(),
-                artworkRepository.observePackStatus(),
-            ) { language, catalog, artwork -> Triple(language, catalog, artwork) }
-                .collect { (language, catalog, artwork) ->
-                    _uiState.update { it.copy(language = language, catalogStatus = catalog, artworkStatus = artwork) }
+                combine(
+                    languageSettings.language,
+                    catalogRepository.observeCatalogUpdateStatus(),
+                    artworkRepository.observePackStatus(),
+                ) { language, catalog, artwork -> Triple(language, catalog, artwork) },
+                combine(
+                    languageSettings.germanPrintingSourceEnabled,
+                    germanPrintingRepository.observeUpdateStatus(),
+                ) { enabled, status -> enabled to status },
+            ) { primary, optional -> primary to optional }
+                .collect { (primary, optional) ->
+                    _uiState.update {
+                        it.copy(
+                            language = primary.first,
+                            catalogStatus = primary.second,
+                            artworkStatus = primary.third,
+                            germanPrintingSourceEnabled = optional.first,
+                            germanPrintingStatus = optional.second,
+                        )
+                    }
                 }
         }
     }
@@ -66,6 +87,32 @@ class SettingsViewModel(
         }
     }
 
+    fun setGermanPrintingSourceEnabled(enabled: Boolean) {
+        languageSettings.setGermanPrintingSourceEnabled(enabled)
+        viewModelScope.launch {
+            try {
+                germanPrintingRepository.setEnabled(enabled)
+            } catch (error: Throwable) {
+                if (error is CancellationException) throw error
+                _uiState.update { it.copy(errorMessage = error.message ?: "The German printing source could not be updated.") }
+            }
+        }
+    }
+
+    fun refreshGermanPrintings() {
+        if (!_uiState.value.germanPrintingSourceEnabled || _uiState.value.isSchedulingGermanPrintings) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSchedulingGermanPrintings = true, errorMessage = null) }
+            try {
+                germanPrintingScheduler.enqueue(force = true)
+            } catch (error: Throwable) {
+                if (error is CancellationException) throw error
+                _uiState.update { it.copy(errorMessage = error.message ?: "The German printing update could not be scheduled.") }
+            } finally {
+                _uiState.update { it.copy(isSchedulingGermanPrintings = false) }
+            }
+        }
+    }
     fun resumeArtworkDownload() {
         if (_uiState.value.isSchedulingArtwork) return
         viewModelScope.launch {
