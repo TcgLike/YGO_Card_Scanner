@@ -18,6 +18,8 @@ import com.ygocardscanner.ui.detail.CardDetailViewModel
 import com.ygocardscanner.ui.manual.ManualAddScreen
 import com.ygocardscanner.ui.manual.ManualAddViewModel
 import com.ygocardscanner.ui.navigation.Destinations
+import com.ygocardscanner.ui.scanner.CardScannerScreen
+import com.ygocardscanner.ui.scanner.ScannerViewModel
 
 @Composable
 fun InventoryApp(container: AppContainer) {
@@ -39,6 +41,9 @@ fun InventoryApp(container: AppContainer) {
             )
         }
     }
+    val scannerFactory = remember(container) {
+        viewModelFactory { ScannerViewModel(container.scannerRepository, container.inventoryRepository) }
+    }
     val manualFactory = remember(container) {
         viewModelFactory { ManualAddViewModel(container.inventoryRepository) }
     }
@@ -58,6 +63,16 @@ fun InventoryApp(container: AppContainer) {
                 viewModel = viewModel,
                 onBack = { navController.popBackStack() },
                 onManualUnknownPrinting = { navController.navigate(Destinations.MANUAL) },
+                onScanCard = { navController.navigate(Destinations.SCANNER) },
+                onAdded = { navController.popBackStack(Destinations.COLLECTION, inclusive = false) },
+            )
+        }
+        composable(Destinations.SCANNER) {
+            val viewModel: ScannerViewModel = viewModel(factory = scannerFactory)
+            CardScannerScreen(
+                viewModel = viewModel,
+                onBack = { navController.popBackStack() },
+                onManualAdd = { navController.navigate(Destinations.MANUAL) },
                 onAdded = { navController.popBackStack(Destinations.COLLECTION, inclusive = false) },
             )
         }

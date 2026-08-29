@@ -68,6 +68,8 @@ data class CollectionEntrySummary(
     val condition: CardCondition,
     val quantity: Int,
     val isUnknownPrinting: Boolean,
+    /** Local-only English artwork cache state; remote URLs never reach the collection UI. */
+    val artwork: CardArtworkDetail?,
 )
 
 data class InventoryEntryDetail(

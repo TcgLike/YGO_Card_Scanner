@@ -100,4 +100,72 @@ interface CatalogDao {
         """,
     )
     suspend fun getPrintingRow(printingId: String, languageCode: String): CatalogPrintingRow?
-}
+    @Query(
+        """
+        SELECT p.*, COALESCE(requested.name, english.name, c.canonical_name) AS display_name
+        FROM printings AS p
+        INNER JOIN cards AS c ON c.card_id = p.card_id
+        LEFT JOIN card_texts AS requested ON requested.card_id = c.card_id
+            AND requested.language_code = :languageCode AND requested.is_active = 1
+        LEFT JOIN card_texts AS english ON english.card_id = c.card_id
+            AND english.language_code = 'en' AND english.is_active = 1
+        WHERE p.is_active = 1 AND c.is_active = 1 AND p.normalized_set_code = :normalizedSetCode
+        ORDER BY p.set_code COLLATE NOCASE
+        """,
+    )
+    suspend fun getActivePrintingsByNormalizedSetCode(
+        normalizedSetCode: String,
+        languageCode: String,
+    ): List<CatalogPrintingRow>
+
+    @Query(
+        """
+        SELECT p.*, COALESCE(requested.name, english.name, c.canonical_name) AS display_name
+        FROM printings AS p
+        INNER JOIN cards AS c ON c.card_id = p.card_id
+        LEFT JOIN card_texts AS requested ON requested.card_id = c.card_id
+            AND requested.language_code = :languageCode AND requested.is_active = 1
+        LEFT JOIN card_texts AS english ON english.card_id = c.card_id
+            AND english.language_code = 'en' AND english.is_active = 1
+        WHERE p.is_active = 1 AND c.is_active = 1 AND c.passcode = :passcode
+        ORDER BY p.set_code COLLATE NOCASE
+        LIMIT :resultLimit
+        """,
+    )
+    suspend fun getActivePrintingsByPasscode(
+        passcode: String,
+        languageCode: String,
+        resultLimit: Int = 100,
+    ): List<CatalogPrintingRow>
+
+    @Query(
+        """
+        SELECT p.*, COALESCE(requested.name, english.name, c.canonical_name) AS display_name,
+            (SELECT matching.name FROM card_texts AS matching
+                WHERE matching.card_id = c.card_id AND matching.is_active = 1
+                    AND (matching.normalized_name LIKE '%' || :normalizedName || '%'
+                        OR :normalizedName LIKE '%' || matching.normalized_name || '%')
+                LIMIT 1) AS matched_name
+        FROM printings AS p
+        INNER JOIN cards AS c ON c.card_id = p.card_id
+        LEFT JOIN card_texts AS requested ON requested.card_id = c.card_id
+            AND requested.language_code = :languageCode AND requested.is_active = 1
+        LEFT JOIN card_texts AS english ON english.card_id = c.card_id
+            AND english.language_code = 'en' AND english.is_active = 1
+        WHERE p.is_active = 1 AND c.is_active = 1
+            AND EXISTS (
+                SELECT 1 FROM card_texts AS searchable
+                WHERE searchable.card_id = c.card_id AND searchable.is_active = 1
+                    AND (searchable.normalized_name LIKE '%' || :normalizedName || '%'
+                        OR :normalizedName LIKE '%' || searchable.normalized_name || '%')
+            )
+        ORDER BY display_name COLLATE NOCASE, p.set_code COLLATE NOCASE
+        LIMIT :resultLimit
+        """,
+    )
+    suspend fun getActivePrintingsByNameFragment(
+        normalizedName: String,
+        languageCode: String,
+        resultLimit: Int,
+    ): List<com.ygocardscanner.data.local.query.ScannerPrintingRow>
+}

@@ -84,6 +84,45 @@ class RoomArtworkCatalogRepositoryTest {
         database.close()
     }
 
+    @Test
+    fun collectionSummaryIncludesOnlyRoomBackedArtworkState() = runBlocking {
+        val catalog = catalogWithArtwork(revision = "1", imageUrl = firstImageUrl)
+        val mapped = CatalogMapper.map(catalog, 1L)
+        val database = openDatabase()
+        val catalogRepository = RoomCatalogRepository(database, StaticCatalogSource(catalog), now = { 1L })
+        val inventoryRepository = RoomInventoryRepository(database, now = { 2L })
+
+        catalogRepository.replaceCatalog(catalog)
+        inventoryRepository.addKnownPrinting(
+            KnownPrintingDraft(
+                printingId = mapped.printings.single().printingId,
+                language = CardLanguage.ENGLISH,
+                rarity = null,
+                edition = CardEdition.UNKNOWN,
+                condition = CardCondition.NEAR_MINT,
+                quantity = 1,
+                notes = "",
+            ),
+        )
+        database.artworkDao().upsertCache(
+            CardArtworkCache(
+                cardId = mapped.cards.single().cardId,
+                remoteUrlSnapshot = firstImageUrl,
+                localFileName = "cached-card.img",
+                downloadState = CardArtworkDownloadState.AVAILABLE.code,
+                lastAttemptAtEpochMillis = 2L,
+                lastSuccessAtEpochMillis = 2L,
+                safeErrorText = null,
+            ),
+        )
+
+        val collection = inventoryRepository.observeCollection("").first()
+
+        assertEquals(1, collection.size)
+        assertEquals(CardArtworkDownloadState.AVAILABLE, collection.single().artwork?.downloadState)
+        assertEquals("cached-card.img", collection.single().artwork?.localFileName)
+        database.close()
+    }
     private fun catalogWithArtwork(revision: String, imageUrl: String) = testCatalog(revision = revision).let { catalog ->
         catalog.copy(
             cards = catalog.cards.map { card ->

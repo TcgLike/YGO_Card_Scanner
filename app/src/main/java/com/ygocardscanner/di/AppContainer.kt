@@ -12,6 +12,8 @@ import com.ygocardscanner.data.repository.InventoryRepository
 import com.ygocardscanner.data.repository.RoomCardArtworkRepository
 import com.ygocardscanner.data.repository.RoomCatalogRepository
 import com.ygocardscanner.data.repository.RoomInventoryRepository
+import com.ygocardscanner.data.scanner.CardScannerRepository
+import com.ygocardscanner.data.scanner.RoomCardScannerRepository
 import com.ygocardscanner.data.work.AppWorkerFactory
 import com.ygocardscanner.data.work.CardArtworkUpdateScheduler
 import com.ygocardscanner.data.work.FullArtworkDownloadScheduler
@@ -45,6 +47,10 @@ class AppContainer(context: Context) {
             database = database,
             fileStore = CardArtworkFileStore(applicationContext),
         )
+    }
+
+    val scannerRepository: CardScannerRepository by lazy {
+        RoomCardScannerRepository(database)
     }
 
     val workerFactory: AppWorkerFactory by lazy {

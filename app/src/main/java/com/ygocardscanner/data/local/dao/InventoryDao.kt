@@ -33,10 +33,21 @@ interface InventoryDao {
             COALESCE(preferred.name, english.name, c.canonical_name) AS display_name,
             c.canonical_name AS canonical_name,
             c.passcode AS passcode,
-            p.set_name AS catalog_set_name
+            p.set_name AS catalog_set_name,
+            a.remote_url AS artwork_remote_url,
+            cache.local_file_name AS artwork_local_file_name,
+            cache.download_state AS artwork_download_state,
+            cache.safe_error_text AS artwork_message
         FROM inventory_entries AS e
         INNER JOIN cards AS c ON c.card_id = e.card_id
         LEFT JOIN printings AS p ON p.printing_id = e.printing_id
+        LEFT JOIN card_artworks AS a
+            ON a.card_id = c.card_id
+            AND a.is_active = 1
+        LEFT JOIN card_artwork_cache AS cache
+            ON cache.card_id = a.card_id
+            AND cache.remote_url_snapshot = a.remote_url
+        
         LEFT JOIN card_texts AS preferred
             ON preferred.card_id = c.card_id
             AND preferred.language_code = e.language_code

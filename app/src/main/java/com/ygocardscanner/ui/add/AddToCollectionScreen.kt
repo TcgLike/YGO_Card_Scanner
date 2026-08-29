@@ -63,6 +63,7 @@ fun AddToCollectionScreen(
     viewModel: AddToCollectionViewModel,
     onBack: () -> Unit,
     onManualUnknownPrinting: () -> Unit,
+    onScanCard: () -> Unit,
     onAdded: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -102,6 +103,7 @@ fun AddToCollectionScreen(
                     validationMessage = null
                 },
                 onManualUnknownPrinting = onManualUnknownPrinting,
+                onScanCard = onScanCard,
                 onRetry = viewModel::retry,
                 onDisplayLanguageChange = viewModel::updateDisplayLanguage,
                 onRequestCatalogUpdate = viewModel::requestCatalogUpdate,
@@ -195,6 +197,7 @@ private fun CatalogPicker(
     onQueryChange: (String) -> Unit,
     onSelect: (CatalogPrintingSummary) -> Unit,
     onManualUnknownPrinting: () -> Unit,
+    onScanCard: () -> Unit,
     onRetry: () -> Unit,
     onDisplayLanguageChange: (CardLanguage) -> Unit,
     onRequestCatalogUpdate: () -> Unit,
@@ -221,8 +224,13 @@ private fun CatalogPicker(
             onRequestUpdate = onRequestCatalogUpdate,
         )
         ArtworkPackControls(artworkPackStatus, isRequestingArtworkPack, onRequestArtworkPack)
-        TextButton(onClick = onManualUnknownPrinting, modifier = Modifier.padding(horizontal = 8.dp)) {
-            Text("Add an unknown printing manually")
+        Row(modifier = Modifier.padding(horizontal = 8.dp)) {
+            TextButton(onClick = onScanCard) {
+                Text("Scan a card")
+            }
+            TextButton(onClick = onManualUnknownPrinting) {
+                Text("Add an unknown printing manually")
+            }
         }
         when {
             state.isLoading -> LoadingState("Searching your local card catalog...")
@@ -351,7 +359,7 @@ private fun CatalogUpdateControls(
     onRequestUpdate: () -> Unit,
 ) {
     val updateInProgress = status?.phase?.isInProgress == true
-    val actionLabel = when (status?.phase) {
+        val actionLabel = when (status?.phase) {
         null -> "Download catalog"
         CatalogUpdatePhase.FAILED -> "Retry catalog update"
         else -> "Check for updates"
@@ -420,7 +428,12 @@ private fun ArtworkPackControls(
     isRequesting: Boolean,
     onRequest: () -> Unit,
 ) {
-    val inProgress = status?.phase?.isInProgress == true
+    val actionLabel = when (status?.phase) {
+        null -> "Download offline card images"
+        ArtworkPackPhase.QUEUED, ArtworkPackPhase.RUNNING, ArtworkPackPhase.RETRYING, ArtworkPackPhase.FAILED -> "Resume image download"
+        ArtworkPackPhase.SUCCEEDED -> "Check cached images"
+        ArtworkPackPhase.QUOTA_REACHED -> "Retry after freeing space"
+    }
     val message = when (status?.phase) {
         null -> "Optional: download one primary English image for every catalog card to this device. Requires 3.5 GiB free space; the cache is capped at 4 GiB."
         ArtworkPackPhase.QUEUED, ArtworkPackPhase.RUNNING -> "Downloading offline card images: ${status.completedArtworkCount} / ${status.totalArtworkCount}."
@@ -434,8 +447,10 @@ private fun ArtworkPackControls(
             Button(
                 onClick = onRequest,
                 modifier = Modifier.padding(top = 8.dp),
-                enabled = !isRequesting && !inProgress,
-            ) { Text(if (isRequesting) "Scheduling..." else if (status?.phase == ArtworkPackPhase.FAILED) "Retry image download" else "Download offline card images") }
+                enabled = !isRequesting,
+            ) {
+                Text(if (isRequesting) "Scheduling..." else actionLabel)
+            }
         }
     }
 }

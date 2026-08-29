@@ -44,6 +44,15 @@ class RoomInventoryRepository(
                     condition = CardCondition.fromCode(row.entry.conditionCode),
                     quantity = row.entry.quantity,
                     isUnknownPrinting = PrintingKind.fromCode(row.entry.printingKind) == PrintingKind.UNKNOWN,
+                    artwork = if (row.artworkRemoteUrl != null) {
+                        CardArtworkDetail(
+                            localFileName = row.artworkLocalFileName,
+                            downloadState = CardArtworkDownloadState.fromCode(row.artworkDownloadState),
+                            message = row.artworkMessage,
+                        )
+                    } else {
+                        null
+                    },
                 )
             }
         }

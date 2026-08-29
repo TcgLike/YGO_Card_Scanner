@@ -105,7 +105,7 @@ class AddToCollectionViewModel(
 
     fun requestArtworkPack() {
         val state = _uiState.value
-        if (state.isRequestingArtworkPack || state.artworkPackStatus?.phase?.isInProgress == true) return
+        if (state.isRequestingArtworkPack) return
         viewModelScope.launch {
             _uiState.update { it.copy(isRequestingArtworkPack = true, errorMessage = null) }
             try { artworkPackScheduler.enqueue() }

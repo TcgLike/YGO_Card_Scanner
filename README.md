@@ -11,6 +11,8 @@ This project is independent and is not affiliated with or endorsed by Konami or 
 - An app-private Room database holds collection data, catalog records, and catalog-update state.
 - The add screen can download the public catalog, search it locally by English or German name, passcode, or set code, and display results in English or Deutsch.
 - Users can add a known printing, edit quantity/condition/notes, remove an entry, or add an unknown printing manually.
+- The optional camera scanner uses CameraX plus bundled offline Latin OCR to read card titles, set codes, and passcodes. It matches only the local Room catalog: exact set code, then passcode, then fuzzy English/German name. Camera frames and recognized text are never saved.
+- Bulk scan is continuous one-card-at-a-time: each match is reviewed before adding, then the same card must leave the frame before another card can be accepted. It does not identify a grid of cards in one image.
 - The confirmation step shows the selected card's locally cached English artwork. A user can also opt in to download one primary English artwork per catalog card; files stay in app-private storage and the UI never hotlinks image URLs.
 - The collection list and detail screens read only from Room.
 - The update worker uses constrained, unique WorkManager work and never performs a network request from a Compose screen or ViewModel.
@@ -31,7 +33,7 @@ The app currently uses the documented public [YGOPRODeck API v7](https://ygoprod
 - Select **Download catalog** on the Add to collection screen for the first installation, or **Check for updates** later. The app does not silently download the catalog at startup.
 - A lightweight provider revision is checked first. If it is unchanged, the full catalog is not downloaded again.
 - The full update fetches paginated English and German card responses, merges records by the stable numeric provider ID/passcode, and stores the results locally. The page size is 1,000 and requests are throttled below the provider's stated limit.
-- English responses also provide the first canonical artwork URL. It is catalog metadata only until downloaded into app-private storage. The optional full-image pack is processed as resumable batches, needs 3.5 GiB free device storage before starting, and has a hard 4 GiB cache ceiling. It downloads only one primary English artwork per card; catalog updates retain all inventory and invalidate changed artwork URLs without deleting inventory.
+- English responses also provide the first canonical artwork URL. It is catalog metadata only until downloaded into app-private storage. The optional full-image pack is processed as resumable batches; if it is interrupted, choose **Resume image download** to continue from its saved progress. It needs 3.5 GiB free device storage before starting, and has a hard 4 GiB cache ceiling. It downloads only one primary English artwork per card; catalog updates retain all inventory and invalidate changed artwork URLs without deleting inventory.
 - English responses provide the canonical name and available printing/set-code rows. German responses contribute localized card names and text only.
 - No image URL is exposed to the UI, and only a user-viewed card's English artwork is downloaded to local app-private storage. Price fields, account data, and analytics data are not requested or stored.
 
@@ -50,7 +52,7 @@ Before any public release, re-check the provider's availability, data quality, a
 - Personal collection data remains in the app-private Room database on the device.
 - There is no login, account, cloud sync, Firebase, analytics, telemetry, advertising, or subscription functionality.
 - Android's Internet permission is used only by the user-requested public catalog update worker.
-- Price data, CameraX, bundled ML Kit OCR, and cloud features are not implemented in this milestone. Artwork is intentionally limited to one locally cached English canonical image per viewed catalog card; it is not proof of a particular physical printing or edition.
+- Price data and cloud features are not implemented in this milestone. Camera scanning is fully local: the bundled OCR model, temporary camera frames, and matching do not send card images or text to a service. Artwork is intentionally limited to one locally cached English canonical image per viewed catalog card; it is not proof of a particular physical printing or edition.
 - Complete local JSON backup/import and CSV export remain future user-initiated local-file features, not cloud sync.
 
 Clearing app storage removes its local database. Do not use real collection data in test fixtures, bug reports, or CI artifacts.
@@ -94,6 +96,7 @@ The debug APK is written to `app/build/outputs/apk/debug/app-debug.apk`.
 3. Select the `app` configuration and press **Run**.
 4. Open **Add to collection**, select **Download catalog**, wait for the status to report completion, then search locally.
 5. Optionally choose **Download offline card images** to cache one English image per catalog card. Select a search result to preview its cached image while adding; all cached images remain available offline.
+6. Choose **Scan a card** from Add to collection and grant camera permission. Keep one card in view; review the local match before adding it. Use **Bulk** for continuous one-card-at-a-time scanning.
 
 ## Verification and project hygiene
 

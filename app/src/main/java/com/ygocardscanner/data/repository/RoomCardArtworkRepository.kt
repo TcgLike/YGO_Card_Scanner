@@ -63,10 +63,19 @@ class RoomCardArtworkRepository(
     override suspend fun prepareFullPack(): Boolean {
         val total = artworkDao.countActiveArtworks(PUBLIC_ARTWORK_SOURCE_ID)
         val cacheBytes = fileStore.cacheSizeBytes()
+        val existing = artworkDao.getPackState(PUBLIC_ARTWORK_SOURCE_ID)
+        val resumeState = existing?.takeIf { state ->
+            val phase = ArtworkPackPhase.fromCode(state.phase)
+            phase !in setOf(ArtworkPackPhase.SUCCEEDED, ArtworkPackPhase.QUOTA_REACHED) &&
+                state.nextOffset in 0 until total
+        }
+        val completed = resumeState?.completedArtworkCount ?: 0
+        val failed = resumeState?.failedArtworkCount ?: 0
+        val nextOffset = resumeState?.nextOffset ?: 0
         val message = when {
             total == 0 -> "Download the card catalog before downloading card images."
             cacheBytes >= CardArtworkFileStore.MAX_CACHE_BYTES -> "The 4 GiB card-image cache limit has been reached."
-            fileStore.availableBytes() < CardArtworkFileStore.MINIMUM_FREE_BYTES_FOR_FULL_PACK ->
+            resumeState == null && fileStore.availableBytes() < CardArtworkFileStore.MINIMUM_FREE_BYTES_FOR_FULL_PACK ->
                 "At least 3.5 GiB of free device storage is required before starting the full image download."
             else -> null
         }
@@ -74,18 +83,17 @@ class RoomCardArtworkRepository(
             savePackState(
                 phase = if (total == 0) ArtworkPackPhase.FAILED else ArtworkPackPhase.QUOTA_REACHED,
                 total = total,
-                completed = 0,
-                failed = 0,
-                nextOffset = 0,
+                completed = completed,
+                failed = failed,
+                nextOffset = nextOffset,
                 cacheBytes = cacheBytes,
                 message = message,
             )
             return false
         }
-        savePackState(ArtworkPackPhase.QUEUED, total, 0, 0, 0, cacheBytes, null)
+        savePackState(ArtworkPackPhase.QUEUED, total, completed, failed, nextOffset, cacheBytes, null)
         return true
     }
-
     override suspend fun processNextFullPackBatch(): ArtworkPackBatchResult = downloadMutex.withLock {
         val existing = artworkDao.getPackState(PUBLIC_ARTWORK_SOURCE_ID) ?: return ArtworkPackBatchResult.Complete
         val phase = ArtworkPackPhase.fromCode(existing.phase)

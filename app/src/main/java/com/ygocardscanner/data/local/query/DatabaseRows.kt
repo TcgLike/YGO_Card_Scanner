@@ -12,6 +12,16 @@ data class CatalogPrintingRow(
     val displayName: String,
 )
 
+
+data class ScannerPrintingRow(
+    @Embedded
+    val printing: Printing,
+    @ColumnInfo(name = "display_name")
+    val displayName: String,
+    @ColumnInfo(name = "matched_name")
+    val matchedName: String,
+)
+
 data class CollectionEntryRow(
     @Embedded
     val entry: InventoryEntry,
@@ -23,6 +33,14 @@ data class CollectionEntryRow(
     val passcode: String?,
     @ColumnInfo(name = "catalog_set_name")
     val catalogSetName: String?,
+    @ColumnInfo(name = "artwork_remote_url")
+    val artworkRemoteUrl: String?,
+    @ColumnInfo(name = "artwork_local_file_name")
+    val artworkLocalFileName: String?,
+    @ColumnInfo(name = "artwork_download_state")
+    val artworkDownloadState: String?,
+    @ColumnInfo(name = "artwork_message")
+    val artworkMessage: String?,
 )
 
 data class InventoryEntryDetailRow(
