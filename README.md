@@ -11,7 +11,7 @@ This project is independent and is not affiliated with or endorsed by Konami or 
 - An app-private Room database holds collection data, catalog records, and catalog-update state.
 - The add screen can download the public catalog, search it locally by English or German name, passcode, or set code, and display results in English or Deutsch.
 - Users can add a known printing, edit quantity/condition/notes, remove an entry, or add an unknown printing manually.
-- Card detail downloads and displays one English canonical artwork only after a user views that card. The image is saved in app-private storage; the UI never hotlinks an image URL.
+- The confirmation step shows the selected card's locally cached English artwork. A user can also opt in to download one primary English artwork per catalog card; files stay in app-private storage and the UI never hotlinks image URLs.
 - The collection list and detail screens read only from Room.
 - The update worker uses constrained, unique WorkManager work and never performs a network request from a Compose screen or ViewModel.
 - Catalog replacement is atomic and inventory-safe: catalog rows that disappear are retained as inactive records, while collection rows and their snapshots are never deleted or overwritten.
@@ -31,7 +31,7 @@ The app currently uses the documented public [YGOPRODeck API v7](https://ygoprod
 - Select **Download catalog** on the Add to collection screen for the first installation, or **Check for updates** later. The app does not silently download the catalog at startup.
 - A lightweight provider revision is checked first. If it is unchanged, the full catalog is not downloaded again.
 - The full update fetches paginated English and German card responses, merges records by the stable numeric provider ID/passcode, and stores the results locally. The page size is 1,000 and requests are throttled below the provider's stated limit.
-- English responses also provide the first canonical artwork URL. It is catalog metadata only until a user opens that card's detail. A constrained worker then downloads and validates the image into app-private storage; there is no image hotlinking and no automatic full-image bulk download.
+- English responses also provide the first canonical artwork URL. It is catalog metadata only until downloaded into app-private storage. The optional full-image pack is processed as resumable batches, needs 3.5 GiB free device storage before starting, and has a hard 4 GiB cache ceiling. It downloads only one primary English artwork per card; catalog updates retain all inventory and invalidate changed artwork URLs without deleting inventory.
 - English responses provide the canonical name and available printing/set-code rows. German responses contribute localized card names and text only.
 - No image URL is exposed to the UI, and only a user-viewed card's English artwork is downloaded to local app-private storage. Price fields, account data, and analytics data are not requested or stored.
 
@@ -93,7 +93,7 @@ The debug APK is written to `app/build/outputs/apk/debug/app-debug.apk`.
 2. Create/select an API 26+ emulator or connect a device.
 3. Select the `app` configuration and press **Run**.
 4. Open **Add to collection**, select **Download catalog**, wait for the status to report completion, then search locally.
-5. Open a collection entry to queue its English card image. Once it finishes, the detail screen reads the cached local file even while offline.
+5. Optionally choose **Download offline card images** to cache one English image per catalog card. Select a search result to preview its cached image while adding; all cached images remain available offline.
 
 ## Verification and project hygiene
 

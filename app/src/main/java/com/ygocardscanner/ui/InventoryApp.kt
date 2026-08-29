@@ -33,6 +33,9 @@ fun InventoryApp(container: AppContainer) {
                 catalogRepository = container.catalogRepository,
                 inventoryRepository = container.inventoryRepository,
                 catalogUpdateScheduler = container.catalogUpdateScheduler,
+                artworkRepository = container.artworkRepository,
+                artworkUpdateScheduler = container.artworkUpdateScheduler,
+                artworkPackScheduler = container.artworkPackScheduler,
             )
         }
     }

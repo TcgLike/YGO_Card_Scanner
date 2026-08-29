@@ -1,0 +1,769 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 5,
+    "identityHash": "06cfc5b9a69c3b48487a48588cbd33ff",
+    "entities": [
+      {
+        "tableName": "cards",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`card_id` TEXT NOT NULL, `source_id` TEXT NOT NULL, `provider_card_id` TEXT NOT NULL, `passcode` TEXT, `canonical_name` TEXT NOT NULL, `is_active` INTEGER NOT NULL, `catalog_revision` TEXT NOT NULL, `updated_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`card_id`))",
+        "fields": [
+          {
+            "fieldPath": "cardId",
+            "columnName": "card_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceId",
+            "columnName": "source_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "providerCardId",
+            "columnName": "provider_card_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "passcode",
+            "columnName": "passcode",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "canonicalName",
+            "columnName": "canonical_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isActive",
+            "columnName": "is_active",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "catalogRevision",
+            "columnName": "catalog_revision",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtEpochMillis",
+            "columnName": "updated_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "card_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_cards_source_id_provider_card_id",
+            "unique": true,
+            "columnNames": [
+              "source_id",
+              "provider_card_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_cards_source_id_provider_card_id` ON `${TABLE_NAME}` (`source_id`, `provider_card_id`)"
+          },
+          {
+            "name": "index_cards_passcode",
+            "unique": false,
+            "columnNames": [
+              "passcode"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_cards_passcode` ON `${TABLE_NAME}` (`passcode`)"
+          }
+        ]
+      },
+      {
+        "tableName": "card_texts",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`card_id` TEXT NOT NULL, `language_code` TEXT NOT NULL, `name` TEXT NOT NULL, `normalized_name` TEXT NOT NULL, `description` TEXT, `is_active` INTEGER NOT NULL, `catalog_revision` TEXT NOT NULL, PRIMARY KEY(`card_id`, `language_code`), FOREIGN KEY(`card_id`) REFERENCES `cards`(`card_id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "cardId",
+            "columnName": "card_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "languageCode",
+            "columnName": "language_code",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "normalizedName",
+            "columnName": "normalized_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "isActive",
+            "columnName": "is_active",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "catalogRevision",
+            "columnName": "catalog_revision",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "card_id",
+            "language_code"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_card_texts_card_id",
+            "unique": false,
+            "columnNames": [
+              "card_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_card_texts_card_id` ON `${TABLE_NAME}` (`card_id`)"
+          },
+          {
+            "name": "index_card_texts_normalized_name",
+            "unique": false,
+            "columnNames": [
+              "normalized_name"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_card_texts_normalized_name` ON `${TABLE_NAME}` (`normalized_name`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "cards",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "card_id"
+            ],
+            "referencedColumns": [
+              "card_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "printings",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`printing_id` TEXT NOT NULL, `card_id` TEXT NOT NULL, `source_id` TEXT NOT NULL, `provider_printing_id` TEXT NOT NULL, `set_code` TEXT NOT NULL, `normalized_set_code` TEXT NOT NULL, `set_name` TEXT, `language_code` TEXT NOT NULL, `rarity_code` TEXT, `edition_code` TEXT, `is_active` INTEGER NOT NULL, `catalog_revision` TEXT NOT NULL, `updated_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`printing_id`), FOREIGN KEY(`card_id`) REFERENCES `cards`(`card_id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "printingId",
+            "columnName": "printing_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cardId",
+            "columnName": "card_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceId",
+            "columnName": "source_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "providerPrintingId",
+            "columnName": "provider_printing_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "setCode",
+            "columnName": "set_code",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "normalizedSetCode",
+            "columnName": "normalized_set_code",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "setName",
+            "columnName": "set_name",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "languageCode",
+            "columnName": "language_code",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rarityCode",
+            "columnName": "rarity_code",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "editionCode",
+            "columnName": "edition_code",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "isActive",
+            "columnName": "is_active",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "catalogRevision",
+            "columnName": "catalog_revision",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtEpochMillis",
+            "columnName": "updated_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "printing_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_printings_source_id_provider_printing_id",
+            "unique": true,
+            "columnNames": [
+              "source_id",
+              "provider_printing_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_printings_source_id_provider_printing_id` ON `${TABLE_NAME}` (`source_id`, `provider_printing_id`)"
+          },
+          {
+            "name": "index_printings_card_id",
+            "unique": false,
+            "columnNames": [
+              "card_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_printings_card_id` ON `${TABLE_NAME}` (`card_id`)"
+          },
+          {
+            "name": "index_printings_normalized_set_code",
+            "unique": false,
+            "columnNames": [
+              "normalized_set_code"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_printings_normalized_set_code` ON `${TABLE_NAME}` (`normalized_set_code`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "cards",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "card_id"
+            ],
+            "referencedColumns": [
+              "card_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "inventory_entries",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`entry_id` TEXT NOT NULL, `card_id` TEXT NOT NULL, `printing_id` TEXT, `printing_kind` TEXT NOT NULL, `set_code_snapshot` TEXT, `normalized_set_code_snapshot` TEXT, `language_code` TEXT NOT NULL, `rarity_code` TEXT, `edition_code` TEXT NOT NULL, `condition_code` TEXT NOT NULL, `quantity` INTEGER NOT NULL, `notes` TEXT NOT NULL, `created_at_epoch_millis` INTEGER NOT NULL, `updated_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`entry_id`), FOREIGN KEY(`card_id`) REFERENCES `cards`(`card_id`) ON UPDATE NO ACTION ON DELETE RESTRICT , FOREIGN KEY(`printing_id`) REFERENCES `printings`(`printing_id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "entryId",
+            "columnName": "entry_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cardId",
+            "columnName": "card_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "printingId",
+            "columnName": "printing_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "printingKind",
+            "columnName": "printing_kind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "setCodeSnapshot",
+            "columnName": "set_code_snapshot",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "normalizedSetCodeSnapshot",
+            "columnName": "normalized_set_code_snapshot",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "languageCode",
+            "columnName": "language_code",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rarityCode",
+            "columnName": "rarity_code",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "editionCode",
+            "columnName": "edition_code",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "conditionCode",
+            "columnName": "condition_code",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "quantity",
+            "columnName": "quantity",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAtEpochMillis",
+            "columnName": "created_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtEpochMillis",
+            "columnName": "updated_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "entry_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_inventory_entries_card_id",
+            "unique": false,
+            "columnNames": [
+              "card_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_inventory_entries_card_id` ON `${TABLE_NAME}` (`card_id`)"
+          },
+          {
+            "name": "index_inventory_entries_printing_id",
+            "unique": false,
+            "columnNames": [
+              "printing_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_inventory_entries_printing_id` ON `${TABLE_NAME}` (`printing_id`)"
+          },
+          {
+            "name": "index_inventory_entries_set_code_snapshot",
+            "unique": false,
+            "columnNames": [
+              "set_code_snapshot"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_inventory_entries_set_code_snapshot` ON `${TABLE_NAME}` (`set_code_snapshot`)"
+          },
+          {
+            "name": "index_inventory_entries_normalized_set_code_snapshot",
+            "unique": false,
+            "columnNames": [
+              "normalized_set_code_snapshot"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_inventory_entries_normalized_set_code_snapshot` ON `${TABLE_NAME}` (`normalized_set_code_snapshot`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "cards",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "card_id"
+            ],
+            "referencedColumns": [
+              "card_id"
+            ]
+          },
+          {
+            "table": "printings",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "printing_id"
+            ],
+            "referencedColumns": [
+              "printing_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "catalog_metadata",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`source_id` TEXT NOT NULL, `catalog_revision` TEXT NOT NULL, `content_hash` TEXT, `updated_at_epoch_millis` INTEGER NOT NULL, `last_error` TEXT, PRIMARY KEY(`source_id`))",
+        "fields": [
+          {
+            "fieldPath": "sourceId",
+            "columnName": "source_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "catalogRevision",
+            "columnName": "catalog_revision",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "contentHash",
+            "columnName": "content_hash",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "updatedAtEpochMillis",
+            "columnName": "updated_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastError",
+            "columnName": "last_error",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "source_id"
+          ]
+        }
+      },
+      {
+        "tableName": "catalog_update_state",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`source_id` TEXT NOT NULL, `phase` TEXT NOT NULL, `last_attempt_at_epoch_millis` INTEGER, `last_success_at_epoch_millis` INTEGER, `last_failure_at_epoch_millis` INTEGER, `safe_error_text` TEXT, PRIMARY KEY(`source_id`))",
+        "fields": [
+          {
+            "fieldPath": "sourceId",
+            "columnName": "source_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "phase",
+            "columnName": "phase",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastAttemptAtEpochMillis",
+            "columnName": "last_attempt_at_epoch_millis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "lastSuccessAtEpochMillis",
+            "columnName": "last_success_at_epoch_millis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "lastFailureAtEpochMillis",
+            "columnName": "last_failure_at_epoch_millis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "safeErrorText",
+            "columnName": "safe_error_text",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "source_id"
+          ]
+        }
+      },
+      {
+        "tableName": "card_artworks",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`artwork_id` TEXT NOT NULL, `card_id` TEXT NOT NULL, `source_id` TEXT NOT NULL, `provider_artwork_id` TEXT NOT NULL, `remote_url` TEXT NOT NULL, `is_active` INTEGER NOT NULL, `catalog_revision` TEXT NOT NULL, `updated_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`artwork_id`), FOREIGN KEY(`card_id`) REFERENCES `cards`(`card_id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "artworkId",
+            "columnName": "artwork_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cardId",
+            "columnName": "card_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceId",
+            "columnName": "source_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "providerArtworkId",
+            "columnName": "provider_artwork_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "remoteUrl",
+            "columnName": "remote_url",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isActive",
+            "columnName": "is_active",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "catalogRevision",
+            "columnName": "catalog_revision",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtEpochMillis",
+            "columnName": "updated_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "artwork_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_card_artworks_card_id",
+            "unique": true,
+            "columnNames": [
+              "card_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_card_artworks_card_id` ON `${TABLE_NAME}` (`card_id`)"
+          },
+          {
+            "name": "index_card_artworks_source_id",
+            "unique": false,
+            "columnNames": [
+              "source_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_card_artworks_source_id` ON `${TABLE_NAME}` (`source_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "cards",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "card_id"
+            ],
+            "referencedColumns": [
+              "card_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "card_artwork_cache",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`card_id` TEXT NOT NULL, `remote_url_snapshot` TEXT NOT NULL, `local_file_name` TEXT, `download_state` TEXT NOT NULL, `last_attempt_at_epoch_millis` INTEGER, `last_success_at_epoch_millis` INTEGER, `safe_error_text` TEXT, PRIMARY KEY(`card_id`), FOREIGN KEY(`card_id`) REFERENCES `cards`(`card_id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "cardId",
+            "columnName": "card_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "remoteUrlSnapshot",
+            "columnName": "remote_url_snapshot",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "localFileName",
+            "columnName": "local_file_name",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "downloadState",
+            "columnName": "download_state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastAttemptAtEpochMillis",
+            "columnName": "last_attempt_at_epoch_millis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "lastSuccessAtEpochMillis",
+            "columnName": "last_success_at_epoch_millis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "safeErrorText",
+            "columnName": "safe_error_text",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "card_id"
+          ]
+        },
+        "foreignKeys": [
+          {
+            "table": "cards",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "card_id"
+            ],
+            "referencedColumns": [
+              "card_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "artwork_pack_state",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`source_id` TEXT NOT NULL, `phase` TEXT NOT NULL, `total_artwork_count` INTEGER NOT NULL, `completed_artwork_count` INTEGER NOT NULL, `failed_artwork_count` INTEGER NOT NULL, `next_offset` INTEGER NOT NULL, `cached_bytes` INTEGER NOT NULL, `updated_at_epoch_millis` INTEGER NOT NULL, `safe_error_text` TEXT, PRIMARY KEY(`source_id`))",
+        "fields": [
+          {
+            "fieldPath": "sourceId",
+            "columnName": "source_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "phase",
+            "columnName": "phase",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalArtworkCount",
+            "columnName": "total_artwork_count",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "completedArtworkCount",
+            "columnName": "completed_artwork_count",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "failedArtworkCount",
+            "columnName": "failed_artwork_count",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nextOffset",
+            "columnName": "next_offset",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cachedBytes",
+            "columnName": "cached_bytes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtEpochMillis",
+            "columnName": "updated_at_epoch_millis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "safeErrorText",
+            "columnName": "safe_error_text",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "source_id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '06cfc5b9a69c3b48487a48588cbd33ff')"
+    ]
+  }
+}

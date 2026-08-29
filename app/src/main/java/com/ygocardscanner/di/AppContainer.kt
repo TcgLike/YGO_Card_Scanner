@@ -14,6 +14,7 @@ import com.ygocardscanner.data.repository.RoomCatalogRepository
 import com.ygocardscanner.data.repository.RoomInventoryRepository
 import com.ygocardscanner.data.work.AppWorkerFactory
 import com.ygocardscanner.data.work.CardArtworkUpdateScheduler
+import com.ygocardscanner.data.work.FullArtworkDownloadScheduler
 import com.ygocardscanner.data.work.CatalogUpdateScheduler
 
 /** Small, explicit dependency graph for local inventory and public catalog updates. */
@@ -54,6 +55,13 @@ class AppContainer(context: Context) {
         CatalogUpdateScheduler(
             workManager = WorkManager.getInstance(applicationContext),
             catalogRepository = catalogRepository,
+        )
+    }
+
+    val artworkPackScheduler: FullArtworkDownloadScheduler by lazy {
+        FullArtworkDownloadScheduler(
+            workManager = WorkManager.getInstance(applicationContext),
+            artworkRepository = artworkRepository,
         )
     }
 

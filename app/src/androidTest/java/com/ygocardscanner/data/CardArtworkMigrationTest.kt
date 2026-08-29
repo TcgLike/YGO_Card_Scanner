@@ -104,4 +104,24 @@ class CardArtworkMigrationTest {
                 }
         }
     }
-}
+    @Test
+    fun migratesV4ToV5WithoutChangingInventoryAndAddsPackState() {
+        helper.createDatabase(databaseName, 4).apply {
+            execSQL(""" INSERT INTO cards(card_id, source_id, provider_card_id, passcode, canonical_name, is_active, catalog_revision, updated_at_epoch_millis) VALUES ('v4:card', 'test', 'card', NULL, 'Dark Magician', 1, '4', 4) """.trimIndent())
+            execSQL(""" INSERT INTO inventory_entries(entry_id, card_id, printing_id, printing_kind, set_code_snapshot, normalized_set_code_snapshot, language_code, rarity_code, edition_code, condition_code, quantity, notes, created_at_epoch_millis, updated_at_epoch_millis) VALUES ('v4:entry', 'v4:card', NULL, 'unknown', NULL, NULL, 'en', NULL, 'unknown', 'near_mint', 9, 'preserve v4 inventory', 4, 4) """.trimIndent())
+            close()
+        }
+        helper.runMigrationsAndValidate(databaseName, 5, true, AppDatabaseMigrations.MIGRATION_4_5).use { database ->
+            database.query("SELECT quantity, notes FROM inventory_entries WHERE entry_id = 'v4:entry'").use { cursor ->
+                assertTrue(cursor.moveToFirst())
+                assertEquals(9, cursor.getInt(0))
+                assertEquals("preserve v4 inventory", cursor.getString(1))
+            }
+            database.execSQL(""" INSERT INTO artwork_pack_state(source_id, phase, total_artwork_count, completed_artwork_count, failed_artwork_count, next_offset, cached_bytes, updated_at_epoch_millis, safe_error_text) VALUES ('ygoprodeck-v7', 'queued', 10, 2, 0, 2, 100, 5, NULL) """.trimIndent())
+            database.query("SELECT completed_artwork_count FROM artwork_pack_state WHERE source_id = 'ygoprodeck-v7'").use { cursor ->
+                assertTrue(cursor.moveToFirst())
+                assertEquals(2, cursor.getInt(0))
+            }
+        }
+    }
+}

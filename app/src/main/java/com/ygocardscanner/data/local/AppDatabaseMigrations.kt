@@ -80,4 +80,24 @@ object AppDatabaseMigrations {
             )
         }
     }
+    val MIGRATION_4_5 = object : Migration(4, 5) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS `artwork_pack_state` (
+                    `source_id` TEXT NOT NULL,
+                    `phase` TEXT NOT NULL,
+                    `total_artwork_count` INTEGER NOT NULL,
+                    `completed_artwork_count` INTEGER NOT NULL,
+                    `failed_artwork_count` INTEGER NOT NULL,
+                    `next_offset` INTEGER NOT NULL,
+                    `cached_bytes` INTEGER NOT NULL,
+                    `updated_at_epoch_millis` INTEGER NOT NULL,
+                    `safe_error_text` TEXT,
+                    PRIMARY KEY(`source_id`)
+                )
+                """.trimIndent(),
+            )
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package com.ygocardscanner.ui.add
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -32,6 +34,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import com.ygocardscanner.data.artwork.CardArtworkFileStore
+import com.ygocardscanner.model.ArtworkPackPhase
+import com.ygocardscanner.model.ArtworkPackStatus
+import com.ygocardscanner.model.CardArtworkDetail
+import com.ygocardscanner.model.CardArtworkDownloadState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import com.ygocardscanner.data.repository.CatalogUpdatePhase
 import com.ygocardscanner.data.repository.CatalogUpdateStatus
 import com.ygocardscanner.model.CardCondition
@@ -71,7 +85,7 @@ fun AddToCollectionScreen(
         topBar = {
             TopAppBar(
                 title = { Text(if (selected == null) "Add to collection" else "Confirm card") },
-                navigationIcon = { TextButton(onClick = { if (selected == null) onBack() else selected = null }) { Text("Back") } },
+                navigationIcon = { TextButton(onClick = { if (selected == null) onBack() else { selected = null; viewModel.clearSelectedArtwork() } }) { Text("Back") } },
             )
         },
     ) { innerPadding ->
@@ -91,6 +105,9 @@ fun AddToCollectionScreen(
                 onRetry = viewModel::retry,
                 onDisplayLanguageChange = viewModel::updateDisplayLanguage,
                 onRequestCatalogUpdate = viewModel::requestCatalogUpdate,
+                artworkPackStatus = state.artworkPackStatus,
+                isRequestingArtworkPack = state.isRequestingArtworkPack,
+                onRequestArtworkPack = viewModel::requestArtworkPack,
             )
         } else {
             val printing = selected ?: return@Scaffold
@@ -107,6 +124,11 @@ fun AddToCollectionScreen(
                         listOfNotNull(printing.setCode, printing.setName).joinToString(" · "),
                         modifier = Modifier.padding(horizontal = 16.dp),
                         style = MaterialTheme.typography.bodyMedium,
+                    )
+                    AddArtworkPreview(
+                        artwork = state.selectedArtwork,
+                        cardName = printing.displayName,
+                        onRefresh = { viewModel.refreshSelectedArtwork(printing.cardId) },
                     )
                     InventoryFields(
                         quantity = quantity,
@@ -176,6 +198,9 @@ private fun CatalogPicker(
     onRetry: () -> Unit,
     onDisplayLanguageChange: (CardLanguage) -> Unit,
     onRequestCatalogUpdate: () -> Unit,
+    artworkPackStatus: ArtworkPackStatus?,
+    isRequestingArtworkPack: Boolean,
+    onRequestArtworkPack: () -> Unit,
 ) {
     Column(modifier = modifier) {
         OutlinedTextField(
@@ -195,6 +220,7 @@ private fun CatalogPicker(
             isRequestingUpdate = state.isRequestingCatalogUpdate,
             onRequestUpdate = onRequestCatalogUpdate,
         )
+        ArtworkPackControls(artworkPackStatus, isRequestingArtworkPack, onRequestArtworkPack)
         TextButton(onClick = onManualUnknownPrinting, modifier = Modifier.padding(horizontal = 8.dp)) {
             Text("Add an unknown printing manually")
         }
@@ -352,3 +378,64 @@ private fun CatalogUpdateControls(
         }
     }
 }
+
+@Composable
+private fun AddArtworkPreview(
+    artwork: CardArtworkDetail?,
+    cardName: String,
+    onRefresh: () -> Unit,
+) {
+    if (artwork == null) return
+    val context = LocalContext.current
+    val fileStore = remember(context) { CardArtworkFileStore(context) }
+    val image = remember(artwork.localFileName) { fileStore.resolve(artwork.localFileName) }
+    val bitmap by androidx.compose.runtime.produceState<Bitmap?>(initialValue = null, image) {
+        value = withContext(Dispatchers.IO) { image?.let { BitmapFactory.decodeFile(it.absolutePath) } }
+    }
+    if (bitmap != null) {
+        Image(
+            bitmap = requireNotNull(bitmap).asImageBitmap(),
+            contentDescription = "English artwork for $cardName",
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.fillMaxWidth().height(260.dp).padding(horizontal = 16.dp, vertical = 8.dp),
+        )
+    } else {
+        val message = when (artwork.downloadState) {
+            CardArtworkDownloadState.NOT_DOWNLOADED -> "Preparing the local English card image..."
+            CardArtworkDownloadState.QUEUED -> "Card image download is queued."
+            CardArtworkDownloadState.DOWNLOADING -> "Downloading the card image to this device..."
+            CardArtworkDownloadState.AVAILABLE -> "The saved card image is unavailable."
+            CardArtworkDownloadState.FAILED -> artwork.message ?: "The card image could not be downloaded."
+        }
+        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+            Text(message, style = MaterialTheme.typography.bodyMedium)
+            TextButton(onClick = onRefresh) { Text("Refresh image") }
+        }
+    }
+}
+
+@Composable
+private fun ArtworkPackControls(
+    status: ArtworkPackStatus?,
+    isRequesting: Boolean,
+    onRequest: () -> Unit,
+) {
+    val inProgress = status?.phase?.isInProgress == true
+    val message = when (status?.phase) {
+        null -> "Optional: download one primary English image for every catalog card to this device. Requires 3.5 GiB free space; the cache is capped at 4 GiB."
+        ArtworkPackPhase.QUEUED, ArtworkPackPhase.RUNNING -> "Downloading offline card images: ${status.completedArtworkCount} / ${status.totalArtworkCount}."
+        ArtworkPackPhase.RETRYING -> "Offline image download will retry when connected."
+        ArtworkPackPhase.SUCCEEDED -> "Offline English card images are ready: ${status.completedArtworkCount} cards."
+        ArtworkPackPhase.QUOTA_REACHED, ArtworkPackPhase.FAILED -> status.message ?: "Offline image download stopped."
+    }
+    Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text(message, style = MaterialTheme.typography.bodyMedium)
+            Button(
+                onClick = onRequest,
+                modifier = Modifier.padding(top = 8.dp),
+                enabled = !isRequesting && !inProgress,
+            ) { Text(if (isRequesting) "Scheduling..." else if (status?.phase == ArtworkPackPhase.FAILED) "Retry image download" else "Download offline card images") }
+        }
+    }
+}

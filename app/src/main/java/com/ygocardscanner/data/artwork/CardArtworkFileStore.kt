@@ -2,6 +2,7 @@ package com.ygocardscanner.data.artwork
 
 import android.content.Context
 import android.graphics.BitmapFactory
+import android.os.StatFs
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -11,19 +12,23 @@ import java.security.MessageDigest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-/**
- * Keeps public catalog artwork in app-private files. The UI receives only a local file name and
- * never loads a provider URL directly.
- */
+/** Keeps public catalog artwork in app-private files. Remote URLs never reach Compose UI. */
 class CardArtworkFileStore(context: Context) {
-    private val directory = File(context.applicationContext.filesDir, DIRECTORY_NAME)
+    private val filesDirectory = context.applicationContext.filesDir
+    private val directory = File(filesDirectory, DIRECTORY_NAME)
 
     fun resolve(fileName: String?): File? {
         if (fileName.isNullOrBlank() || fileName.contains('/') || fileName.contains('\\')) return null
         return File(directory, fileName).takeIf(File::isFile)
     }
 
-    suspend fun download(artworkId: String, remoteUrl: String): String = withContext(Dispatchers.IO) {
+    fun cacheSizeBytes(): Long = directory.listFiles()?.sumOf { file ->
+        if (file.isFile) file.length() else 0L
+    } ?: 0L
+
+    fun availableBytes(): Long = StatFs(filesDirectory.absolutePath).availableBytes
+
+    suspend fun download(artworkId: String, remoteUrl: String): StoredArtwork = withContext(Dispatchers.IO) {
         requireProviderUrl(remoteUrl)
         if (!directory.exists() && !directory.mkdirs()) {
             throw IOException("The app-private artwork cache could not be created.")
@@ -35,13 +40,18 @@ class CardArtworkFileStore(context: Context) {
         try {
             downloadToTemporaryFile(remoteUrl, temporary)
             validateBitmap(temporary)
+            val previousBytes = destination.takeIf(File::isFile)?.length() ?: 0L
+            val resultingCacheBytes = cacheSizeBytes() - previousBytes + temporary.length()
+            if (resultingCacheBytes > MAX_CACHE_BYTES) {
+                throw ArtworkStorageQuotaExceededException()
+            }
             if (destination.exists() && !destination.delete()) {
                 throw IOException("The previous artwork file could not be replaced.")
             }
             if (!temporary.renameTo(destination)) {
                 throw IOException("The artwork file could not be stored.")
             }
-            fileName
+            StoredArtwork(fileName = fileName, cacheSizeBytes = resultingCacheBytes)
         } finally {
             temporary.delete()
         }
@@ -112,13 +122,22 @@ class CardArtworkFileStore(context: Context) {
         .digest(value.toByteArray(Charsets.UTF_8))
         .joinToString("") { "%02x".format(it) }
 
-    private companion object {
+    data class StoredArtwork(
+        val fileName: String,
+        val cacheSizeBytes: Long,
+    )
+
+    class ArtworkStorageQuotaExceededException : IOException("The 4 GiB artwork cache limit was reached.")
+
+    companion object {
         const val DIRECTORY_NAME = "card_artwork"
         const val PROVIDER_IMAGE_HOST = "images.ygoprodeck.com"
-        const val CONNECT_TIMEOUT_MILLIS = 20_000
-        const val READ_TIMEOUT_MILLIS = 30_000
-        const val MAX_IMAGE_BYTES = 5L * 1024L * 1024L
-        const val MAX_DIMENSION = 4_096
-        const val BUFFER_SIZE = 8 * 1024
+        const val MAX_CACHE_BYTES = 4L * 1024L * 1024L * 1024L
+        const val MINIMUM_FREE_BYTES_FOR_FULL_PACK = 3_500L * 1024L * 1024L
+        private const val CONNECT_TIMEOUT_MILLIS = 20_000
+        private const val READ_TIMEOUT_MILLIS = 30_000
+        private const val MAX_IMAGE_BYTES = 5L * 1024L * 1024L
+        private const val MAX_DIMENSION = 4_096
+        private const val BUFFER_SIZE = 8 * 1024
     }
-}
+}

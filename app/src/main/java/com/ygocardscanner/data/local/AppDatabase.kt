@@ -11,6 +11,7 @@ import com.ygocardscanner.data.local.dao.InventoryDao
 import com.ygocardscanner.data.local.entity.Card
 import com.ygocardscanner.data.local.entity.CardArtwork
 import com.ygocardscanner.data.local.entity.CardArtworkCache
+import com.ygocardscanner.data.local.entity.ArtworkPackState
 import com.ygocardscanner.data.local.entity.CardText
 import com.ygocardscanner.data.local.entity.CatalogMetadata
 import com.ygocardscanner.data.local.entity.CatalogUpdateState
@@ -27,8 +28,9 @@ import com.ygocardscanner.data.local.entity.Printing
         CatalogUpdateState::class,
         CardArtwork::class,
         CardArtworkCache::class,
+        ArtworkPackState::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -48,6 +50,7 @@ abstract class AppDatabase : RoomDatabase() {
             AppDatabaseMigrations.MIGRATION_1_2,
             AppDatabaseMigrations.MIGRATION_2_3,
             AppDatabaseMigrations.MIGRATION_3_4,
+            AppDatabaseMigrations.MIGRATION_4_5,
         )
             .build()
     }

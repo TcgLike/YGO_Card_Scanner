@@ -23,6 +23,9 @@ class AppWorkerFactory(
         CardArtworkUpdateWorker::class.java.name ->
             CardArtworkUpdateWorker(appContext, workerParameters, artworkRepository)
 
+        FullArtworkDownloadWorker::class.java.name ->
+            FullArtworkDownloadWorker(appContext, workerParameters, artworkRepository)
+
         else -> null
     }
 }
