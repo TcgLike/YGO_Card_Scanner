@@ -31,6 +31,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,6 +49,7 @@ import com.ygocardscanner.model.CollectionEntrySummary
 import com.ygocardscanner.ui.components.EmptyState
 import com.ygocardscanner.ui.components.ErrorState
 import com.ygocardscanner.ui.components.LoadingState
+import com.ygocardscanner.ui.components.LocalArtworkViewer
 import com.ygocardscanner.ui.localization.appText
 import com.ygocardscanner.ui.localization.localizedLabel
 import kotlinx.coroutines.Dispatchers
@@ -61,6 +64,7 @@ fun CollectionListScreen(
     onEntrySelected: (String) -> Unit,
 ) {
     val state by viewModel.uiState.collectAsState()
+    var fullscreenArtwork by remember { mutableStateOf<Pair<String, String>?>(null) }
 
     Scaffold(
         topBar = {
@@ -92,7 +96,7 @@ fun CollectionListScreen(
                 )
                 else -> LazyColumn(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) {
                     items(state.entries, key = CollectionEntrySummary::entryId) { entry ->
-                        CollectionEntryRow(entry, onClick = { onEntrySelected(entry.entryId) })
+                        CollectionEntryRow(entry, onClick = { onEntrySelected(entry.entryId) }, onArtworkClick = { fileName -> fullscreenArtwork = fileName to entry.cardName })
                     }
                 }
             }
@@ -101,7 +105,7 @@ fun CollectionListScreen(
 }
 
 @Composable
-private fun CollectionEntryRow(entry: CollectionEntrySummary, onClick: () -> Unit) {
+private fun CollectionEntryRow(entry: CollectionEntrySummary, onClick: () -> Unit, onArtworkClick: (String) -> Unit) {
     Card(Modifier.fillMaxWidth().padding(vertical = 4.dp).clickable(onClick = onClick)) {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
@@ -109,13 +113,13 @@ private fun CollectionEntryRow(entry: CollectionEntrySummary, onClick: () -> Uni
                 Text(listOfNotNull(entry.setCode, entry.rarity, entry.edition.localizedLabel()).joinToString(" · "), modifier = Modifier.padding(top = 4.dp), style = MaterialTheme.typography.bodyMedium)
                 Text("${entry.quantity} × ${entry.condition.localizedLabel()}" + if (entry.isUnknownPrinting) " · ${appText("Unknown printing", "Unbekannter Druck")}" else "", modifier = Modifier.padding(top = 4.dp), style = MaterialTheme.typography.labelLarge)
             }
-            CollectionEntryArtwork(entry.artwork, entry.cardName, Modifier.padding(start = 12.dp))
+            CollectionEntryArtwork(entry.artwork, entry.cardName, Modifier.padding(start = 12.dp), onArtworkClick)
         }
     }
 }
 
 @Composable
-private fun CollectionEntryArtwork(artwork: CardArtworkDetail?, cardName: String, modifier: Modifier = Modifier) {
+private fun CollectionEntryArtwork(artwork: CardArtworkDetail?, cardName: String, modifier: Modifier = Modifier, onArtworkClick: (String) -> Unit) {
     val context = LocalContext.current
     val fileStore = remember(context) { CardArtworkFileStore(context) }
     val image = remember(artwork?.localFileName) { fileStore.resolve(artwork?.localFileName) }
@@ -125,7 +129,7 @@ private fun CollectionEntryArtwork(artwork: CardArtworkDetail?, cardName: String
     val shape = RoundedCornerShape(6.dp)
     Box(modifier = modifier.width(64.dp).height(92.dp).clip(shape).background(MaterialTheme.colorScheme.surfaceVariant).border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape), contentAlignment = Alignment.Center) {
         if (bitmap != null) {
-            Image(bitmap = requireNotNull(bitmap).asImageBitmap(), contentDescription = appText("English artwork for $cardName", "Englisches Kartenbild für $cardName"), contentScale = ContentScale.Crop, modifier = Modifier.matchParentSize())
+            Image(bitmap = requireNotNull(bitmap).asImageBitmap(), contentDescription = appText("English artwork for $cardName", "Englisches Kartenbild für $cardName"), contentScale = ContentScale.Crop, modifier = Modifier.matchParentSize().clickable { artwork?.localFileName?.let(onArtworkClick) })
         } else {
             val label = when (artwork?.downloadState) {
                 CardArtworkDownloadState.QUEUED, CardArtworkDownloadState.DOWNLOADING -> appText("Loading\nimage", "Bild wird\ngeladen")

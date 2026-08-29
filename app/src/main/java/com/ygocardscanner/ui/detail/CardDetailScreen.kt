@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -45,6 +46,7 @@ import kotlinx.coroutines.withContext
 import com.ygocardscanner.ui.components.EmptyState
 import com.ygocardscanner.ui.components.ErrorState
 import com.ygocardscanner.ui.components.LoadingState
+import com.ygocardscanner.ui.components.LocalArtworkViewer
 import com.ygocardscanner.ui.localization.appText
 import com.ygocardscanner.ui.localization.localizedLabel
 
@@ -58,6 +60,7 @@ fun CardDetailScreen(
     val state by viewModel.uiState.collectAsState()
     var showDeleteConfirmation by remember { mutableStateOf(false) }
     var showConditionPicker by remember { mutableStateOf(false) }
+    var fullscreenArtworkFileName by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
@@ -90,9 +93,14 @@ fun CardDetailScreen(
                 onQuantityChanged = viewModel::updateQuantity,
                 onEditCondition = { showConditionPicker = true },
                 onRequestArtwork = viewModel::requestArtwork,
+                onOpenArtwork = { fileName -> fullscreenArtworkFileName = fileName },
                 onDelete = { showDeleteConfirmation = true },
             )
         }
+    }
+
+    fullscreenArtworkFileName?.let { fileName ->
+        state.entry?.let { entry -> LocalArtworkViewer(fileName, entry.cardName, onDismiss = { fullscreenArtworkFileName = null }) }
     }
 
     if (showConditionPicker) {
@@ -128,6 +136,7 @@ private fun EntryDetailContent(
     onQuantityChanged: (Int) -> Unit,
     onEditCondition: () -> Unit,
     onRequestArtwork: () -> Unit,
+    onOpenArtwork: (String) -> Unit,
     onDelete: () -> Unit,
 ) {
     var quantityText by remember(entry.entryId, entry.quantity) { mutableStateOf(entry.quantity.toString()) }
@@ -141,6 +150,7 @@ private fun EntryDetailContent(
                     artwork = entry.artwork,
                     cardName = entry.cardName,
                     onRequestArtwork = onRequestArtwork,
+                    onOpenArtwork = onOpenArtwork,
                 )
                 if (entry.canonicalName != entry.cardName) {
                     Text(entry.canonicalName, style = MaterialTheme.typography.bodyMedium)
@@ -221,6 +231,7 @@ private fun ArtworkContent(
     artwork: CardArtworkDetail?,
     cardName: String,
     onRequestArtwork: () -> Unit,
+    onOpenArtwork: (String) -> Unit,
 ) {
     if (artwork == null) return
 
@@ -238,7 +249,7 @@ private fun ArtworkContent(
             bitmap = requireNotNull(bitmap).asImageBitmap(),
             contentDescription = "English artwork for $cardName",
             contentScale = ContentScale.Fit,
-            modifier = Modifier.fillMaxWidth().height(260.dp).padding(top = 12.dp),
+            modifier = Modifier.fillMaxWidth().height(260.dp).padding(top = 12.dp).clickable { artwork.localFileName?.let(onOpenArtwork) },
         )
         return
     }
