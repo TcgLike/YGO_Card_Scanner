@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,7 +40,13 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
             )
         },
     ) { padding ->
-        Column(Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+        ) {
             SettingsCard(title = appText("App language", "App-Sprache")) {
                 Text(appText("Changes the language throughout the app. Card catalog downloads always include English and German.", "Ändert die Sprache in der gesamten App. Katalogdownloads enthalten immer Englisch und Deutsch."))
                 TextButton(onClick = { viewModel.setLanguage(CardLanguage.ENGLISH) }, enabled = state.language != CardLanguage.ENGLISH) { Text("English") }
