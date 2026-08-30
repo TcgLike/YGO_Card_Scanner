@@ -65,7 +65,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
                 )
             }
             SettingsCard(title = appText("Card catalog", "Kartenkatalog")) {
-                Text(catalogMessage(state.game, state.catalogStatus?.phase, state.catalogStatus?.message))
+                Text(catalogMessage(state.catalogStatus?.phase, state.catalogStatus?.message))
                 if (state.catalogStatus?.phase?.isInProgress == true) {
                     Spacer(Modifier.height(12.dp))
                     LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
@@ -78,8 +78,17 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
-                Button(onClick = viewModel::refreshCatalog, enabled = !state.isSchedulingCatalog && state.catalogStatus?.phase?.isInProgress != true) {
-                    Text(if (state.isSchedulingCatalog) appText("Scheduling…", "Wird geplant…") else if (state.game == com.ygocardscanner.model.CardGame.POKEMON) appText("Download / refresh English Pokémon catalog", "Englischen Pokémon-Katalog herunterladen / aktualisieren") else appText("Download / refresh English + German catalog", "Englischen + deutschen Katalog herunterladen / aktualisieren"))
+                Button(
+                    onClick = viewModel::refreshCatalog,
+                    enabled = !state.isSchedulingCatalog && state.catalogStatus?.phase?.isInProgress != true,
+                ) {
+                    Text(
+                        if (state.isSchedulingCatalog) {
+                            appText("Scheduling...", "Wird geplant...")
+                        } else {
+                            appText("Download / refresh English + German catalog", "Englischen + deutschen Katalog herunterladen / aktualisieren")
+                        },
+                    )
                 }
             }
             if (state.supportsGermanPrintingBackup) {
@@ -138,11 +147,11 @@ private fun SettingsCard(title: String, content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun catalogMessage(game: com.ygocardscanner.model.CardGame, phase: CatalogUpdatePhase?, message: String?): String = when (phase) {
+private fun catalogMessage(phase: CatalogUpdatePhase?, message: String?): String = when (phase) {
     null -> appText("Download the complete local catalog in English and German.", "Lädt den vollständigen lokalen Katalog auf Englisch und Deutsch herunter.")
     CatalogUpdatePhase.QUEUED, CatalogUpdatePhase.RUNNING -> appText("Catalog download is running.", "Katalogdownload läuft.")
     CatalogUpdatePhase.RETRYING -> appText("Catalog download will resume when connected.", "Katalogdownload wird bei Verbindung fortgesetzt.")
-    CatalogUpdatePhase.SUCCEEDED -> if (game == com.ygocardscanner.model.CardGame.POKEMON) appText("The local English Pokémon catalog is ready.", "Der lokale englische Pokémon-Katalog ist bereit.") else appText("Catalog is up to date in English and German.", "Katalog ist auf Englisch und Deutsch aktuell.")
+    CatalogUpdatePhase.SUCCEEDED -> appText("Catalog is up to date in English and German.", "Katalog ist auf Englisch und Deutsch aktuell.")
     CatalogUpdatePhase.FAILED -> message ?: appText("Catalog download stopped.", "Katalogdownload wurde angehalten.")
 }
 

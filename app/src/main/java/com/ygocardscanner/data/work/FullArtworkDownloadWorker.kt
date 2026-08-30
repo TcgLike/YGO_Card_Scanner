@@ -17,7 +17,6 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.ygocardscanner.data.repository.ArtworkPackBatchResult
 import com.ygocardscanner.data.repository.CardArtworkRepository
-import com.ygocardscanner.model.CardGame
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CancellationException
@@ -29,11 +28,12 @@ class FullArtworkDownloadWorker(
     private val artworkRepository: CardArtworkRepository,
 ) : CoroutineWorker(appContext, params) {
     override suspend fun getForegroundInfo(): ForegroundInfo = foregroundInfo()
+
     override suspend fun doWork(): Result = try {
         setForeground(foregroundInfo())
         when (artworkRepository.processNextFullPackBatch()) {
             ArtworkPackBatchResult.Continue -> {
-                enqueueContinuation(applicationContext, CardGame.fromCode(inputData.getString(CatalogUpdateWorker.KEY_GAME)))
+                enqueueContinuation(applicationContext)
                 Result.success()
             }
             ArtworkPackBatchResult.Complete -> Result.success()
@@ -65,15 +65,20 @@ class FullArtworkDownloadWorker(
             .setContentText("Keeping the offline English card image pack up to date.")
             .setOngoing(true)
             .build()
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ForegroundInfo(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC) else ForegroundInfo(NOTIFICATION_ID, notification)
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ForegroundInfo(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        } else {
+            ForegroundInfo(NOTIFICATION_ID, notification)
+        }
     }
+
     companion object {
         const val UNIQUE_WORK_NAME = "public-card-artwork-full-pack"
         private const val CHANNEL_ID = "offline_card_images"
         private const val NOTIFICATION_ID = 4101
         private const val MAX_TRANSIENT_ATTEMPTS = 3
 
-        fun request(game: CardGame = CardGame.YUGIOH) = OneTimeWorkRequestBuilder<FullArtworkDownloadWorker>()
+        fun request() = OneTimeWorkRequestBuilder<FullArtworkDownloadWorker>()
             .setConstraints(
                 Constraints.Builder()
                     .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -81,19 +86,13 @@ class FullArtworkDownloadWorker(
                     .build(),
             )
             .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
-            .setInputData(androidx.work.workDataOf(CatalogUpdateWorker.KEY_GAME to game.code))
             .build()
 
-        fun uniqueWorkName(game: CardGame): String = when (game) {
-            CardGame.YUGIOH -> UNIQUE_WORK_NAME
-            CardGame.POKEMON -> "pokemon-$UNIQUE_WORK_NAME"
-        }
-
-        fun enqueueContinuation(context: Context, game: CardGame = CardGame.YUGIOH) {
+        fun enqueueContinuation(context: Context) {
             WorkManager.getInstance(context.applicationContext).enqueueUniqueWork(
-                uniqueWorkName(game),
+                UNIQUE_WORK_NAME,
                 ExistingWorkPolicy.APPEND_OR_REPLACE,
-                request(game),
+                request(),
             )
         }
     }

@@ -53,7 +53,6 @@ import androidx.compose.ui.unit.dp
 import com.ygocardscanner.data.artwork.CardArtworkFileStore
 import com.ygocardscanner.model.CardArtworkDetail
 import com.ygocardscanner.model.CardArtworkDownloadState
-import com.ygocardscanner.model.CardGame
 import com.ygocardscanner.model.CollectionEntrySummary
 import com.ygocardscanner.model.CollectionLayout
 import com.ygocardscanner.ui.components.EmptyState
@@ -69,8 +68,6 @@ import kotlinx.coroutines.withContext
 @Composable
 fun CollectionListScreen(
     viewModel: CollectionListViewModel,
-    game: CardGame,
-    onGameSelected: (CardGame) -> Unit,
     onAddCard: () -> Unit,
     onCatalog: () -> Unit,
     onSettings: () -> Unit,
@@ -79,33 +76,11 @@ fun CollectionListScreen(
     val state by viewModel.uiState.collectAsState()
     var fullscreenArtwork by remember { mutableStateOf<Pair<String, String>?>(null) }
     var layoutMenuExpanded by remember { mutableStateOf(false) }
-    var gameMenuExpanded by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Box {
-                        TextButton(onClick = { gameMenuExpanded = true }) {
-                            Text(if (game == CardGame.YUGIOH) "Yu-Gi-Oh!" else "Pokémon")
-                        }
-                        DropdownMenu(
-                            expanded = gameMenuExpanded,
-                            onDismissRequest = { gameMenuExpanded = false },
-                        ) {
-                            CardGame.entries.forEach { option ->
-                                DropdownMenuItem(
-                                    text = { Text(if (option == CardGame.YUGIOH) "Yu-Gi-Oh!" else "Pokémon") },
-                                    onClick = {
-                                        gameMenuExpanded = false
-                                        onGameSelected(option)
-                                    },
-                                    trailingIcon = { if (option == game) Text("✓") },
-                                )
-                            }
-                        }
-                    }
-                },
+                title = { Text("Yu-Gi-Oh!") },
                 actions = {
                     TextButton(onClick = onCatalog) { Text(appText("Catalog", "Katalog")) }
                     Box {

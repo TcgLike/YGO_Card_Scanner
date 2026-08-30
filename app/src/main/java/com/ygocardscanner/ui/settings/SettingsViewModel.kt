@@ -11,7 +11,6 @@ import com.ygocardscanner.data.work.CatalogUpdateScheduler
 import com.ygocardscanner.data.work.FullArtworkDownloadScheduler
 import com.ygocardscanner.data.work.GermanPrintingUpdateScheduler
 import com.ygocardscanner.model.ArtworkPackStatus
-import com.ygocardscanner.model.CardGame
 import com.ygocardscanner.model.CardLanguage
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +20,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class SettingsUiState(
-    val game: CardGame = CardGame.YUGIOH,
     val language: CardLanguage = CardLanguage.ENGLISH,
     val catalogStatus: CatalogUpdateStatus? = null,
     val supportsGermanPrintingBackup: Boolean = false,
@@ -43,16 +41,15 @@ private data class PrimarySettings(
 )
 
 class SettingsViewModel(
-    private val game: CardGame,
     private val languageSettings: AppLanguageSettings,
     private val catalogRepository: CatalogRepository,
     private val artworkRepository: CardArtworkRepository,
     private val catalogScheduler: CatalogUpdateScheduler,
-    private val germanPrintingRepository: GermanPrintingEnrichmentRepository?,
-    private val germanPrintingScheduler: GermanPrintingUpdateScheduler?,
+    private val germanPrintingRepository: GermanPrintingEnrichmentRepository? = null,
+    private val germanPrintingScheduler: GermanPrintingUpdateScheduler? = null,
     private val artworkScheduler: FullArtworkDownloadScheduler,
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow(SettingsUiState(game = game))
+    private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState = _uiState
 
     init {

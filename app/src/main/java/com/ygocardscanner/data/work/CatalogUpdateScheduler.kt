@@ -8,15 +8,13 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.ygocardscanner.data.repository.CatalogRepository
-import com.ygocardscanner.model.CardGame
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CancellationException
 
-/** Schedules one durable, constrained public-catalog update for one isolated card workspace. */
+/** Schedules the durable, constrained Yu-Gi-Oh! public-catalog update. */
 class CatalogUpdateScheduler(
     private val workManager: WorkManager,
     private val catalogRepository: CatalogRepository,
-    private val game: CardGame = CardGame.YUGIOH,
 ) {
     suspend fun enqueue(force: Boolean = false) {
         catalogRepository.markCatalogUpdateQueued()
@@ -29,22 +27,14 @@ class CatalogUpdateScheduler(
                         .build(),
                 )
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
-                .setInputData(workDataOf(
-                    CatalogUpdateWorker.KEY_FORCE to force,
-                    CatalogUpdateWorker.KEY_GAME to game.code,
-                ))
+                .setInputData(workDataOf(CatalogUpdateWorker.KEY_FORCE to force))
                 .build()
-            workManager.enqueueUniqueWork(uniqueWorkName(), ExistingWorkPolicy.KEEP, request)
+            workManager.enqueueUniqueWork(CatalogUpdateWorker.UNIQUE_WORK_NAME, ExistingWorkPolicy.KEEP, request)
         } catch (error: CancellationException) {
             throw error
         } catch (_: Exception) {
             catalogRepository.markCatalogUpdateFailed(SCHEDULING_FAILURE_MESSAGE)
         }
-    }
-
-    private fun uniqueWorkName(): String = when (game) {
-        CardGame.YUGIOH -> CatalogUpdateWorker.UNIQUE_WORK_NAME
-        CardGame.POKEMON -> "pokemon-${CatalogUpdateWorker.UNIQUE_WORK_NAME}"
     }
 
     private companion object {

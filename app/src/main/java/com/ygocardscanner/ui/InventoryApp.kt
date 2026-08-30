@@ -13,19 +13,18 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.ygocardscanner.di.AppContainer
 import com.ygocardscanner.di.CardWorkspace
-import com.ygocardscanner.model.CardGame
 import com.ygocardscanner.ui.add.AddToCollectionScreen
 import com.ygocardscanner.ui.add.AddToCollectionViewModel
 import com.ygocardscanner.ui.catalog.CatalogViewerScreen
 import com.ygocardscanner.ui.catalog.CatalogViewerViewModel
 import com.ygocardscanner.ui.collection.CollectionListScreen
 import com.ygocardscanner.ui.collection.CollectionListViewModel
-import com.ygocardscanner.ui.detail.CardDetailScreen
-import com.ygocardscanner.ui.detail.CardDetailViewModel
-import com.ygocardscanner.ui.deckimport.YgoDeckImportScreen
 import com.ygocardscanner.ui.deckimport.YgoDeckAvailabilityScreen
 import com.ygocardscanner.ui.deckimport.YgoDeckAvailabilityViewModel
+import com.ygocardscanner.ui.deckimport.YgoDeckImportScreen
 import com.ygocardscanner.ui.deckimport.YgoDeckImportViewModel
+import com.ygocardscanner.ui.detail.CardDetailScreen
+import com.ygocardscanner.ui.detail.CardDetailViewModel
 import com.ygocardscanner.ui.localization.LocalAppLanguage
 import com.ygocardscanner.ui.manual.ManualAddScreen
 import com.ygocardscanner.ui.manual.ManualAddViewModel
@@ -39,23 +38,10 @@ import com.ygocardscanner.ui.settings.SettingsViewModel
 fun InventoryApp(container: AppContainer) {
     val navController = rememberNavController()
     val appLanguage by container.languageSettings.language.collectAsState()
-    val selectedGame by container.languageSettings.selectedGame.collectAsState()
-    val workspace = remember(selectedGame) { container.workspace(selectedGame) }
-
-    fun switchWorkspace(game: CardGame) {
-        if (game != selectedGame) {
-            container.languageSettings.setSelectedGame(game)
-            navController.popBackStack(Destinations.COLLECTION, inclusive = false)
-        }
-    }
+    val workspace = remember { container.ygoWorkspace }
 
     CompositionLocalProvider(LocalAppLanguage provides appLanguage) {
-        WorkspaceNavigation(
-            container = container,
-            workspace = workspace,
-            onGameSelected = ::switchWorkspace,
-            navController = navController,
-        )
+        WorkspaceNavigation(container = container, workspace = workspace, navController = navController)
     }
 }
 
@@ -63,10 +49,9 @@ fun InventoryApp(container: AppContainer) {
 private fun WorkspaceNavigation(
     container: AppContainer,
     workspace: CardWorkspace,
-    onGameSelected: (CardGame) -> Unit,
     navController: androidx.navigation.NavHostController,
 ) {
-    val workspaceKey = workspace.game.code
+    val workspaceKey = "yugioh"
     val collectionFactory = remember(workspace) {
         viewModelFactory { CollectionListViewModel(workspace.inventoryRepository, container.languageSettings) }
     }
@@ -86,15 +71,11 @@ private fun WorkspaceNavigation(
             )
         }
     }
-    val deckImportFactory = workspace.deckImportRepository?.let { repository ->
-        remember(workspace) {
-            viewModelFactory { YgoDeckImportViewModel(repository, container.languageSettings) }
-        }
+    val deckImportFactory = remember(workspace) {
+        viewModelFactory { YgoDeckImportViewModel(workspace.deckImportRepository, container.languageSettings) }
     }
-    val deckAvailabilityFactory = workspace.deckAvailabilityRepository?.let { repository ->
-        remember(workspace) {
-            viewModelFactory { YgoDeckAvailabilityViewModel(repository, container.languageSettings) }
-        }
+    val deckAvailabilityFactory = remember(workspace) {
+        viewModelFactory { YgoDeckAvailabilityViewModel(workspace.deckAvailabilityRepository, container.languageSettings) }
     }
     val manualFactory = remember(workspace) {
         viewModelFactory { ManualAddViewModel(workspace.inventoryRepository) }
@@ -102,13 +83,12 @@ private fun WorkspaceNavigation(
     val settingsFactory = remember(workspace) {
         viewModelFactory {
             SettingsViewModel(
-                game = workspace.game,
                 languageSettings = container.languageSettings,
                 catalogRepository = workspace.catalogRepository,
                 artworkRepository = workspace.artworkRepository,
                 catalogScheduler = workspace.catalogUpdateScheduler,
-                germanPrintingRepository = if (workspace.game == CardGame.YUGIOH) container.germanPrintingRepository else null,
-                germanPrintingScheduler = if (workspace.game == CardGame.YUGIOH) container.germanPrintingUpdateScheduler else null,
+                germanPrintingRepository = container.germanPrintingRepository,
+                germanPrintingScheduler = container.germanPrintingUpdateScheduler,
                 artworkScheduler = workspace.artworkPackScheduler,
             )
         }
@@ -119,8 +99,6 @@ private fun WorkspaceNavigation(
             val viewModel: CollectionListViewModel = viewModel(key = "collection-$workspaceKey", factory = collectionFactory)
             CollectionListScreen(
                 viewModel = viewModel,
-                game = workspace.game,
-                onGameSelected = onGameSelected,
                 onAddCard = { navController.navigate(Destinations.ADD) },
                 onCatalog = { navController.navigate(Destinations.CATALOG) },
                 onSettings = { navController.navigate(Destinations.SETTINGS) },
@@ -135,63 +113,56 @@ private fun WorkspaceNavigation(
             val viewModel: AddToCollectionViewModel = viewModel(key = "add-$workspaceKey", factory = addFactory)
             AddToCollectionScreen(
                 viewModel = viewModel,
-                canScan = workspace.supportsScanner,
-                canImportDeck = deckImportFactory != null,
-                canCheckDeck = deckAvailabilityFactory != null,
-                englishOnly = workspace.game == CardGame.POKEMON,
+                canScan = true,
+                canImportDeck = true,
+                canCheckDeck = true,
+                englishOnly = false,
                 onBack = { navController.popBackStack() },
                 onManualUnknownPrinting = { navController.navigate(Destinations.MANUAL) },
-                onImportDeck = { if (deckImportFactory != null) navController.navigate(Destinations.DECK_IMPORT) },
-                onCheckDeck = { if (deckAvailabilityFactory != null) navController.navigate(Destinations.DECK_AVAILABILITY) },
-                onScanCard = { if (workspace.supportsScanner) navController.navigate(Destinations.SCANNER) },
+                onImportDeck = { navController.navigate(Destinations.DECK_IMPORT) },
+                onCheckDeck = { navController.navigate(Destinations.DECK_AVAILABILITY) },
+                onScanCard = { navController.navigate(Destinations.SCANNER) },
                 onAdded = { navController.popBackStack(Destinations.COLLECTION, inclusive = false) },
             )
         }
-        if (deckImportFactory != null) {
-            composable(Destinations.DECK_IMPORT) {
-                val viewModel: YgoDeckImportViewModel = viewModel(key = "deck-import-$workspaceKey", factory = deckImportFactory)
-                YgoDeckImportScreen(
-                    viewModel = viewModel,
-                    onBack = { navController.popBackStack() },
-                    onImported = { navController.popBackStack(Destinations.COLLECTION, inclusive = false) },
-                )
-            }
+        composable(Destinations.DECK_IMPORT) {
+            val viewModel: YgoDeckImportViewModel = viewModel(key = "deck-import-$workspaceKey", factory = deckImportFactory)
+            YgoDeckImportScreen(
+                viewModel = viewModel,
+                onBack = { navController.popBackStack() },
+                onImported = { navController.popBackStack(Destinations.COLLECTION, inclusive = false) },
+            )
         }
-        if (deckAvailabilityFactory != null) {
-            composable(Destinations.DECK_AVAILABILITY) {
-                val viewModel: YgoDeckAvailabilityViewModel = viewModel(
-                    key = "deck-availability-$workspaceKey",
-                    factory = deckAvailabilityFactory,
-                )
-                YgoDeckAvailabilityScreen(viewModel = viewModel, onBack = { navController.popBackStack() })
-            }
+        composable(Destinations.DECK_AVAILABILITY) {
+            val viewModel: YgoDeckAvailabilityViewModel = viewModel(
+                key = "deck-availability-$workspaceKey",
+                factory = deckAvailabilityFactory,
+            )
+            YgoDeckAvailabilityScreen(viewModel = viewModel, onBack = { navController.popBackStack() })
         }
-        if (workspace.supportsScanner) {
-            composable(Destinations.SCANNER) {
-                val scannerRepository = requireNotNull(workspace.scannerRepository)
-                val scannerFactory = remember(workspace) {
-                    viewModelFactory {
-                        ScannerViewModel(
-                            scannerRepository,
-                            workspace.inventoryRepository,
-                            workspace.artworkRepository,
-                            container.languageSettings,
-                        )
-                    }
+        composable(Destinations.SCANNER) {
+            val scannerFactory = remember(workspace) {
+                viewModelFactory {
+                    ScannerViewModel(
+                        workspace.scannerRepository,
+                        workspace.inventoryRepository,
+                        workspace.artworkRepository,
+                        container.languageSettings,
+                    )
                 }
-                val viewModel: ScannerViewModel = viewModel(key = "scanner-$workspaceKey", factory = scannerFactory)
-                CardScannerScreen(
-                    viewModel = viewModel,
-                    onBack = { navController.popBackStack() },
-                    onManualAdd = { navController.navigate(Destinations.MANUAL) },
-                )
             }
+            val viewModel: ScannerViewModel = viewModel(key = "scanner-$workspaceKey", factory = scannerFactory)
+            CardScannerScreen(
+                viewModel = viewModel,
+                onBack = { navController.popBackStack() },
+                onManualAdd = { navController.navigate(Destinations.MANUAL) },
+            )
         }
         composable(Destinations.MANUAL) {
             val viewModel: ManualAddViewModel = viewModel(key = "manual-$workspaceKey", factory = manualFactory)
             ManualAddScreen(
                 viewModel = viewModel,
-                englishOnly = workspace.game == CardGame.POKEMON,
+                englishOnly = false,
                 onBack = { navController.popBackStack() },
                 onAdded = { navController.popBackStack(Destinations.COLLECTION, inclusive = false) },
             )

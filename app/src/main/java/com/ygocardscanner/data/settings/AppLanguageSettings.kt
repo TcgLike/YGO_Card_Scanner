@@ -2,7 +2,6 @@ package com.ygocardscanner.data.settings
 
 import android.content.Context
 import com.ygocardscanner.model.CardLanguage
-import com.ygocardscanner.model.CardGame
 import com.ygocardscanner.model.CollectionLayout
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,11 +29,6 @@ class AppLanguageSettings(context: Context) {
     )
     val collectionLayout = _collectionLayout.asStateFlow()
 
-    private val _selectedGame = MutableStateFlow(
-        CardGame.fromCode(preferences.getString(KEY_SELECTED_GAME, CardGame.YUGIOH.code)),
-    )
-    val selectedGame = _selectedGame.asStateFlow()
-
     fun setLanguage(value: CardLanguage) {
         preferences.edit().putString(KEY_LANGUAGE, value.code).apply()
         _language.value = value
@@ -50,10 +44,6 @@ class AppLanguageSettings(context: Context) {
         _scanSuccessAnimationEnabled.value = value
     }
 
-    fun setSelectedGame(value: CardGame) {
-        preferences.edit().putString(KEY_SELECTED_GAME, value.code).apply()
-        _selectedGame.value = value
-    }
     fun setCollectionLayout(value: CollectionLayout) {
         preferences.edit().putString(KEY_COLLECTION_LAYOUT, value.code).apply()
         _collectionLayout.value = value
@@ -65,6 +55,5 @@ class AppLanguageSettings(context: Context) {
         const val KEY_GERMAN_PRINTING_SOURCE_ENABLED = "ygojson_german_printings_enabled"
         const val KEY_SCAN_SUCCESS_ANIMATION_ENABLED = "scan_success_animation_enabled"
         const val KEY_COLLECTION_LAYOUT = "collection_layout"
-        const val KEY_SELECTED_GAME = "selected_game"
     }
 }
