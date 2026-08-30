@@ -107,3 +107,9 @@ data class DeckImportCardRow(
     @ColumnInfo(name = "display_name")
     val displayName: String,
 )
+data class DeckAvailabilityOwnedQuantityRow(
+    @ColumnInfo(name = "passcode")
+    val passcode: String,
+    @ColumnInfo(name = "quantity")
+    val quantity: Int,
+)

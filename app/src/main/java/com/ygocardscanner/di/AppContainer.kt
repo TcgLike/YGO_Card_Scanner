@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.work.WorkManager
 import com.ygocardscanner.data.artwork.CardArtworkFileStore
 import com.ygocardscanner.data.deckimport.yugioh.RoomYgoDeckImportRepository
+import com.ygocardscanner.data.deckimport.yugioh.RoomYgoDeckAvailabilityRepository
 import com.ygocardscanner.data.catalog.yugioh.HttpYgoJsonApiClient
 import com.ygocardscanner.data.catalog.pokemon.PokemonTcgCatalogSource
 import com.ygocardscanner.data.catalog.yugioh.YgoJsonGermanPrintingSource
@@ -79,6 +80,7 @@ class AppContainer(context: Context) {
             artworkUpdateScheduler = CardArtworkUpdateScheduler(workManager, ygoArtworkRepository, CardGame.YUGIOH),
             scannerRepository = RoomCardScannerRepository(ygoDatabase),
             deckImportRepository = RoomYgoDeckImportRepository(ygoDatabase),
+            deckAvailabilityRepository = RoomYgoDeckAvailabilityRepository(ygoDatabase),
         )
     }
     val pokemonWorkspace: CardWorkspace by lazy {

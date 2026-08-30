@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -66,10 +67,12 @@ fun AddToCollectionScreen(
     viewModel: AddToCollectionViewModel,
     canScan: Boolean,
     canImportDeck: Boolean,
+    canCheckDeck: Boolean,
     englishOnly: Boolean,
     onBack: () -> Unit,
     onManualUnknownPrinting: () -> Unit,
     onImportDeck: () -> Unit,
+    onCheckDeck: () -> Unit,
     onScanCard: () -> Unit,
     onAdded: () -> Unit,
 ) {
@@ -111,7 +114,9 @@ fun AddToCollectionScreen(
                 },
                 onManualUnknownPrinting = onManualUnknownPrinting,
                 canImportDeck = canImportDeck,
+                canCheckDeck = canCheckDeck,
                 onImportDeck = onImportDeck,
+                onCheckDeck = onCheckDeck,
                 canScan = canScan,
                 onScanCard = onScanCard,
                 onRetry = viewModel::retry,
@@ -205,8 +210,10 @@ private fun CatalogPicker(
     onManualUnknownPrinting: () -> Unit,
     canScan: Boolean,
     canImportDeck: Boolean,
+    canCheckDeck: Boolean,
     onScanCard: () -> Unit,
     onImportDeck: () -> Unit,
+    onCheckDeck: () -> Unit,
     onRetry: () -> Unit,
 ) {
     Column(modifier = modifier) {
@@ -218,19 +225,26 @@ private fun CatalogPicker(
             supportingText = { Text(appText("Search name, passcode, or set code", "Name, Passcode oder Set-Code suchen")) },
             singleLine = true,
         )
-        Row(modifier = Modifier.padding(horizontal = 8.dp)) {
-            if (canScan) {
+        LazyRow(modifier = Modifier.padding(horizontal = 8.dp)) {
+            if (canScan) item {
                 TextButton(onClick = onScanCard) {
                     Text(appText("Scan a card", "Karte scannen"))
                 }
             }
-            if (canImportDeck) {
+            if (canImportDeck) item {
                 TextButton(onClick = onImportDeck) {
                     Text("Import a deck")
                 }
             }
-            TextButton(onClick = onManualUnknownPrinting) {
-                Text(appText("Add an unknown printing manually", "Unbekannten Druck manuell hinzufügen"))
+            if (canCheckDeck) item {
+                TextButton(onClick = onCheckDeck) {
+                    Text("Can I build it?")
+                }
+            }
+            item {
+                TextButton(onClick = onManualUnknownPrinting) {
+                    Text(appText("Add an unknown printing manually", "Unbekannten Druck manuell hinzufügen"))
+                }
             }
         }
         when {
@@ -475,4 +489,4 @@ private fun ArtworkPackControls(
             }
         }
     }
-}
+}

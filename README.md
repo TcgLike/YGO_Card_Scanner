@@ -109,6 +109,8 @@ The review screen preserves Main, Extra, and Side quantities, combines them into
 
 For sealed products with a shared printing prefix, enter an optional **deck printing base code** before review, such as `CH02-DE` or `CH02-DEXXX`. The importer normalizes the prefix, puts matching local printings first, orders those cards by the numeric suffix, and preselects a printing only when exactly one local match exists. It also lists resolved cards with no matching local printing so nothing is guessed. Deck files still contain only passcodes, not printed set codes; a base-code match is possible only after the relevant printings are present in the local catalog. For German print codes, enable and update the optional German printing backup in Settings before reviewing the deck.
 
+**Can I build it?** is also available from **Add** in Yu-Gi-Oh! mode. It accepts the same local .ydk and ydke:// inputs, reads no network data, and compares each required passcode quantity with all owned copies in the app-private collection. Rows are green when enough copies are owned; insufficient or unavailable catalog cards keep the normal color. This is a read-only check and never changes inventory.
+
 Custom-card XML, name-only deck lists, remote deck URLs, and Pokémon deck import are intentionally out of scope for this milestone.
 ## Privacy and data handling
 

@@ -23,6 +23,8 @@ import com.ygocardscanner.ui.collection.CollectionListViewModel
 import com.ygocardscanner.ui.detail.CardDetailScreen
 import com.ygocardscanner.ui.detail.CardDetailViewModel
 import com.ygocardscanner.ui.deckimport.YgoDeckImportScreen
+import com.ygocardscanner.ui.deckimport.YgoDeckAvailabilityScreen
+import com.ygocardscanner.ui.deckimport.YgoDeckAvailabilityViewModel
 import com.ygocardscanner.ui.deckimport.YgoDeckImportViewModel
 import com.ygocardscanner.ui.localization.LocalAppLanguage
 import com.ygocardscanner.ui.manual.ManualAddScreen
@@ -89,6 +91,11 @@ private fun WorkspaceNavigation(
             viewModelFactory { YgoDeckImportViewModel(repository, container.languageSettings) }
         }
     }
+    val deckAvailabilityFactory = workspace.deckAvailabilityRepository?.let { repository ->
+        remember(workspace) {
+            viewModelFactory { YgoDeckAvailabilityViewModel(repository, container.languageSettings) }
+        }
+    }
     val manualFactory = remember(workspace) {
         viewModelFactory { ManualAddViewModel(workspace.inventoryRepository) }
     }
@@ -130,10 +137,12 @@ private fun WorkspaceNavigation(
                 viewModel = viewModel,
                 canScan = workspace.supportsScanner,
                 canImportDeck = deckImportFactory != null,
+                canCheckDeck = deckAvailabilityFactory != null,
                 englishOnly = workspace.game == CardGame.POKEMON,
                 onBack = { navController.popBackStack() },
                 onManualUnknownPrinting = { navController.navigate(Destinations.MANUAL) },
                 onImportDeck = { if (deckImportFactory != null) navController.navigate(Destinations.DECK_IMPORT) },
+                onCheckDeck = { if (deckAvailabilityFactory != null) navController.navigate(Destinations.DECK_AVAILABILITY) },
                 onScanCard = { if (workspace.supportsScanner) navController.navigate(Destinations.SCANNER) },
                 onAdded = { navController.popBackStack(Destinations.COLLECTION, inclusive = false) },
             )
@@ -146,6 +155,15 @@ private fun WorkspaceNavigation(
                     onBack = { navController.popBackStack() },
                     onImported = { navController.popBackStack(Destinations.COLLECTION, inclusive = false) },
                 )
+            }
+        }
+        if (deckAvailabilityFactory != null) {
+            composable(Destinations.DECK_AVAILABILITY) {
+                val viewModel: YgoDeckAvailabilityViewModel = viewModel(
+                    key = "deck-availability-$workspaceKey",
+                    factory = deckAvailabilityFactory,
+                )
+                YgoDeckAvailabilityScreen(viewModel = viewModel, onBack = { navController.popBackStack() })
             }
         }
         if (workspace.supportsScanner) {

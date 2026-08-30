@@ -7,10 +7,22 @@ import androidx.room.Query
 import com.ygocardscanner.data.local.entity.InventoryEntry
 import com.ygocardscanner.data.local.query.CollectionEntryRow
 import com.ygocardscanner.data.local.query.InventoryEntryDetailRow
+import com.ygocardscanner.data.local.query.DeckAvailabilityOwnedQuantityRow
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface InventoryDao {
+    @Query(
+        """
+        SELECT c.passcode AS passcode,
+            e.quantity AS quantity
+        FROM inventory_entries AS e
+        INNER JOIN cards AS c ON c.card_id = e.card_id
+        WHERE c.passcode = :passcode
+        """,
+    )
+    suspend fun getOwnedQuantitiesByPasscode(passcode: String): List<DeckAvailabilityOwnedQuantityRow>
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(entry: InventoryEntry)
 
@@ -81,7 +93,7 @@ interface InventoryDao {
         LEFT JOIN card_artwork_cache AS cache
             ON cache.card_id = a.card_id
             AND cache.remote_url_snapshot = a.remote_url
-        
+
         LEFT JOIN card_texts AS preferred
             ON preferred.card_id = c.card_id
             AND preferred.language_code = :displayLanguageCode
@@ -141,4 +153,4 @@ interface InventoryDao {
         """,
     )
     fun observeEntry(entryId: String): Flow<InventoryEntryDetailRow?>
-}
+}

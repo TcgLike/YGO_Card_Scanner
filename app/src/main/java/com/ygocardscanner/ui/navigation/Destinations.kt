@@ -10,6 +10,7 @@ object Destinations {
     const val SCANNER = "scanner"
     const val SETTINGS = "settings"
     const val DECK_IMPORT = "deck-import"
+    const val DECK_AVAILABILITY = "deck-availability"
     const val DETAIL_PATTERN = "detail/{entryId}"
 
     fun detail(entryId: String): String = "detail/${Uri.encode(entryId)}"
