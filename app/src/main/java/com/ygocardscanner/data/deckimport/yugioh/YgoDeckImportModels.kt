@@ -20,6 +20,8 @@ data class YgoDeckDocument(
 data class YgoDeckImportPreview(
     val sourceLabel: String,
     val totalCardCount: Int,
+    /** Normalized optional printing-prefix filter, for example CH02DE. */
+    val baseCodePrefix: String?,
     val cards: List<YgoDeckImportCard>,
 )
 
@@ -31,14 +33,20 @@ data class YgoDeckImportCard(
     val extraQuantity: Int,
     val sideQuantity: Int,
     val printingChoices: List<YgoDeckPrintingChoice>,
+    /** Candidate printings whose normalized set code starts with the chosen base-code prefix. */
+    val matchingBaseCodePrintingIds: List<String> = emptyList(),
+    /** Numeric suffix of the first matching base-code printing, used for review ordering. */
+    val baseCodeSuffix: Int? = null,
 ) {
     val quantity: Int get() = mainQuantity + extraQuantity + sideQuantity
     val isResolved: Boolean get() = cardId != null
+    val hasBaseCodeMatch: Boolean get() = matchingBaseCodePrintingIds.isNotEmpty()
 }
 
 data class YgoDeckPrintingChoice(
     val printingId: String,
     val label: String,
+    val normalizedSetCode: String,
 )
 
 data class YgoDeckImportRequest(

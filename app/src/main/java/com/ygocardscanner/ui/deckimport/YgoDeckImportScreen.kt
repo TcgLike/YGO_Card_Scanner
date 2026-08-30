@@ -50,11 +50,14 @@ fun YgoDeckImportScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var pastedInput by remember { mutableStateOf("") }
+    var baseCodeInput by remember { mutableStateOf("") }
     val filePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri ?: return@rememberLauncherForActivityResult
         scope.launch {
             runCatching { readDocument(context, uri) }
-                .onSuccess { contents -> viewModel.preview(uri.lastPathSegment ?: "deck.ydk", contents) }
+                .onSuccess { contents ->
+                    viewModel.preview(uri.lastPathSegment ?: "deck.ydk", contents, baseCodeInput)
+                }
                 .onFailure { error -> viewModel.reportReadError(error.message ?: "The selected deck file could not be opened.") }
         }
     }
@@ -74,6 +77,14 @@ fun YgoDeckImportScreen(
         if (state.preview == null) {
             Column(Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
                 Text("Import a local .ydk file or paste a ydke:// deck code. The file stays on this device.")
+                OutlinedTextField(
+                    value = baseCodeInput,
+                    onValueChange = { baseCodeInput = it },
+                    modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+                    label = { Text("Deck printing base code (optional)") },
+                    supportingText = { Text("Example: CH02-DE or CH02-DEXXX. Matching local printings are placed first.") },
+                    singleLine = true,
+                )
                 Button(onClick = { filePicker.launch("*/*") }, modifier = Modifier.padding(top = 12.dp)) {
                     Text("Choose .ydk file")
                 }
@@ -85,10 +96,10 @@ fun YgoDeckImportScreen(
                     minLines = 6,
                 )
                 Button(
-                    onClick = { viewModel.preview("Pasted deck", pastedInput) },
+                    onClick = { viewModel.preview("Pasted deck", pastedInput, baseCodeInput) },
                     modifier = Modifier.padding(top = 8.dp),
                     enabled = pastedInput.isNotBlank() && !state.isLoading,
-                ) { Text(if (state.isLoading) "Reading…" else "Review deck") }
+                ) { Text(if (state.isLoading) "Reading..." else "Review deck") }
                 state.errorMessage?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 12.dp)) }
             }
         } else {
@@ -104,15 +115,39 @@ private fun DeckReview(
     modifier: Modifier,
 ) {
     val preview = requireNotNull(state.preview)
+    val matchedCards = preview.cards.count(YgoDeckImportCard::hasBaseCodeMatch)
     LazyColumn(modifier = modifier.padding(horizontal = 16.dp)) {
         item {
-            Text(preview.sourceLabel, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 12.dp))
-            Text("${preview.totalCardCount} cards · ${preview.cards.size} unique passcodes")
+            Row(Modifier.fillMaxWidth().padding(top = 12.dp)) {
+                Column(Modifier.weight(1f)) {
+                    Text(preview.sourceLabel, style = MaterialTheme.typography.titleMedium)
+                    Text("${preview.totalCardCount} cards - ${preview.cards.size} unique passcodes")
+                }
+                TextButton(onClick = viewModel::clearPreview) { Text("Change code") }
+            }
             Text(
-                "Deck files identify cards, not physical printings. Unknown printing is selected by default so no set code, rarity, or edition is guessed.",
+                "Deck files identify cards by passcode, not physical printings. Unknown printing remains the safe default unless one local match is unambiguous.",
                 modifier = Modifier.padding(top = 8.dp),
                 style = MaterialTheme.typography.bodySmall,
             )
+            if (preview.baseCodePrefix != null) {
+                Text(
+                    "$matchedCards of ${preview.cards.size} local cards match ${state.baseCodeInput.trim()}. Matching cards are first and ordered by the code number.",
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+                if (state.cardsWithoutBaseCode.isNotEmpty()) {
+                    Text(
+                        "No local printing with that base code was found for: ${state.cardsWithoutBaseCode.joinToString { it.displayName ?: it.passcode }}.",
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(top = 8.dp),
+                    )
+                    Text(
+                        "For German print codes, enable and update the optional German printing backup in Settings before reviewing the deck again.",
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
+                }
+            }
             ConditionPicker(state.condition, viewModel::setCondition)
             OutlinedTextField(
                 value = state.notes,
@@ -141,7 +176,7 @@ private fun DeckReview(
                 onClick = viewModel::importDeck,
                 modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
                 enabled = state.unresolvedCards.isEmpty() && !state.isSaving,
-            ) { Text(if (state.isSaving) "Adding deck…" else "Add deck to collection") }
+            ) { Text(if (state.isSaving) "Adding deck..." else "Add deck to collection") }
         }
     }
 }
@@ -156,7 +191,10 @@ private fun DeckCardRow(
     Card(Modifier.fillMaxWidth().padding(top = 8.dp)) {
         Column(Modifier.padding(12.dp)) {
             Text(card.displayName ?: "Unknown passcode ${card.passcode}", style = MaterialTheme.typography.titleSmall)
-            Text("${card.passcode} · Main ${card.mainQuantity} · Extra ${card.extraQuantity} · Side ${card.sideQuantity} · Total ${card.quantity}")
+            Text("${card.passcode} - Main ${card.mainQuantity} - Extra ${card.extraQuantity} - Side ${card.sideQuantity} - Total ${card.quantity}")
+            if (card.hasBaseCodeMatch) {
+                Text("Matches the selected base code", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall)
+            }
             if (card.isResolved) {
                 val label = card.printingChoices.firstOrNull { it.printingId == selectedPrintingId }?.label ?: "Unknown printing (safe default)"
                 Row {

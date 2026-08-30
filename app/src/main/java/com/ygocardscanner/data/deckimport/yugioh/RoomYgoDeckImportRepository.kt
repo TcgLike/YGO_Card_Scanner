@@ -3,7 +3,9 @@ package com.ygocardscanner.data.deckimport.yugioh
 import androidx.room.withTransaction
 import com.ygocardscanner.data.local.AppDatabase
 import com.ygocardscanner.data.local.entity.InventoryEntry
+import com.ygocardscanner.data.util.CatalogNormalizers
 import com.ygocardscanner.model.CardEdition
+import com.ygocardscanner.model.CardLanguage
 import com.ygocardscanner.model.PrintingKind
 import java.util.UUID
 
@@ -15,18 +17,34 @@ class RoomYgoDeckImportRepository(
     private val catalogDao = database.catalogDao()
     private val inventoryDao = database.inventoryDao()
 
-    override suspend fun preview(document: YgoDeckDocument, language: com.ygocardscanner.model.CardLanguage): YgoDeckImportPreview {
-        val quantities = document.cardsBySection.values
-            .flatten()
-            .groupingBy { it }
-            .eachCount()
-        val main = document.cardsBySection[ YgoDeckSection.MAIN ].orEmpty().groupingBy { it }.eachCount()
-        val extra = document.cardsBySection[ YgoDeckSection.EXTRA ].orEmpty().groupingBy { it }.eachCount()
-        val side = document.cardsBySection[ YgoDeckSection.SIDE ].orEmpty().groupingBy { it }.eachCount()
+    override suspend fun preview(
+        document: YgoDeckDocument,
+        language: CardLanguage,
+        baseCodeInput: String?,
+    ): YgoDeckImportPreview {
+        val normalizedBaseCode = normalizeBaseCode(baseCodeInput)
+        val quantities = document.cardsBySection.values.flatten().groupingBy { it }.eachCount()
+        val main = document.cardsBySection[YgoDeckSection.MAIN].orEmpty().groupingBy { it }.eachCount()
+        val extra = document.cardsBySection[YgoDeckSection.EXTRA].orEmpty().groupingBy { it }.eachCount()
+        val side = document.cardsBySection[YgoDeckSection.SIDE].orEmpty().groupingBy { it }.eachCount()
 
-        val cards = quantities.keys.sorted().map { passcode ->
+        val cards = quantities.keys.map { passcode ->
             val card = catalogDao.getActiveCardForDeckImport(passcode, language.code)
             val printings = if (card == null) emptyList() else catalogDao.getActivePrintingsByPasscode(passcode, language.code)
+            val choices = printings.map { row ->
+                YgoDeckPrintingChoice(
+                    printingId = row.printing.printingId,
+                    label = listOfNotNull(
+                        row.printing.setCode,
+                        row.printing.rarityCode,
+                        CardEdition.fromCode(row.printing.editionCode).label,
+                    ).joinToString(" - "),
+                    normalizedSetCode = row.printing.normalizedSetCode,
+                )
+            }.distinctBy(YgoDeckPrintingChoice::printingId)
+            val matchingChoices = normalizedBaseCode?.let { prefix ->
+                choices.filter { it.normalizedSetCode.startsWith(prefix) }
+            }.orEmpty()
             YgoDeckImportCard(
                 passcode = passcode,
                 cardId = card?.cardId,
@@ -34,19 +52,16 @@ class RoomYgoDeckImportRepository(
                 mainQuantity = main[passcode] ?: 0,
                 extraQuantity = extra[passcode] ?: 0,
                 sideQuantity = side[passcode] ?: 0,
-                printingChoices = printings.map { row ->
-                    YgoDeckPrintingChoice(
-                        printingId = row.printing.printingId,
-                        label = listOfNotNull(
-                            row.printing.setCode,
-                            row.printing.rarityCode,
-                            CardEdition.fromCode(row.printing.editionCode).label,
-                        ).joinToString(" · "),
-                    )
-                }.distinctBy(YgoDeckPrintingChoice::printingId),
+                printingChoices = choices.sortedWith(printingChoiceComparator(normalizedBaseCode)),
+                matchingBaseCodePrintingIds = matchingChoices.map(YgoDeckPrintingChoice::printingId),
+                baseCodeSuffix = matchingChoices.mapNotNull { suffixAfterPrefix(it.normalizedSetCode, normalizedBaseCode) }.minOrNull(),
             )
-        }
-        return YgoDeckImportPreview(document.sourceLabel, document.totalCardCount, cards)
+        }.sortedWith(
+            compareBy<YgoDeckImportCard> { !it.hasBaseCodeMatch }
+                .thenBy { it.baseCodeSuffix ?: Int.MAX_VALUE }
+                .thenBy(YgoDeckImportCard::passcode),
+        )
+        return YgoDeckImportPreview(document.sourceLabel, document.totalCardCount, normalizedBaseCode, cards)
     }
 
     override suspend fun importDeck(request: YgoDeckImportRequest): YgoDeckImportResult {
@@ -132,4 +147,18 @@ class RoomYgoDeckImportRepository(
             edition = CardEdition.fromCode(printing.editionCode),
         )
     }
+
+    private fun normalizeBaseCode(value: String?): String? = value
+        ?.trim()
+        ?.replace(Regex("(?i)x+$"), "")
+        ?.let(CatalogNormalizers::setCode)
+
+    private fun suffixAfterPrefix(value: String, prefix: String?): Int? = prefix
+        ?.takeIf { value.startsWith(it) }
+        ?.let { value.removePrefix(it).takeIf(String::isNotEmpty)?.toIntOrNull() }
+
+    private fun printingChoiceComparator(prefix: String?): Comparator<YgoDeckPrintingChoice> =
+        compareBy<YgoDeckPrintingChoice> { prefix != null && !it.normalizedSetCode.startsWith(prefix) }
+            .thenBy { suffixAfterPrefix(it.normalizedSetCode, prefix) ?: Int.MAX_VALUE }
+            .thenBy(YgoDeckPrintingChoice::label)
 }

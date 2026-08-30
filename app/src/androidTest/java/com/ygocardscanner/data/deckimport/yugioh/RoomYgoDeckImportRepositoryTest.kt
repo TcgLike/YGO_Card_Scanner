@@ -6,11 +6,14 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ygocardscanner.data.StaticCatalogSource
 import com.ygocardscanner.data.testCatalog
+import com.ygocardscanner.data.catalog.universal.CatalogCardDto
+import com.ygocardscanner.data.catalog.universal.CatalogCardTextDto
+import com.ygocardscanner.data.catalog.universal.CatalogPayload
+import com.ygocardscanner.data.catalog.universal.CatalogPrintingDto
 import com.ygocardscanner.data.local.AppDatabase
 import com.ygocardscanner.data.repository.RoomCatalogRepository
 import com.ygocardscanner.model.CardCondition
 import com.ygocardscanner.model.CardLanguage
-import java.util.UUID
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -43,6 +46,32 @@ class RoomYgoDeckImportRepositoryTest {
         assertEquals(1, entries.size)
         assertEquals(4, entries.single().entry.quantity)
         assertEquals("unknown", entries.single().entry.printingKind)
+        database.close()
+    }
+
+    @Test
+    fun baseCodePrioritizesAndSelectsOnlyMatchingLocalPrintings() = runBlocking {
+        val database = openDatabase()
+        val payload = baseCodeCatalog()
+        RoomCatalogRepository(database, StaticCatalogSource(payload), now = { 1L }).replaceCatalog(payload)
+        val repository = RoomYgoDeckImportRepository(database)
+
+        val preview = repository.preview(
+            document = YgoDeckDocument(
+                "spirit-charmers.ydk",
+                mapOf(YgoDeckSection.MAIN to listOf("12345678", "23456789", "34567890")),
+            ),
+            language = CardLanguage.ENGLISH,
+            baseCodeInput = "CH02-DEXXX",
+        )
+
+        assertEquals("CH02DE", preview.baseCodePrefix)
+        assertEquals(listOf("Second", "First", "Outside"), preview.cards.map { it.displayName })
+        assertEquals(listOf(2, 12, null), preview.cards.map { it.baseCodeSuffix })
+        assertTrue(preview.cards[0].hasBaseCodeMatch)
+        assertTrue(preview.cards[1].hasBaseCodeMatch)
+        assertTrue(!preview.cards[2].hasBaseCodeMatch)
+        assertEquals(1, preview.cards[0].matchingBaseCodePrintingIds.size)
         database.close()
     }
 
@@ -80,6 +109,38 @@ class RoomYgoDeckImportRepositoryTest {
         language = CardLanguage.ENGLISH,
         condition = CardCondition.NEAR_MINT,
         notes = "",
+    )
+
+    private fun baseCodeCatalog(): CatalogPayload = CatalogPayload(
+        sourceId = "base-code-test",
+        catalogRevision = "1",
+        contentHash = "base-code-test-1",
+        cards = listOf(
+            catalogCard("first", "12345678", "First", "CH02-DE012"),
+            catalogCard("second", "23456789", "Second", "CH02-DE002"),
+            catalogCard("outside", "34567890", "Outside", "OTHER-DE001"),
+        ),
+    )
+
+    private fun catalogCard(
+        providerCardId: String,
+        passcode: String,
+        name: String,
+        setCode: String,
+    ) = CatalogCardDto(
+        providerCardId = providerCardId,
+        passcode = passcode,
+        canonicalName = name,
+        texts = listOf(CatalogCardTextDto("en", name)),
+        printings = listOf(
+            CatalogPrintingDto(
+                providerPrintingId = "$providerCardId-printing",
+                setCode = setCode,
+                languageCode = "en",
+                rarityCode = "ultra_rare",
+                editionCode = "unlimited",
+            ),
+        ),
     )
 
     private fun openDatabase(): AppDatabase = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java)

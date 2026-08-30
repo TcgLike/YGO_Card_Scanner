@@ -20,6 +20,7 @@ data class YgoDeckImportUiState(
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
     val sourceLabel: String? = null,
+    val baseCodeInput: String = "",
     val preview: YgoDeckImportPreview? = null,
     val selectedPrintingIds: Map<String, String?> = emptyMap(),
     val condition: CardCondition = CardCondition.NEAR_MINT,
@@ -27,6 +28,8 @@ data class YgoDeckImportUiState(
     val errorMessage: String? = null,
 ) {
     val unresolvedCards: List<YgoDeckImportCard> get() = preview?.cards.orEmpty().filterNot(YgoDeckImportCard::isResolved)
+    val cardsWithoutBaseCode: List<YgoDeckImportCard>
+        get() = preview?.baseCodePrefix?.let { preview.cards.filter { card -> card.isResolved && !card.hasBaseCodeMatch } }.orEmpty()
 }
 
 sealed interface YgoDeckImportEvent { data object Imported : YgoDeckImportEvent }
@@ -40,17 +43,28 @@ class YgoDeckImportViewModel(
     private val _events = MutableSharedFlow<YgoDeckImportEvent>()
     val events = _events
 
-    fun preview(sourceLabel: String, rawInput: String) {
+    fun preview(sourceLabel: String, rawInput: String, baseCodeInput: String = "") {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null, preview = null, sourceLabel = sourceLabel) }
+            _uiState.update {
+                it.copy(
+                    isLoading = true,
+                    errorMessage = null,
+                    preview = null,
+                    sourceLabel = sourceLabel,
+                    baseCodeInput = baseCodeInput,
+                )
+            }
             try {
                 val document = YgoDeckParsers.parse(sourceLabel, rawInput)
-                val result = repository.preview(document, languageSettings.language.value)
+                val result = repository.preview(document, languageSettings.language.value, baseCodeInput)
                 _uiState.update {
                     it.copy(
                         isLoading = false,
                         preview = result,
-                        selectedPrintingIds = result.cards.associate { card -> card.passcode to null },
+                        // A base-code match is selected only when it is unique. Ambiguous candidates stay safe/unknown.
+                        selectedPrintingIds = result.cards.associate { card ->
+                            card.passcode to card.matchingBaseCodePrintingIds.singleOrNull()
+                        },
                     )
                 }
             } catch (error: Throwable) {
@@ -58,6 +72,10 @@ class YgoDeckImportViewModel(
                 _uiState.update { it.copy(isLoading = false, errorMessage = error.message ?: "The deck could not be read.") }
             }
         }
+    }
+
+    fun clearPreview() {
+        _uiState.update { it.copy(preview = null, selectedPrintingIds = emptyMap(), errorMessage = null) }
     }
 
     fun reportReadError(message: String) {
