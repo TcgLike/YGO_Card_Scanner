@@ -29,6 +29,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.ygocardscanner.data.artwork.CardArtworkFileStore
+import com.ygocardscanner.ui.localization.appText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -74,7 +75,7 @@ private fun DeckTarget(acceptedCount: Int, modifier: Modifier = Modifier) {
     Card(modifier = modifier.width(92.dp).height(122.dp)) {
         Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primaryContainer)) {
             Text(
-                "Deck\n$acceptedCount",
+                appText("Deck\\n$acceptedCount", "Deck\\n$acceptedCount"),
                 modifier = Modifier.align(Alignment.Center),
                 style = MaterialTheme.typography.labelLarge,
             )
@@ -97,14 +98,14 @@ private fun SuccessCard(success: LiveScanSuccess, modifier: Modifier = Modifier)
         if (bitmap != null) {
             Image(
                 bitmap = requireNotNull(bitmap).asImageBitmap(),
-                contentDescription = "Recently scanned ${success.cardName}",
+                contentDescription = appText("Recently scanned ${success.cardName}", "KÃ¼rzlich gescannt: ${success.cardName}"),
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.fillMaxSize(),
             )
         } else {
             Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.secondaryContainer)) {
                 Text(
-                    "${success.cardName}\n${success.setCode}",
+                    appText("${success.cardName}\\n${success.setCode}", "${success.cardName}\\n${success.setCode}"),
                     modifier = Modifier.align(Alignment.Center).padding(12.dp),
                     style = MaterialTheme.typography.titleSmall,
                 )

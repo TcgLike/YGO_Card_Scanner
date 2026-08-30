@@ -59,14 +59,14 @@ fun ManualAddScreen(
         topBar = {
             TopAppBar(
                 title = { Text(appText("Unknown printing", "Unbekannter Druck")) },
-                navigationIcon = { TextButton(onClick = onBack) { Text(appText("Back", "Zurück")) } },
+                navigationIcon = { TextButton(onClick = onBack) { Text(appText("Back", "ZurÃƒÂ¼ck")) } },
             )
         },
     ) { innerPadding ->
         LazyColumn(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
             item {
                 Text(
-                    appText("Record a card when its printing is not in the local catalog. You can match it later without losing these details.", "Erfasse eine Karte, wenn ihr Druck nicht im lokalen Katalog ist. Du kannst sie später zuordnen, ohne diese Angaben zu verlieren."),
+                    appText("Record a card when its printing is not in the local catalog. You can match it later without losing these details.", "Erfasse eine Karte, wenn ihr Druck nicht im lokalen Katalog ist. Du kannst sie spÃƒÂ¤ter zuordnen, ohne diese Angaben zu verlieren."),
                     modifier = Modifier.padding(16.dp),
                     style = MaterialTheme.typography.bodyMedium,
                 )
@@ -138,7 +138,7 @@ fun ManualAddScreen(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     enabled = !state.isSaving,
                 ) {
-                    Text(if (state.isSaving) "Saving…" else appText("Save unknown printing", "Unbekannten Druck speichern"))
+                    Text(if (state.isSaving) appText("Savingâ€¦", "Wird gespeichertâ€¦") else appText("Save unknown printing", "Unbekannten Druck speichern"))
                 }
             }
         }

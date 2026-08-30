@@ -91,7 +91,7 @@ fun CatalogViewerScreen(viewModel: CatalogViewerViewModel, onBack: () -> Unit) {
                                         viewModel.setLayout(layout)
                                         layoutMenuExpanded = false
                                     },
-                                    trailingIcon = { if (state.layout == layout) Text("✓") },
+                                    trailingIcon = { if (state.layout == layout) Text(appText("✓", "✓")) },
                                 )
                             }
                         }
@@ -215,7 +215,7 @@ private fun CatalogCompactRow(card: CatalogCardSummary, onOpenArtwork: (String, 
                 }
             }
             if (card.isOwned) {
-                Text("✓", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleMedium)
+                Text(appText("✓", "✓"), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleMedium)
             }
         }
     }
@@ -230,23 +230,13 @@ private fun CatalogArtwork(
     val bitmap = catalogArtworkBitmap(card.artwork?.localFileName)
     val shape = RoundedCornerShape(6.dp)
     Box(
-        modifier = modifier
-            .width(64.dp)
-            .height(92.dp)
-            .clip(shape)
+        modifier = modifier.width(64.dp).height(92.dp).clip(shape)
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape),
         contentAlignment = Alignment.Center,
     ) {
         if (bitmap != null) {
-            Image(
-                bitmap = bitmap.asImageBitmap(),
-                contentDescription = appText("Open ${card.displayName}", "${card.displayName} öffnen"),
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.matchParentSize().clickable {
-                    card.artwork?.localFileName?.let { onOpenArtwork(it, card.displayName) }
-                },
-            )
+            Image(bitmap = bitmap.asImageBitmap(), contentDescription = appText("Open ${card.displayName}", "${card.displayName} öffnen"), contentScale = ContentScale.Crop, modifier = Modifier.matchParentSize().clickable { card.artwork?.localFileName?.let { onOpenArtwork(it, card.displayName) } })
         } else {
             val label = when (card.artwork?.downloadState) {
                 CardArtworkDownloadState.QUEUED, CardArtworkDownloadState.DOWNLOADING -> appText("Loading\nimage", "Bild wird\ngeladen")
@@ -263,33 +253,14 @@ private fun CatalogArtworkTile(card: CatalogCardSummary, onOpenArtwork: (String,
     val shape = RoundedCornerShape(8.dp)
     val openImage = card.artwork?.localFileName
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(0.68f)
-            .clip(shape)
+        modifier = Modifier.fillMaxWidth().aspectRatio(0.68f).clip(shape)
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape)
             .then(if (openImage != null) Modifier.clickable { onOpenArtwork(openImage, card.displayName) } else Modifier),
         contentAlignment = Alignment.Center,
     ) {
-        bitmap?.let {
-            Image(
-                bitmap = it.asImageBitmap(),
-                contentDescription = appText("Open ${card.displayName}", "${card.displayName} öffnen"),
-                contentScale = ContentScale.Fit,
-                modifier = Modifier.matchParentSize(),
-            )
-        }
-        if (card.isOwned) {
-            Text(
-                "✓",
-                color = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(bottomStart = 8.dp))
-                    .padding(horizontal = 7.dp, vertical = 3.dp),
-            )
-        }
+        bitmap?.let { Image(bitmap = it.asImageBitmap(), contentDescription = appText("Open ${card.displayName}", "${card.displayName} öffnen"), contentScale = ContentScale.Fit, modifier = Modifier.matchParentSize()) }
+        if (card.isOwned) Text(appText("✓", "✓"), color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.align(Alignment.TopEnd).background(MaterialTheme.colorScheme.primary, RoundedCornerShape(bottomStart = 8.dp)).padding(horizontal = 7.dp, vertical = 3.dp))
     }
 }
 
@@ -298,9 +269,7 @@ private fun catalogArtworkBitmap(localFileName: String?): Bitmap? {
     val context = LocalContext.current
     val fileStore = remember(context) { CardArtworkFileStore(context) }
     val file = remember(localFileName) { fileStore.resolve(localFileName) }
-    val bitmap by produceState<Bitmap?>(initialValue = null, file) {
-        value = withContext(Dispatchers.IO) { file?.let { BitmapFactory.decodeFile(it.absolutePath) } }
-    }
+    val bitmap by produceState<Bitmap?>(initialValue = null, file) { value = withContext(Dispatchers.IO) { file?.let { BitmapFactory.decodeFile(it.absolutePath) } } }
     return bitmap
 }
 

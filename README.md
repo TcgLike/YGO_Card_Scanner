@@ -165,3 +165,7 @@ The debug APK is written to `app/build/outputs/apk/debug/app-debug.apk`.
 The test suite covers catalog mapping and parsing, paginated English/German merge behavior, English-only artwork selection, provider-version parsing, Room migrations, durable update state, inventory persistence across database recreation, catalog replacement safety, artwork cache invalidation, and worker success/retry/failure states.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for project conventions and [SECURITY.md](SECURITY.md) for the private security-reporting process. GitHub issue, contribution, and conduct templates are present so the repository can be opened to contributors when the owner chooses a license and public-release policy.
+
+### UI language tokens
+
+Visible Compose UI text is selected through `appText(...)` / `UiTextToken`, with English and German values. GitHub Actions runs `scripts/verify_ui_text_tokens.py` before Gradle verification and rejects new direct `Text("...")` or `contentDescription = "..."` literals outside the localization package. This keeps language switching complete as screens evolve.

@@ -12,11 +12,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -35,20 +36,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CameraAlt
+import androidx.compose.material.icons.outlined.EditNote
+import androidx.compose.material.icons.outlined.FileOpen
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import com.ygocardscanner.data.artwork.CardArtworkFileStore
-import com.ygocardscanner.model.ArtworkPackPhase
-import com.ygocardscanner.model.ArtworkPackStatus
 import com.ygocardscanner.model.CardArtworkDetail
 import com.ygocardscanner.model.CardArtworkDownloadState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import com.ygocardscanner.data.repository.CatalogUpdatePhase
-import com.ygocardscanner.data.repository.CatalogUpdateStatus
 import com.ygocardscanner.model.CardCondition
 import com.ygocardscanner.model.CardEdition
 import com.ygocardscanner.model.CardLanguage
@@ -57,6 +58,7 @@ import com.ygocardscanner.model.KnownPrintingDraft
 import com.ygocardscanner.ui.components.EmptyState
 import com.ygocardscanner.ui.components.ErrorState
 import com.ygocardscanner.ui.components.LoadingState
+import com.ygocardscanner.ui.localization.UiText
 import com.ygocardscanner.ui.localization.appText
 import com.ygocardscanner.ui.localization.localizedLabel
 import com.ygocardscanner.ui.localization.formattedAmount
@@ -67,12 +69,10 @@ fun AddToCollectionScreen(
     viewModel: AddToCollectionViewModel,
     canScan: Boolean,
     canImportDeck: Boolean,
-    canCheckDeck: Boolean,
     englishOnly: Boolean,
     onBack: () -> Unit,
     onManualUnknownPrinting: () -> Unit,
     onImportDeck: () -> Unit,
-    onCheckDeck: () -> Unit,
     onScanCard: () -> Unit,
     onAdded: () -> Unit,
 ) {
@@ -85,6 +85,7 @@ fun AddToCollectionScreen(
     var condition by rememberSaveable { mutableStateOf(CardCondition.NEAR_MINT) }
     var notes by rememberSaveable { mutableStateOf("") }
     var validationMessage by rememberSaveable { mutableStateOf<String?>(null) }
+    val quantityRequiredMessage = appText("Quantity must be at least 1.", "Die Menge muss mindestens 1 sein.")
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
@@ -95,8 +96,8 @@ fun AddToCollectionScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (selected == null) appText("Add to collection", "Zur Sammlung hinzufügen") else appText("Confirm card", "Karte bestätigen")) },
-                navigationIcon = { TextButton(onClick = { if (selected == null) onBack() else { selected = null; viewModel.clearSelectedArtwork() } }) { Text(appText("Back", "Zurück")) } },
+                title = { Text(if (selected == null) appText("Add to collection", "Zur Sammlung hinzufÃƒÂ¼gen") else appText("Confirm card", "Karte bestÃƒÂ¤tigen")) },
+                navigationIcon = { TextButton(onClick = { if (selected == null) onBack() else { selected = null; viewModel.clearSelectedArtwork() } }) { Text(appText("Back", "ZurÃƒÂ¼ck")) } },
             )
         },
     ) { innerPadding ->
@@ -114,9 +115,7 @@ fun AddToCollectionScreen(
                 },
                 onManualUnknownPrinting = onManualUnknownPrinting,
                 canImportDeck = canImportDeck,
-                canCheckDeck = canCheckDeck,
                 onImportDeck = onImportDeck,
-                onCheckDeck = onCheckDeck,
                 canScan = canScan,
                 onScanCard = onScanCard,
                 onRetry = viewModel::retry,
@@ -133,7 +132,7 @@ fun AddToCollectionScreen(
                         style = MaterialTheme.typography.headlineSmall,
                     )
                     Text(
-                        listOfNotNull(printing.setCode, printing.setName).joinToString(" · "),
+                        listOfNotNull(printing.setCode, printing.setName).joinToString(" Ã‚Â· "),
                         modifier = Modifier.padding(horizontal = 16.dp),
                         style = MaterialTheme.typography.bodyMedium,
                     )
@@ -175,7 +174,7 @@ fun AddToCollectionScreen(
                         onClick = {
                             val parsedQuantity = quantity.toIntOrNull()
                             if (parsedQuantity == null || parsedQuantity <= 0) {
-                                validationMessage = "Quantity must be at least 1."
+                                validationMessage = quantityRequiredMessage
                             } else {
                                 viewModel.addKnownPrinting(
                                     KnownPrintingDraft(
@@ -193,7 +192,7 @@ fun AddToCollectionScreen(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                         enabled = !state.isSaving,
                     ) {
-                        Text(if (state.isSaving) "Adding…" else appText("Add to collection", "Zur Sammlung hinzufügen"))
+                        Text(if (state.isSaving) appText("Addingâ€¦", "Wird hinzugefÃ¼gtâ€¦") else appText("Add to collection", "Zur Sammlung hinzufÃ¼gen"))
                     }
                 }
             }
@@ -210,10 +209,8 @@ private fun CatalogPicker(
     onManualUnknownPrinting: () -> Unit,
     canScan: Boolean,
     canImportDeck: Boolean,
-    canCheckDeck: Boolean,
     onScanCard: () -> Unit,
     onImportDeck: () -> Unit,
-    onCheckDeck: () -> Unit,
     onRetry: () -> Unit,
 ) {
     Column(modifier = modifier) {
@@ -225,39 +222,35 @@ private fun CatalogPicker(
             supportingText = { Text(appText("Search name, passcode, or set code", "Name, Passcode oder Set-Code suchen")) },
             singleLine = true,
         )
-        LazyRow(modifier = Modifier.padding(horizontal = 8.dp)) {
-            if (canScan) item {
-                TextButton(onClick = onScanCard) {
-                    Text(appText("Scan a card", "Karte scannen"))
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+        ) {
+            if (canScan) {
+                IconButton(onClick = onScanCard) {
+                    Icon(Icons.Outlined.CameraAlt, contentDescription = appText(UiText.ScanCard))
                 }
             }
-            if (canImportDeck) item {
-                TextButton(onClick = onImportDeck) {
-                    Text("Import a deck")
+            if (canImportDeck) {
+                IconButton(onClick = onImportDeck) {
+                    Icon(Icons.Outlined.FileOpen, contentDescription = appText(UiText.ImportDeck))
                 }
             }
-            if (canCheckDeck) item {
-                TextButton(onClick = onCheckDeck) {
-                    Text("Can I build it?")
-                }
-            }
-            item {
-                TextButton(onClick = onManualUnknownPrinting) {
-                    Text(appText("Add an unknown printing manually", "Unbekannten Druck manuell hinzufügen"))
-                }
+            IconButton(onClick = onManualUnknownPrinting) {
+                Icon(Icons.Outlined.EditNote, contentDescription = appText(UiText.AddUnknownPrinting))
             }
         }
         when {
-            state.isLoading -> LoadingState("Searching your local card catalog...")
+            state.isLoading -> LoadingState(appText("Searching your local card catalogâ€¦", "Lokaler Kartenkatalog wird durchsuchtâ€¦"))
             state.errorMessage != null -> ErrorState(state.errorMessage, onRetry)
             state.query.isBlank() -> EmptyState(
                 title = appText("Search the card catalog", "Kartenkatalog durchsuchen"),
-                message = "Enter a card name, passcode, or set code. Download the catalog if it is not available yet.",
+                message = appText("Enter a card name, passcode, or set code. Download the catalog if it is not available yet.", "Gib einen Kartennamen, Passcode oder Set-Code ein. Lade den Katalog herunter, falls er noch nicht verfÃ¼gbar ist."),
             )
             state.printings.isEmpty() -> EmptyState(
                 title = appText("No catalog cards found", "Keine Katalogkarten gefunden"),
-                message = "Try another local search, download an update, or add an unknown printing manually.",
-                actionLabel = appText("Add unknown printing", "Unbekannten Druck hinzufügen"),
+                message = appText("Try another local search, download an update, or add an unknown printing manually.", "Versuche eine andere lokale Suche, lade ein Update herunter oder fÃ¼ge einen unbekannten Druck manuell hinzu."),
+                actionLabel = appText("Add unknown printing", "Unbekannten Druck hinzufÃƒÂ¼gen"),
                 onAction = onManualUnknownPrinting,
             )
             else -> LazyColumn {
@@ -269,7 +262,7 @@ private fun CatalogPicker(
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(printing.displayName, style = MaterialTheme.typography.titleMedium)
                             Text(
-                                listOfNotNull(printing.setCode, printing.setName, printing.rarity).joinToString(" · "),
+                                listOfNotNull(printing.setCode, printing.setName, printing.rarity).joinToString(" Ã‚Â· "),
                                 modifier = Modifier.padding(top = 4.dp),
                             )
                             printing.referencePrice?.let { price ->
@@ -316,29 +309,29 @@ fun InventoryFields(
         value = quantity,
         onValueChange = onQuantityChange,
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
-        label = { Text("Quantity") },
+        label = { Text(appText("Quantity", "Menge")) },
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
     )
     if (allowGermanLanguage) {
-        ChoiceRow("Language", language.label) {
+        ChoiceRow(appText("Language", "Sprache"), language.localizedLabel()) {
             onLanguageChange(if (language == CardLanguage.ENGLISH) CardLanguage.GERMAN else CardLanguage.ENGLISH)
         }
     } else {
-        ChoiceRow("Language", "English") {}
+        ChoiceRow(appText("Language", "Sprache"), appText("English", "Englisch")) {}
     }
     OutlinedTextField(
         value = rarity,
         onValueChange = onRarityChange,
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
-        label = { Text("Rarity (optional)") },
+        label = { Text(appText("Rarity (optional)", "Seltenheit (optional)")) },
         singleLine = true,
     )
-    ChoiceRow("Edition", edition.localizedLabel()) {
+    ChoiceRow(appText("Edition", "Edition"), edition.localizedLabel()) {
         val options = CardEdition.entries
         onEditionChange(options[(options.indexOf(edition) + 1) % options.size])
     }
-    ChoiceRow("Condition", condition.localizedLabel()) {
+    ChoiceRow(appText("Condition", "Zustand"), condition.localizedLabel()) {
         val options = CardCondition.entries
         onConditionChange(options[(options.indexOf(condition) + 1) % options.size])
     }
@@ -346,7 +339,7 @@ fun InventoryFields(
         value = notes,
         onValueChange = onNotesChange,
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
-        label = { Text("Notes (optional)") },
+        label = { Text(appText("Notes (optional)", "Notizen (optional)")) },
         minLines = 3,
     )
 }
@@ -356,70 +349,6 @@ private fun ChoiceRow(label: String, value: String, onClick: () -> Unit) {
     Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 2.dp)) {
         Text(label, modifier = Modifier.weight(1f).padding(top = 12.dp))
         TextButton(onClick = onClick) { Text(value) }
-    }
-}
-
-@Composable
-private fun CatalogDisplayLanguageSelector(
-    selectedLanguage: CardLanguage,
-    onLanguageChange: (CardLanguage) -> Unit,
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        Text(
-            "Display language",
-            modifier = Modifier.weight(1f).padding(top = 12.dp),
-            style = MaterialTheme.typography.bodyMedium,
-        )
-        TextButton(
-            onClick = { onLanguageChange(CardLanguage.ENGLISH) },
-            enabled = selectedLanguage != CardLanguage.ENGLISH,
-        ) {
-            Text("English")
-        }
-        TextButton(
-            onClick = { onLanguageChange(CardLanguage.GERMAN) },
-            enabled = selectedLanguage != CardLanguage.GERMAN,
-        ) {
-            Text("Deutsch")
-        }
-    }
-}
-
-@Composable
-private fun CatalogUpdateControls(
-    status: CatalogUpdateStatus?,
-    isRequestingUpdate: Boolean,
-    onRequestUpdate: () -> Unit,
-) {
-    val updateInProgress = status?.phase?.isInProgress == true
-        val actionLabel = when (status?.phase) {
-        null -> "Download catalog"
-        CatalogUpdatePhase.FAILED -> "Retry catalog update"
-        else -> "Check for updates"
-    }
-    val statusMessage = when (status?.phase) {
-        null -> "The public card catalog has not been downloaded yet."
-        CatalogUpdatePhase.QUEUED -> "Catalog update is queued."
-        CatalogUpdatePhase.RUNNING -> "Updating the local card catalog..."
-        CatalogUpdatePhase.RETRYING -> "Catalog update will retry when possible."
-        CatalogUpdatePhase.SUCCEEDED -> "The local card catalog is ready."
-        CatalogUpdatePhase.FAILED -> status?.message ?: "The last catalog update failed."
-    }
-
-    Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text(statusMessage, style = MaterialTheme.typography.bodyMedium)
-            Button(
-                onClick = onRequestUpdate,
-                modifier = Modifier.padding(top = 8.dp),
-                enabled = !isRequestingUpdate && !updateInProgress,
-            ) {
-                Text(if (isRequestingUpdate) "Scheduling..." else actionLabel)
-            }
-        }
     }
 }
 
@@ -439,54 +368,21 @@ private fun AddArtworkPreview(
     if (bitmap != null) {
         Image(
             bitmap = requireNotNull(bitmap).asImageBitmap(),
-            contentDescription = "English artwork for $cardName",
+            contentDescription = appText("English artwork for $cardName", "Englisches Kartenbild fÃ¼r $cardName"),
             contentScale = ContentScale.Fit,
             modifier = Modifier.fillMaxWidth().height(260.dp).padding(horizontal = 16.dp, vertical = 8.dp),
         )
     } else {
         val message = when (artwork.downloadState) {
-            CardArtworkDownloadState.NOT_DOWNLOADED -> "Preparing the local English card image..."
-            CardArtworkDownloadState.QUEUED -> "Card image download is queued."
-            CardArtworkDownloadState.DOWNLOADING -> "Downloading the card image to this device..."
-            CardArtworkDownloadState.AVAILABLE -> "The saved card image is unavailable."
-            CardArtworkDownloadState.FAILED -> artwork.message ?: "The card image could not be downloaded."
+            CardArtworkDownloadState.NOT_DOWNLOADED -> appText("Preparing the local English card imageâ€¦", "Lokales englisches Kartenbild wird vorbereitetâ€¦")
+            CardArtworkDownloadState.QUEUED -> appText("Card image download is queued.", "Kartenbild-Download ist vorgemerkt.")
+            CardArtworkDownloadState.DOWNLOADING -> appText("Downloading the card image to this deviceâ€¦", "Kartenbild wird auf dieses GerÃ¤t heruntergeladenâ€¦")
+            CardArtworkDownloadState.AVAILABLE -> appText("The saved card image is unavailable.", "Das gespeicherte Kartenbild ist nicht verfÃ¼gbar.")
+            CardArtworkDownloadState.FAILED -> artwork.message ?: appText("The card image could not be downloaded.", "Das Kartenbild konnte nicht heruntergeladen werden.")
         }
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
             Text(message, style = MaterialTheme.typography.bodyMedium)
             TextButton(onClick = onRefresh) { Text(appText("Refresh image", "Bild aktualisieren")) }
-        }
-    }
-}
-
-@Composable
-private fun ArtworkPackControls(
-    status: ArtworkPackStatus?,
-    isRequesting: Boolean,
-    onRequest: () -> Unit,
-) {
-    val actionLabel = when (status?.phase) {
-        null -> "Download offline card images"
-        ArtworkPackPhase.QUEUED, ArtworkPackPhase.RUNNING, ArtworkPackPhase.RETRYING, ArtworkPackPhase.FAILED -> "Resume image download"
-        ArtworkPackPhase.SUCCEEDED -> "Check cached images"
-        ArtworkPackPhase.QUOTA_REACHED -> "Retry after freeing space"
-    }
-    val message = when (status?.phase) {
-        null -> "Optional: download one primary English image for every catalog card to this device. Requires 3.5 GiB free space; the cache is capped at 4 GiB."
-        ArtworkPackPhase.QUEUED, ArtworkPackPhase.RUNNING -> "Downloading offline card images: ${status.completedArtworkCount} / ${status.totalArtworkCount}."
-        ArtworkPackPhase.RETRYING -> "Offline image download will retry when connected."
-        ArtworkPackPhase.SUCCEEDED -> "Offline English card images are ready: ${status.completedArtworkCount} cards."
-        ArtworkPackPhase.QUOTA_REACHED, ArtworkPackPhase.FAILED -> status.message ?: "Offline image download stopped."
-    }
-    Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text(message, style = MaterialTheme.typography.bodyMedium)
-            Button(
-                onClick = onRequest,
-                modifier = Modifier.padding(top = 8.dp),
-                enabled = !isRequesting,
-            ) {
-                Text(if (isRequesting) "Scheduling..." else actionLabel)
-            }
         }
     }
 }

@@ -100,6 +100,7 @@ private fun WorkspaceNavigation(
             CollectionListScreen(
                 viewModel = viewModel,
                 onAddCard = { navController.navigate(Destinations.ADD) },
+                onCheckDeck = { navController.navigate(Destinations.DECK_AVAILABILITY) },
                 onCatalog = { navController.navigate(Destinations.CATALOG) },
                 onSettings = { navController.navigate(Destinations.SETTINGS) },
                 onEntrySelected = { entryId -> navController.navigate(Destinations.detail(entryId)) },
@@ -115,12 +116,10 @@ private fun WorkspaceNavigation(
                 viewModel = viewModel,
                 canScan = true,
                 canImportDeck = true,
-                canCheckDeck = true,
                 englishOnly = false,
                 onBack = { navController.popBackStack() },
                 onManualUnknownPrinting = { navController.navigate(Destinations.MANUAL) },
                 onImportDeck = { navController.navigate(Destinations.DECK_IMPORT) },
-                onCheckDeck = { navController.navigate(Destinations.DECK_AVAILABILITY) },
                 onScanCard = { navController.navigate(Destinations.SCANNER) },
                 onAdded = { navController.popBackStack(Destinations.COLLECTION, inclusive = false) },
             )
