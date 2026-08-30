@@ -14,6 +14,8 @@ import androidx.navigation.navArgument
 import com.ygocardscanner.di.AppContainer
 import com.ygocardscanner.ui.add.AddToCollectionScreen
 import com.ygocardscanner.ui.add.AddToCollectionViewModel
+import com.ygocardscanner.ui.catalog.CatalogViewerScreen
+import com.ygocardscanner.ui.catalog.CatalogViewerViewModel
 import com.ygocardscanner.ui.collection.CollectionListScreen
 import com.ygocardscanner.ui.collection.CollectionListViewModel
 import com.ygocardscanner.ui.detail.CardDetailScreen
@@ -34,6 +36,9 @@ fun InventoryApp(container: AppContainer) {
     val collectionFactory = remember(container) {
         viewModelFactory { CollectionListViewModel(container.inventoryRepository, container.languageSettings) }
     }
+    val catalogViewerFactory = remember(container) {
+        viewModelFactory { CatalogViewerViewModel(container.catalogViewerRepository, container.languageSettings) }
+    }
     val addFactory = remember(container) {
         viewModelFactory {
             AddToCollectionViewModel(
@@ -48,7 +53,14 @@ fun InventoryApp(container: AppContainer) {
         }
     }
     val scannerFactory = remember(container) {
-        viewModelFactory { ScannerViewModel(container.scannerRepository, container.inventoryRepository, container.artworkRepository, container.languageSettings) }
+        viewModelFactory {
+            ScannerViewModel(
+                container.scannerRepository,
+                container.inventoryRepository,
+                container.artworkRepository,
+                container.languageSettings,
+            )
+        }
     }
     val manualFactory = remember(container) {
         viewModelFactory { ManualAddViewModel(container.inventoryRepository) }
@@ -74,8 +86,16 @@ fun InventoryApp(container: AppContainer) {
                 CollectionListScreen(
                     viewModel = viewModel,
                     onAddCard = { navController.navigate(Destinations.ADD) },
+                    onCatalog = { navController.navigate(Destinations.CATALOG) },
                     onSettings = { navController.navigate(Destinations.SETTINGS) },
                     onEntrySelected = { entryId -> navController.navigate(Destinations.detail(entryId)) },
+                )
+            }
+            composable(Destinations.CATALOG) {
+                val viewModel: CatalogViewerViewModel = viewModel(factory = catalogViewerFactory)
+                CatalogViewerScreen(
+                    viewModel = viewModel,
+                    onBack = { navController.popBackStack() },
                 )
             }
             composable(Destinations.ADD) {

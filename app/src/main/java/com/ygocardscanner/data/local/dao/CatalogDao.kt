@@ -299,4 +299,61 @@ interface CatalogDao {
         languageCode: String,
         resultLimit: Int,
     ): List<com.ygocardscanner.data.local.query.ScannerPrintingRow>
+    @Query(
+        """
+        SELECT
+            c.card_id AS card_id,
+            COALESCE(preferred.name, english.name, c.canonical_name) AS display_name,
+            c.passcode AS passcode,
+            a.remote_url AS artwork_remote_url,
+            cache.local_file_name AS artwork_local_file_name,
+            cache.download_state AS artwork_download_state,
+            cache.safe_error_text AS artwork_message,
+            CASE WHEN (
+                SELECT COUNT(*) FROM inventory_entries AS entry
+                WHERE entry.card_id = c.card_id AND entry.quantity > 0
+            ) > 0 THEN 1 ELSE 0 END AS is_owned
+        FROM cards AS c
+        LEFT JOIN card_texts AS preferred
+            ON preferred.card_id = c.card_id
+            AND preferred.language_code = :languageCode
+            AND preferred.is_active = 1
+        LEFT JOIN card_texts AS english
+            ON english.card_id = c.card_id
+            AND english.language_code = 'en'
+            AND english.is_active = 1
+        LEFT JOIN card_artworks AS a
+            ON a.card_id = c.card_id
+            AND a.is_active = 1
+        LEFT JOIN card_artwork_cache AS cache
+            ON cache.card_id = a.card_id
+            AND cache.remote_url_snapshot = a.remote_url
+        WHERE c.is_active = 1
+            AND c.source_id <> 'local'
+            AND (
+                :hasQuery = 0
+                OR c.passcode LIKE '%' || :compactQuery || '%'
+                OR EXISTS (
+                    SELECT 1 FROM printings AS printing
+                    WHERE printing.card_id = c.card_id
+                        AND printing.is_active = 1
+                        AND :compactQuery <> ''
+                        AND printing.normalized_set_code LIKE '%' || :compactQuery || '%'
+                )
+                OR EXISTS (
+                    SELECT 1 FROM card_texts AS searchable
+                    WHERE searchable.card_id = c.card_id
+                        AND searchable.is_active = 1
+                        AND searchable.normalized_name LIKE '%' || :nameQuery || '%'
+                )
+            )
+        ORDER BY display_name COLLATE NOCASE
+        """,
+    )
+    fun observeActiveCards(
+        nameQuery: String,
+        compactQuery: String,
+        languageCode: String,
+        hasQuery: Boolean,
+    ): Flow<List<com.ygocardscanner.data.local.query.CatalogCardRow>>
 }

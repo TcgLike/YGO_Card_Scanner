@@ -4,6 +4,7 @@ import android.net.Uri
 
 object Destinations {
     const val COLLECTION = "collection"
+    const val CATALOG = "catalog"
     const val ADD = "add"
     const val MANUAL = "manual"
     const val SCANNER = "scanner"

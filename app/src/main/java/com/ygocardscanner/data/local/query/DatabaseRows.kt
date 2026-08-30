@@ -80,3 +80,21 @@ data class InventoryEntryDetailRow(
     @ColumnInfo(name = "artwork_message")
     val artworkMessage: String?,
 )
+data class CatalogCardRow(
+    @ColumnInfo(name = "card_id")
+    val cardId: String,
+    @ColumnInfo(name = "display_name")
+    val displayName: String,
+    @ColumnInfo(name = "passcode")
+    val passcode: String?,
+    @ColumnInfo(name = "artwork_remote_url")
+    val artworkRemoteUrl: String?,
+    @ColumnInfo(name = "artwork_local_file_name")
+    val artworkLocalFileName: String?,
+    @ColumnInfo(name = "artwork_download_state")
+    val artworkDownloadState: String?,
+    @ColumnInfo(name = "artwork_message")
+    val artworkMessage: String?,
+    @ColumnInfo(name = "is_owned")
+    val isOwned: Boolean,
+)

@@ -11,10 +11,12 @@ import com.ygocardscanner.data.catalog.network.HttpYgoProDeckApiClient
 import com.ygocardscanner.data.local.AppDatabase
 import com.ygocardscanner.data.repository.CardArtworkRepository
 import com.ygocardscanner.data.repository.CatalogRepository
+import com.ygocardscanner.data.repository.CatalogViewerRepository
 import com.ygocardscanner.data.repository.InventoryRepository
 import com.ygocardscanner.data.repository.GermanPrintingEnrichmentRepository
 import com.ygocardscanner.data.repository.RoomCardArtworkRepository
 import com.ygocardscanner.data.repository.RoomCatalogRepository
+import com.ygocardscanner.data.repository.RoomCatalogViewerRepository
 import com.ygocardscanner.data.repository.RoomInventoryRepository
 import com.ygocardscanner.data.repository.RoomGermanPrintingEnrichmentRepository
 import com.ygocardscanner.data.scanner.CardScannerRepository
@@ -50,6 +52,9 @@ class AppContainer(context: Context) {
         )
     }
 
+    val catalogViewerRepository: CatalogViewerRepository by lazy {
+        RoomCatalogViewerRepository(database)
+    }
     val germanPrintingRepository: GermanPrintingEnrichmentRepository by lazy {
         RoomGermanPrintingEnrichmentRepository(
             database = database,

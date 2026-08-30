@@ -1,4 +1,4 @@
-package com.ygocardscanner.ui.collection
+package com.ygocardscanner.ui.catalog
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -27,7 +27,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -51,38 +50,32 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ygocardscanner.data.artwork.CardArtworkFileStore
-import com.ygocardscanner.model.CardArtworkDetail
 import com.ygocardscanner.model.CardArtworkDownloadState
-import com.ygocardscanner.model.CollectionEntrySummary
+import com.ygocardscanner.model.CatalogCardSummary
 import com.ygocardscanner.model.CollectionLayout
 import com.ygocardscanner.ui.components.EmptyState
 import com.ygocardscanner.ui.components.ErrorState
 import com.ygocardscanner.ui.components.LoadingState
 import com.ygocardscanner.ui.components.LocalArtworkViewer
 import com.ygocardscanner.ui.localization.appText
-import com.ygocardscanner.ui.localization.localizedLabel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CollectionListScreen(
-    viewModel: CollectionListViewModel,
-    onAddCard: () -> Unit,
-    onCatalog: () -> Unit,
-    onSettings: () -> Unit,
-    onEntrySelected: (String) -> Unit,
-) {
+fun CatalogViewerScreen(viewModel: CatalogViewerViewModel, onBack: () -> Unit) {
     val state by viewModel.uiState.collectAsState()
-    var fullscreenArtwork by remember { mutableStateOf<Pair<String, String>?>(null) }
     var layoutMenuExpanded by remember { mutableStateOf(false) }
+    var fullscreenArtwork by remember { mutableStateOf<Pair<String, String>?>(null) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(appText("Collection", "Sammlung")) },
+                title = { Text(appText("Card catalog", "Kartenkatalog")) },
+                navigationIcon = {
+                    TextButton(onClick = onBack) { Text(appText("Back", "Zurück")) }
+                },
                 actions = {
-                    TextButton(onClick = onCatalog) { Text(appText("Catalog", "Katalog")) }
                     Box {
                         TextButton(onClick = { layoutMenuExpanded = true }) {
                             Text(appText("View", "Ansicht"))
@@ -98,19 +91,13 @@ fun CollectionListScreen(
                                         viewModel.setLayout(layout)
                                         layoutMenuExpanded = false
                                     },
-                                    trailingIcon = {
-                                        if (state.layout == layout) Text("✓")
-                                    },
+                                    trailingIcon = { if (state.layout == layout) Text("✓") },
                                 )
                             }
                         }
                     }
-                    TextButton(onClick = onSettings) { Text(appText("Settings", "Einstellungen")) }
                 },
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = onAddCard) { Text(appText("Add", "Hinzufügen")) }
         },
     ) { innerPadding ->
         Column(Modifier.fillMaxSize().padding(innerPadding)) {
@@ -118,23 +105,27 @@ fun CollectionListScreen(
                 value = state.query,
                 onValueChange = viewModel::updateQuery,
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                label = { Text(appText("Search your collection", "Sammlung durchsuchen")) },
+                label = { Text(appText("Search all local cards", "Alle lokalen Karten durchsuchen")) },
                 singleLine = true,
             )
             when {
-                state.isLoading -> LoadingState(appText("Loading your local collection…", "Lokale Sammlung wird geladen…"))
+                state.isLoading -> LoadingState(appText("Loading the local card catalog…", "Lokaler Kartenkatalog wird geladen…"))
                 state.errorMessage != null -> ErrorState(state.errorMessage.orEmpty(), viewModel::retry)
-                state.entries.isEmpty() -> EmptyState(
-                    title = if (state.query.isBlank()) appText("Your collection is empty", "Deine Sammlung ist leer") else appText("No cards found", "Keine Karten gefunden"),
-                    message = if (state.query.isBlank()) appText("Add a catalog card or record an unknown printing manually.", "Füge eine Katalogkarte hinzu oder erfasse einen unbekannten Druck manuell.") else appText("Try a card name, passcode, set code, or note.", "Versuche einen Kartennamen, Passcode, Set-Code oder eine Notiz."),
-                    actionLabel = if (state.query.isBlank()) appText("Add a card", "Karte hinzufügen") else null,
-                    onAction = if (state.query.isBlank()) onAddCard else null,
+                state.cards.isEmpty() -> EmptyState(
+                    title = appText("No catalog cards found", "Keine Katalogkarten gefunden"),
+                    message = if (state.query.isBlank()) {
+                        appText(
+                            "Download the English and German catalog in Settings to browse cards here.",
+                            "Lade den englischen und deutschen Katalog in den Einstellungen herunter, um hier Karten zu durchsuchen.",
+                        )
+                    } else {
+                        appText("Try a card name, passcode, or set code.", "Versuche einen Kartennamen, Passcode oder Set-Code.")
+                    },
                 )
-                else -> CollectionEntries(
-                    entries = state.entries,
+                else -> CatalogCards(
+                    cards = state.cards,
                     layout = state.layout,
-                    onEntrySelected = onEntrySelected,
-                    onArtworkClick = { fileName, cardName -> fullscreenArtwork = fileName to cardName },
+                    onOpenArtwork = { fileName, cardName -> fullscreenArtwork = fileName to cardName },
                 )
             }
         }
@@ -146,26 +137,21 @@ fun CollectionListScreen(
 }
 
 @Composable
-private fun CollectionEntries(
-    entries: List<CollectionEntrySummary>,
+private fun CatalogCards(
+    cards: List<CatalogCardSummary>,
     layout: CollectionLayout,
-    onEntrySelected: (String) -> Unit,
-    onArtworkClick: (String, String) -> Unit,
+    onOpenArtwork: (String, String) -> Unit,
 ) {
     when (layout) {
         CollectionLayout.DETAILED -> LazyColumn(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) {
-            items(entries, key = CollectionEntrySummary::entryId) { entry ->
-                CollectionEntryRow(
-                    entry = entry,
-                    onClick = { onEntrySelected(entry.entryId) },
-                    onArtworkClick = { fileName -> onArtworkClick(fileName, entry.cardName) },
-                )
+            items(cards, key = CatalogCardSummary::cardId) { card ->
+                CatalogDetailedRow(card, onOpenArtwork)
             }
         }
 
         CollectionLayout.COMPACT -> LazyColumn(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) {
-            items(entries, key = CollectionEntrySummary::entryId) { entry ->
-                CompactCollectionEntryRow(entry, onClick = { onEntrySelected(entry.entryId) })
+            items(cards, key = CatalogCardSummary::cardId) { card ->
+                CatalogCompactRow(card, onOpenArtwork)
             }
         }
 
@@ -175,74 +161,73 @@ private fun CollectionEntries(
             verticalArrangement = Arrangement.spacedBy(10.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            gridItems(entries, key = CollectionEntrySummary::entryId) { entry ->
-                CollectionArtworkTile(entry, onClick = { onEntrySelected(entry.entryId) })
+            gridItems(cards, key = CatalogCardSummary::cardId) { card ->
+                CatalogArtworkTile(card, onOpenArtwork)
             }
         }
     }
 }
 
 @Composable
-private fun CollectionEntryRow(entry: CollectionEntrySummary, onClick: () -> Unit, onArtworkClick: (String) -> Unit) {
-    Card(Modifier.fillMaxWidth().padding(vertical = 4.dp).clickable(onClick = onClick)) {
+private fun CatalogDetailedRow(card: CatalogCardSummary, onOpenArtwork: (String, String) -> Unit) {
+    Card(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text(entry.cardName, style = MaterialTheme.typography.titleMedium)
-                Text(
-                    listOfNotNull(entry.setCode, entry.rarity, entry.edition.localizedLabel()).joinToString(" · "),
-                    modifier = Modifier.padding(top = 4.dp),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                Text(
-                    "${entry.quantity} × ${entry.condition.localizedLabel()}" + if (entry.isUnknownPrinting) " · ${appText("Unknown printing", "Unbekannter Druck")}" else "",
-                    modifier = Modifier.padding(top = 4.dp),
-                    style = MaterialTheme.typography.labelLarge,
-                )
+                Text(card.displayName, style = MaterialTheme.typography.titleMedium)
+                card.passcode?.let { passcode ->
+                    Text(
+                        appText("Passcode: $passcode", "Passcode: $passcode"),
+                        modifier = Modifier.padding(top = 4.dp),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+                if (card.isOwned) {
+                    Text(
+                        appText("✓ In your collection", "✓ In deiner Sammlung"),
+                        modifier = Modifier.padding(top = 4.dp),
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                }
             }
-            CollectionEntryArtwork(entry.artwork, entry.cardName, Modifier.padding(start = 12.dp), onArtworkClick)
+            CatalogArtwork(card, Modifier.padding(start = 12.dp), onOpenArtwork)
         }
     }
 }
 
 @Composable
-private fun CompactCollectionEntryRow(entry: CollectionEntrySummary, onClick: () -> Unit) {
-    Card(Modifier.fillMaxWidth().padding(vertical = 3.dp).clickable(onClick = onClick)) {
+private fun CatalogCompactRow(card: CatalogCardSummary, onOpenArtwork: (String, String) -> Unit) {
+    val openImage = card.artwork?.localFileName
+    Card(
+        Modifier
+            .fillMaxWidth()
+            .padding(vertical = 3.dp)
+            .then(if (openImage != null) Modifier.clickable { onOpenArtwork(openImage, card.displayName) } else Modifier),
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(Modifier.weight(1f)) {
-                Text(
-                    entry.cardName,
-                    style = MaterialTheme.typography.titleSmall,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    listOfNotNull(entry.setCode, entry.rarity).joinToString(" · "),
-                    style = MaterialTheme.typography.bodySmall,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                Text(card.displayName, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                card.passcode?.let { passcode ->
+                    Text(passcode, style = MaterialTheme.typography.bodySmall)
+                }
             }
-            Text(
-                "${entry.quantity} × ${entry.condition.localizedLabel()}",
-                modifier = Modifier.padding(start = 8.dp),
-                style = MaterialTheme.typography.labelMedium,
-                maxLines = 1,
-            )
+            if (card.isOwned) {
+                Text("✓", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleMedium)
+            }
         }
     }
 }
 
 @Composable
-private fun CollectionEntryArtwork(
-    artwork: CardArtworkDetail?,
-    cardName: String,
-    modifier: Modifier = Modifier,
-    onArtworkClick: (String) -> Unit,
+private fun CatalogArtwork(
+    card: CatalogCardSummary,
+    modifier: Modifier,
+    onOpenArtwork: (String, String) -> Unit,
 ) {
-    val bitmap = collectionArtworkBitmap(artwork?.localFileName)
+    val bitmap = catalogArtworkBitmap(card.artwork?.localFileName)
     val shape = RoundedCornerShape(6.dp)
     Box(
         modifier = modifier
@@ -256,12 +241,14 @@ private fun CollectionEntryArtwork(
         if (bitmap != null) {
             Image(
                 bitmap = bitmap.asImageBitmap(),
-                contentDescription = appText("English artwork for $cardName", "Englisches Kartenbild für $cardName"),
+                contentDescription = appText("Open ${card.displayName}", "${card.displayName} öffnen"),
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.matchParentSize().clickable { artwork?.localFileName?.let(onArtworkClick) },
+                modifier = Modifier.matchParentSize().clickable {
+                    card.artwork?.localFileName?.let { onOpenArtwork(it, card.displayName) }
+                },
             )
         } else {
-            val label = when (artwork?.downloadState) {
+            val label = when (card.artwork?.downloadState) {
                 CardArtworkDownloadState.QUEUED, CardArtworkDownloadState.DOWNLOADING -> appText("Loading\nimage", "Bild wird\ngeladen")
                 else -> appText("No saved\nimage", "Kein gespeichertes\nBild")
             }
@@ -271,9 +258,10 @@ private fun CollectionEntryArtwork(
 }
 
 @Composable
-private fun CollectionArtworkTile(entry: CollectionEntrySummary, onClick: () -> Unit) {
-    val bitmap = collectionArtworkBitmap(entry.artwork?.localFileName)
+private fun CatalogArtworkTile(card: CatalogCardSummary, onOpenArtwork: (String, String) -> Unit) {
+    val bitmap = catalogArtworkBitmap(card.artwork?.localFileName)
     val shape = RoundedCornerShape(8.dp)
+    val openImage = card.artwork?.localFileName
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -281,27 +269,37 @@ private fun CollectionArtworkTile(entry: CollectionEntrySummary, onClick: () -> 
             .clip(shape)
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape)
-            .clickable(onClick = onClick),
+            .then(if (openImage != null) Modifier.clickable { onOpenArtwork(openImage, card.displayName) } else Modifier),
         contentAlignment = Alignment.Center,
     ) {
         bitmap?.let {
             Image(
                 bitmap = it.asImageBitmap(),
-                contentDescription = appText("Open ${entry.cardName}", "${entry.cardName} öffnen"),
+                contentDescription = appText("Open ${card.displayName}", "${card.displayName} öffnen"),
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.matchParentSize(),
+            )
+        }
+        if (card.isOwned) {
+            Text(
+                "✓",
+                color = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(bottomStart = 8.dp))
+                    .padding(horizontal = 7.dp, vertical = 3.dp),
             )
         }
     }
 }
 
 @Composable
-private fun collectionArtworkBitmap(localFileName: String?): Bitmap? {
+private fun catalogArtworkBitmap(localFileName: String?): Bitmap? {
     val context = LocalContext.current
     val fileStore = remember(context) { CardArtworkFileStore(context) }
-    val image = remember(localFileName) { fileStore.resolve(localFileName) }
-    val bitmap by produceState<Bitmap?>(initialValue = null, image) {
-        value = withContext(Dispatchers.IO) { image?.let { BitmapFactory.decodeFile(it.absolutePath) } }
+    val file = remember(localFileName) { fileStore.resolve(localFileName) }
+    val bitmap by produceState<Bitmap?>(initialValue = null, file) {
+        value = withContext(Dispatchers.IO) { file?.let { BitmapFactory.decodeFile(it.absolutePath) } }
     }
     return bitmap
 }
