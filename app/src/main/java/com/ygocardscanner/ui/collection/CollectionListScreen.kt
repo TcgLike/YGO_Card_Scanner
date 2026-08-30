@@ -6,19 +6,26 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
@@ -30,10 +37,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,11 +48,13 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ygocardscanner.data.artwork.CardArtworkFileStore
 import com.ygocardscanner.model.CardArtworkDetail
 import com.ygocardscanner.model.CardArtworkDownloadState
 import com.ygocardscanner.model.CollectionEntrySummary
+import com.ygocardscanner.model.CollectionLayout
 import com.ygocardscanner.ui.components.EmptyState
 import com.ygocardscanner.ui.components.ErrorState
 import com.ygocardscanner.ui.components.LoadingState
@@ -65,12 +74,37 @@ fun CollectionListScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     var fullscreenArtwork by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var layoutMenuExpanded by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(appText("Collection", "Sammlung")) },
-                actions = { TextButton(onClick = onSettings) { Text(appText("Settings", "Einstellungen")) } },
+                actions = {
+                    Box {
+                        TextButton(onClick = { layoutMenuExpanded = true }) {
+                            Text(appText("View", "Ansicht"))
+                        }
+                        DropdownMenu(
+                            expanded = layoutMenuExpanded,
+                            onDismissRequest = { layoutMenuExpanded = false },
+                        ) {
+                            CollectionLayout.entries.forEach { layout ->
+                                DropdownMenuItem(
+                                    text = { Text(layoutLabel(layout)) },
+                                    onClick = {
+                                        viewModel.setLayout(layout)
+                                        layoutMenuExpanded = false
+                                    },
+                                    trailingIcon = {
+                                        if (state.layout == layout) Text("✓")
+                                    },
+                                )
+                            }
+                        }
+                    }
+                    TextButton(onClick = onSettings) { Text(appText("Settings", "Einstellungen")) }
+                },
             )
         },
         floatingActionButton = {
@@ -94,11 +128,53 @@ fun CollectionListScreen(
                     actionLabel = if (state.query.isBlank()) appText("Add a card", "Karte hinzufügen") else null,
                     onAction = if (state.query.isBlank()) onAddCard else null,
                 )
-                else -> LazyColumn(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) {
-                    items(state.entries, key = CollectionEntrySummary::entryId) { entry ->
-                        CollectionEntryRow(entry, onClick = { onEntrySelected(entry.entryId) }, onArtworkClick = { fileName -> fullscreenArtwork = fileName to entry.cardName })
-                    }
-                }
+                else -> CollectionEntries(
+                    entries = state.entries,
+                    layout = state.layout,
+                    onEntrySelected = onEntrySelected,
+                    onArtworkClick = { fileName, cardName -> fullscreenArtwork = fileName to cardName },
+                )
+            }
+        }
+    }
+
+    fullscreenArtwork?.let { (fileName, cardName) ->
+        LocalArtworkViewer(fileName, cardName, onDismiss = { fullscreenArtwork = null })
+    }
+}
+
+@Composable
+private fun CollectionEntries(
+    entries: List<CollectionEntrySummary>,
+    layout: CollectionLayout,
+    onEntrySelected: (String) -> Unit,
+    onArtworkClick: (String, String) -> Unit,
+) {
+    when (layout) {
+        CollectionLayout.DETAILED -> LazyColumn(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) {
+            items(entries, key = CollectionEntrySummary::entryId) { entry ->
+                CollectionEntryRow(
+                    entry = entry,
+                    onClick = { onEntrySelected(entry.entryId) },
+                    onArtworkClick = { fileName -> onArtworkClick(fileName, entry.cardName) },
+                )
+            }
+        }
+
+        CollectionLayout.COMPACT -> LazyColumn(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) {
+            items(entries, key = CollectionEntrySummary::entryId) { entry ->
+                CompactCollectionEntryRow(entry, onClick = { onEntrySelected(entry.entryId) })
+            }
+        }
+
+        CollectionLayout.ARTWORK_TILES -> LazyVerticalGrid(
+            columns = GridCells.Adaptive(minSize = 112.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            gridItems(entries, key = CollectionEntrySummary::entryId) { entry ->
+                CollectionArtworkTile(entry, onClick = { onEntrySelected(entry.entryId) })
             }
         }
     }
@@ -110,8 +186,16 @@ private fun CollectionEntryRow(entry: CollectionEntrySummary, onClick: () -> Uni
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(entry.cardName, style = MaterialTheme.typography.titleMedium)
-                Text(listOfNotNull(entry.setCode, entry.rarity, entry.edition.localizedLabel()).joinToString(" · "), modifier = Modifier.padding(top = 4.dp), style = MaterialTheme.typography.bodyMedium)
-                Text("${entry.quantity} × ${entry.condition.localizedLabel()}" + if (entry.isUnknownPrinting) " · ${appText("Unknown printing", "Unbekannter Druck")}" else "", modifier = Modifier.padding(top = 4.dp), style = MaterialTheme.typography.labelLarge)
+                Text(
+                    listOfNotNull(entry.setCode, entry.rarity, entry.edition.localizedLabel()).joinToString(" · "),
+                    modifier = Modifier.padding(top = 4.dp),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Text(
+                    "${entry.quantity} × ${entry.condition.localizedLabel()}" + if (entry.isUnknownPrinting) " · ${appText("Unknown printing", "Unbekannter Druck")}" else "",
+                    modifier = Modifier.padding(top = 4.dp),
+                    style = MaterialTheme.typography.labelLarge,
+                )
             }
             CollectionEntryArtwork(entry.artwork, entry.cardName, Modifier.padding(start = 12.dp), onArtworkClick)
         }
@@ -119,17 +203,61 @@ private fun CollectionEntryRow(entry: CollectionEntrySummary, onClick: () -> Uni
 }
 
 @Composable
-private fun CollectionEntryArtwork(artwork: CardArtworkDetail?, cardName: String, modifier: Modifier = Modifier, onArtworkClick: (String) -> Unit) {
-    val context = LocalContext.current
-    val fileStore = remember(context) { CardArtworkFileStore(context) }
-    val image = remember(artwork?.localFileName) { fileStore.resolve(artwork?.localFileName) }
-    val bitmap by produceState<Bitmap?>(initialValue = null, image) {
-        value = withContext(Dispatchers.IO) { image?.let { BitmapFactory.decodeFile(it.absolutePath) } }
+private fun CompactCollectionEntryRow(entry: CollectionEntrySummary, onClick: () -> Unit) {
+    Card(Modifier.fillMaxWidth().padding(vertical = 3.dp).clickable(onClick = onClick)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    entry.cardName,
+                    style = MaterialTheme.typography.titleSmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    listOfNotNull(entry.setCode, entry.rarity).joinToString(" · "),
+                    style = MaterialTheme.typography.bodySmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            Text(
+                "${entry.quantity} × ${entry.condition.localizedLabel()}",
+                modifier = Modifier.padding(start = 8.dp),
+                style = MaterialTheme.typography.labelMedium,
+                maxLines = 1,
+            )
+        }
     }
+}
+
+@Composable
+private fun CollectionEntryArtwork(
+    artwork: CardArtworkDetail?,
+    cardName: String,
+    modifier: Modifier = Modifier,
+    onArtworkClick: (String) -> Unit,
+) {
+    val bitmap = collectionArtworkBitmap(artwork?.localFileName)
     val shape = RoundedCornerShape(6.dp)
-    Box(modifier = modifier.width(64.dp).height(92.dp).clip(shape).background(MaterialTheme.colorScheme.surfaceVariant).border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape), contentAlignment = Alignment.Center) {
+    Box(
+        modifier = modifier
+            .width(64.dp)
+            .height(92.dp)
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape),
+        contentAlignment = Alignment.Center,
+    ) {
         if (bitmap != null) {
-            Image(bitmap = requireNotNull(bitmap).asImageBitmap(), contentDescription = appText("English artwork for $cardName", "Englisches Kartenbild für $cardName"), contentScale = ContentScale.Crop, modifier = Modifier.matchParentSize().clickable { artwork?.localFileName?.let(onArtworkClick) })
+            Image(
+                bitmap = bitmap.asImageBitmap(),
+                contentDescription = appText("English artwork for $cardName", "Englisches Kartenbild für $cardName"),
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.matchParentSize().clickable { artwork?.localFileName?.let(onArtworkClick) },
+            )
         } else {
             val label = when (artwork?.downloadState) {
                 CardArtworkDownloadState.QUEUED, CardArtworkDownloadState.DOWNLOADING -> appText("Loading\nimage", "Bild wird\ngeladen")
@@ -138,4 +266,47 @@ private fun CollectionEntryArtwork(artwork: CardArtworkDetail?, cardName: String
             Text(label, textAlign = TextAlign.Center, style = MaterialTheme.typography.labelSmall)
         }
     }
-}
+}
+
+@Composable
+private fun CollectionArtworkTile(entry: CollectionEntrySummary, onClick: () -> Unit) {
+    val bitmap = collectionArtworkBitmap(entry.artwork?.localFileName)
+    val shape = RoundedCornerShape(8.dp)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(0.68f)
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        bitmap?.let {
+            Image(
+                bitmap = it.asImageBitmap(),
+                contentDescription = appText("Open ${entry.cardName}", "${entry.cardName} öffnen"),
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.matchParentSize(),
+            )
+        }
+    }
+}
+
+@Composable
+private fun collectionArtworkBitmap(localFileName: String?): Bitmap? {
+    val context = LocalContext.current
+    val fileStore = remember(context) { CardArtworkFileStore(context) }
+    val image = remember(localFileName) { fileStore.resolve(localFileName) }
+    val bitmap by produceState<Bitmap?>(initialValue = null, image) {
+        value = withContext(Dispatchers.IO) { image?.let { BitmapFactory.decodeFile(it.absolutePath) } }
+    }
+    return bitmap
+}
+
+@Composable
+private fun layoutLabel(layout: CollectionLayout): String = when (layout) {
+    CollectionLayout.DETAILED -> appText("Detailed list", "Detaillierte Liste")
+    CollectionLayout.COMPACT -> appText("Compact list", "Kompakte Liste")
+    CollectionLayout.ARTWORK_TILES -> appText("Artwork tiles", "Bildkacheln")
+}

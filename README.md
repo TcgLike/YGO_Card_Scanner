@@ -14,7 +14,7 @@ This project is independent and is not affiliated with or endorsed by Konami or 
 - The optional camera scanner uses CameraX plus bundled offline Latin OCR to read card titles, set codes, and passcodes. It matches only the local Room catalog: exact set code, then passcode, then fuzzy English/German name. Camera frames and recognized text are never saved.
 - Live scan remains open after each reviewed card is added. The same card must leave the frame before OCR re-arms, preventing accidental duplicate additions; Bulk photo still identifies multiple cards in one photographed image and presents them as a confirmation queue.
 - The confirmation step shows the selected card's locally cached English artwork. A user can also opt in to download one primary English artwork per catalog card; files stay in app-private storage and the UI never hotlinks image URLs.
-- The collection list and detail screens read only from Room.
+- The collection list and detail screens read only from Room. The Collection toolbar offers a persisted local view switcher: detailed cards, compact text-only rows, or artwork-only tiles.
 - The update worker uses constrained, unique WorkManager work and never performs a network request from a Compose screen or ViewModel.
 - Catalog replacement is atomic and inventory-safe: catalog rows that disappear are retained as inactive records, while collection rows and their snapshots are never deleted or overwritten.
 
