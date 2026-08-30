@@ -24,10 +24,18 @@ data class SettingsUiState(
     val germanPrintingSourceEnabled: Boolean = false,
     val germanPrintingStatus: CatalogUpdateStatus? = null,
     val artworkStatus: ArtworkPackStatus? = null,
+    val scanSuccessAnimationEnabled: Boolean = true,
     val isSchedulingCatalog: Boolean = false,
     val isSchedulingGermanPrintings: Boolean = false,
     val isSchedulingArtwork: Boolean = false,
     val errorMessage: String? = null,
+)
+
+private data class PrimarySettings(
+    val language: CardLanguage,
+    val catalog: CatalogUpdateStatus?,
+    val artwork: ArtworkPackStatus?,
+    val scanSuccessAnimationEnabled: Boolean,
 )
 
 class SettingsViewModel(
@@ -49,7 +57,10 @@ class SettingsViewModel(
                     languageSettings.language,
                     catalogRepository.observeCatalogUpdateStatus(),
                     artworkRepository.observePackStatus(),
-                ) { language, catalog, artwork -> Triple(language, catalog, artwork) },
+                    languageSettings.scanSuccessAnimationEnabled,
+                ) { language, catalog, artwork, animationEnabled ->
+                    PrimarySettings(language, catalog, artwork, animationEnabled)
+                },
                 combine(
                     languageSettings.germanPrintingSourceEnabled,
                     germanPrintingRepository.observeUpdateStatus(),
@@ -58,9 +69,10 @@ class SettingsViewModel(
                 .collect { (primary, optional) ->
                     _uiState.update {
                         it.copy(
-                            language = primary.first,
-                            catalogStatus = primary.second,
-                            artworkStatus = primary.third,
+                            language = primary.language,
+                            catalogStatus = primary.catalog,
+                            artworkStatus = primary.artwork,
+                            scanSuccessAnimationEnabled = primary.scanSuccessAnimationEnabled,
                             germanPrintingSourceEnabled = optional.first,
                             germanPrintingStatus = optional.second,
                         )
@@ -70,6 +82,10 @@ class SettingsViewModel(
     }
 
     fun setLanguage(language: CardLanguage) = languageSettings.setLanguage(language)
+
+    fun setScanSuccessAnimationEnabled(enabled: Boolean) {
+        languageSettings.setScanSuccessAnimationEnabled(enabled)
+    }
 
     /** A forced refresh repairs older installs that were downloaded before German text support. */
     fun refreshBilingualCatalog() {
@@ -113,6 +129,7 @@ class SettingsViewModel(
             }
         }
     }
+
     fun resumeArtworkDownload() {
         if (_uiState.value.isSchedulingArtwork) return
         viewModelScope.launch {

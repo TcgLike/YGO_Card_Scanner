@@ -48,7 +48,7 @@ fun InventoryApp(container: AppContainer) {
         }
     }
     val scannerFactory = remember(container) {
-        viewModelFactory { ScannerViewModel(container.scannerRepository, container.inventoryRepository, container.languageSettings) }
+        viewModelFactory { ScannerViewModel(container.scannerRepository, container.inventoryRepository, container.artworkRepository, container.languageSettings) }
     }
     val manualFactory = remember(container) {
         viewModelFactory { ManualAddViewModel(container.inventoryRepository) }
@@ -94,7 +94,6 @@ fun InventoryApp(container: AppContainer) {
                     viewModel = viewModel,
                     onBack = { navController.popBackStack() },
                     onManualAdd = { navController.navigate(Destinations.MANUAL) },
-                    onAdded = { navController.popBackStack(Destinations.COLLECTION, inclusive = false) },
                 )
             }
             composable(Destinations.MANUAL) {

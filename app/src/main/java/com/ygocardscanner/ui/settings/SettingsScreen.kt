@@ -44,6 +44,18 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
                 TextButton(onClick = { viewModel.setLanguage(CardLanguage.ENGLISH) }, enabled = state.language != CardLanguage.ENGLISH) { Text("English") }
                 TextButton(onClick = { viewModel.setLanguage(CardLanguage.GERMAN) }, enabled = state.language != CardLanguage.GERMAN) { Text("Deutsch") }
             }
+            SettingsCard(title = appText("Live scan feedback", "Live-Scan-Rückmeldung")) {
+                Text(
+                    appText(
+                        "Show a short card-to-deck animation after a live scan is added. It uses only artwork already stored on this device and does not pause scanning.",
+                        "Zeigt nach einem hinzugefügten Live-Scan eine kurze Karten-zu-Deck-Animation. Sie verwendet nur bereits auf diesem Gerät gespeicherte Bilder und pausiert den Scan nicht.",
+                    ),
+                )
+                Switch(
+                    checked = state.scanSuccessAnimationEnabled,
+                    onCheckedChange = viewModel::setScanSuccessAnimationEnabled,
+                )
+            }
             SettingsCard(title = appText("Card catalog", "Kartenkatalog")) {
                 Text(catalogMessage(state.catalogStatus?.phase, state.catalogStatus?.message))
                 if (state.catalogStatus?.phase?.isInProgress == true) {

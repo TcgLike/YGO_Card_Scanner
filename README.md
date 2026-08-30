@@ -12,7 +12,7 @@ This project is independent and is not affiliated with or endorsed by Konami or 
 - The add screen can download the public catalog, search it locally by English or German name, passcode, or set code, and display results in English or Deutsch.
 - Users can add a known printing, edit quantity/condition/notes, remove an entry, or add an unknown printing manually.
 - The optional camera scanner uses CameraX plus bundled offline Latin OCR to read card titles, set codes, and passcodes. It matches only the local Room catalog: exact set code, then passcode, then fuzzy English/German name. Camera frames and recognized text are never saved.
-- Bulk scan is continuous one-card-at-a-time: each match is reviewed before adding, then the same card must leave the frame before another card can be accepted. It does not identify a grid of cards in one image.
+- Live scan remains open after each reviewed card is added. The same card must leave the frame before OCR re-arms, preventing accidental duplicate additions; Bulk photo still identifies multiple cards in one photographed image and presents them as a confirmation queue.
 - The confirmation step shows the selected card's locally cached English artwork. A user can also opt in to download one primary English artwork per catalog card; files stay in app-private storage and the UI never hotlinks image URLs.
 - The collection list and detail screens read only from Room.
 - The update worker uses constrained, unique WorkManager work and never performs a network request from a Compose screen or ViewModel.
@@ -66,6 +66,9 @@ The default YGOPRODeck catalog remains the primary source. Users may opt in unde
 - Its rows are joined only to active primary-catalog cards by passcode. A malformed download or a source card that cannot be matched is rejected/skipped; inventory is never modified.
 - Disabling the setting removes this source from new local search and scanner candidates. Its retained catalog rows and any collection entries that use them are not deleted.
 - YGOJSON is an independent community dataset assembled from YGOPRODeck, YAML Yugi, and Yugipedia. The project is MIT-licensed, while upstream/community content can carry separate terms and attribution requirements. Re-check its current release, data quality, and licensing before a public release: <https://github.com/iconmaster5326/YGOJSON>.
+## Live-scan feedback
+
+After a confirmed Live scan, the camera stays open and waits for the previous card to leave view before re-arming. Settings includes **Live scan feedback**, which controls a short, non-blocking card-to-deck acknowledgement animation. It is enabled by default, lasts about 1.25 seconds, and uses only the card artwork already cached in app-private storage; otherwise it shows a local text placeholder. It never downloads an image or sends camera content anywhere.
 ## Settings, language, and downloads
 
 Open **Settings** from the Collection screen to choose English or Deutsch for the app UI, refresh the catalog, or start/resume the optional offline artwork pack. The language choice is stored only in the app-private preference store and immediately changes the catalog-search language used by Room.
