@@ -10,9 +10,9 @@ fun CardCondition.localizedLabel(): String = when (this) {
     CardCondition.MINT -> appText("Mint", "Mint")
     CardCondition.NEAR_MINT -> appText("Near mint", "Nahezu mint")
     CardCondition.LIGHTLY_PLAYED -> appText("Lightly played", "Leicht bespielt")
-    CardCondition.MODERATELY_PLAYED -> appText("Moderately played", "MÃ¤ÃŸig bespielt")
+    CardCondition.MODERATELY_PLAYED -> appText("Moderately played", "Mäßig bespielt")
     CardCondition.HEAVILY_PLAYED -> appText("Heavily played", "Stark bespielt")
-    CardCondition.DAMAGED -> appText("Damaged", "BeschÃ¤digt")
+    CardCondition.DAMAGED -> appText("Damaged", "Beschädigt")
 }
 
 @Composable

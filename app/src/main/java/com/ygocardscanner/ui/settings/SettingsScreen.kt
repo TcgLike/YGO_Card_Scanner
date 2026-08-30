@@ -36,7 +36,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
         topBar = {
             TopAppBar(
                 title = { Text(appText("Settings", "Einstellungen")) },
-                navigationIcon = { TextButton(onClick = onBack) { Text(appText("Back", "ZurÃ¼ck")) } },
+                navigationIcon = { TextButton(onClick = onBack) { Text(appText("Back", "Zurück")) } },
             )
         },
     ) { padding ->
@@ -48,15 +48,15 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
                 .padding(16.dp),
         ) {
             SettingsCard(title = appText("App language", "App-Sprache")) {
-                Text(appText("Changes the language throughout the app. Card catalog downloads always include English and German.", "Ã„ndert die Sprache in der gesamten App. Katalogdownloads enthalten immer Englisch und Deutsch."))
+                Text(appText("Changes the language throughout the app. Card catalog downloads always include English and German.", "Ändert die Sprache in der gesamten App. Katalogdownloads enthalten immer Englisch und Deutsch."))
                 TextButton(onClick = { viewModel.setLanguage(CardLanguage.ENGLISH) }, enabled = state.language != CardLanguage.ENGLISH) { Text(appText("English", "Englisch")) }
                 TextButton(onClick = { viewModel.setLanguage(CardLanguage.GERMAN) }, enabled = state.language != CardLanguage.GERMAN) { Text(appText("German", "Deutsch")) }
             }
-            SettingsCard(title = appText("Live scan feedback", "Live-Scan-RÃ¼ckmeldung")) {
+            SettingsCard(title = appText("Live scan feedback", "Live-Scan-Rückmeldung")) {
                 Text(
                     appText(
                         "Show a short card-to-deck animation after a live scan is added. It uses only artwork already stored on this device and does not pause scanning.",
-                        "Zeigt nach einem hinzugefÃ¼gten Live-Scan eine kurze Karten-zu-Deck-Animation. Sie verwendet nur bereits auf diesem GerÃ¤t gespeicherte Bilder und pausiert den Scan nicht.",
+                        "Zeigt nach einem hinzugefügten Live-Scan eine kurze Karten-zu-Deck-Animation. Sie verwendet nur bereits auf diesem Gerät gespeicherte Bilder und pausiert den Scan nicht.",
                     ),
                 )
                 Switch(
@@ -72,7 +72,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
                     Text(
                         appText(
                             "The download is still working. This may take several minutes for both languages.",
-                            "Der Download lÃ¤uft weiter. FÃ¼r beide Sprachen kann das einige Minuten dauern.",
+                            "Der Download läuft weiter. Für beide Sprachen kann das einige Minuten dauern.",
                         ),
                         modifier = Modifier.padding(top = 6.dp),
                         style = MaterialTheme.typography.bodySmall,
@@ -95,7 +95,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
             SettingsCard(title = appText("German printing backup", "Deutsche Drucke (Zusatzquelle)")) {
                 Text(appText(
                     "Optional community source for German physical set codes. It downloads about 35 MB and only runs when enabled.",
-                    "Optionale Community-Quelle fÃ¼r deutsche physische Set-Codes. Der Download umfasst etwa 35 MB und lÃ¤uft nur wenn aktiviert.",
+                    "Optionale Community-Quelle für deutsche physische Set-Codes. Der Download umfasst etwa 35 MB und läuft nur wenn aktiviert.",
                 ))
                 Switch(
                     checked = state.germanPrintingSourceEnabled,
@@ -112,13 +112,13 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
                         onClick = viewModel::refreshGermanPrintings,
                         enabled = !state.isSchedulingGermanPrintings && state.germanPrintingStatus?.phase?.isInProgress != true,
                     ) {
-                        Text(if (state.isSchedulingGermanPrintings) appText("Schedulingâ€¦", "Wird geplantâ€¦") else appText("Download / refresh German codes", "Deutsche Codes herunterladen / aktualisieren"))
+                        Text(if (state.isSchedulingGermanPrintings) appText("Scheduling…", "Wird geplant…") else appText("Download / refresh German codes", "Deutsche Codes herunterladen / aktualisieren"))
                     }
                 } else {
                     Text(
                         appText(
                             "Disabled: this source contributes no search or scanner results. Stored catalog and inventory records are retained.",
-                            "Deaktiviert: Diese Quelle liefert keine Such- oder Scanner-Ergebnisse. Gespeicherte Katalog- und InventareintrÃ¤ge bleiben erhalten.",
+                            "Deaktiviert: Diese Quelle liefert keine Such- oder Scanner-Ergebnisse. Gespeicherte Katalog- und Inventareinträge bleiben erhalten.",
                         ),
                         style = MaterialTheme.typography.bodySmall,
                     )
@@ -128,7 +128,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
             SettingsCard(title = appText("Offline card images", "Offline-Kartenbilder")) {
                 Text(artworkMessage(state.artworkStatus?.phase, state.artworkStatus?.completedArtworkCount, state.artworkStatus?.totalArtworkCount, state.artworkStatus?.message))
                 Button(onClick = viewModel::resumeArtworkDownload, enabled = !state.isSchedulingArtwork) {
-                    Text(if (state.isSchedulingArtwork) appText("Schedulingâ€¦", "Wird geplantâ€¦") else artworkAction(state.artworkStatus?.phase))
+                    Text(if (state.isSchedulingArtwork) appText("Scheduling…", "Wird geplant…") else artworkAction(state.artworkStatus?.phase))
                 }
             }
             state.errorMessage?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 12.dp)) }
@@ -148,8 +148,8 @@ private fun SettingsCard(title: String, content: @Composable () -> Unit) {
 
 @Composable
 private fun catalogMessage(phase: CatalogUpdatePhase?, message: String?): String = when (phase) {
-    null -> appText("Download the complete local catalog in English and German.", "LÃ¤dt den vollstÃ¤ndigen lokalen Katalog auf Englisch und Deutsch herunter.")
-    CatalogUpdatePhase.QUEUED, CatalogUpdatePhase.RUNNING -> appText("Catalog download is running.", "Katalogdownload lÃ¤uft.")
+    null -> appText("Download the complete local catalog in English and German.", "Lädt den vollständigen lokalen Katalog auf Englisch und Deutsch herunter.")
+    CatalogUpdatePhase.QUEUED, CatalogUpdatePhase.RUNNING -> appText("Catalog download is running.", "Katalogdownload läuft.")
     CatalogUpdatePhase.RETRYING -> appText("Catalog download will resume when connected.", "Katalogdownload wird bei Verbindung fortgesetzt.")
     CatalogUpdatePhase.SUCCEEDED -> appText("Catalog is up to date in English and German.", "Katalog ist auf Englisch und Deutsch aktuell.")
     CatalogUpdatePhase.FAILED -> message ?: appText("Catalog download stopped.", "Katalogdownload wurde angehalten.")
@@ -158,14 +158,14 @@ private fun catalogMessage(phase: CatalogUpdatePhase?, message: String?): String
 @Composable
 private fun germanPrintingMessage(phase: CatalogUpdatePhase?, message: String?): String = when (phase) {
     null -> appText("Enabled. Download the optional German physical printing catalog when you are ready.", "Aktiviert. Lade den optionalen Katalog deutscher physischer Drucke herunter, wenn du bereit bist.")
-    CatalogUpdatePhase.QUEUED, CatalogUpdatePhase.RUNNING -> appText("German printing update is running.", "Update der deutschen Drucke lÃ¤uft.")
+    CatalogUpdatePhase.QUEUED, CatalogUpdatePhase.RUNNING -> appText("German printing update is running.", "Update der deutschen Drucke läuft.")
     CatalogUpdatePhase.RETRYING -> appText("German printing update will resume when connected.", "Update der deutschen Drucke wird bei Verbindung fortgesetzt.")
     CatalogUpdatePhase.SUCCEEDED -> appText("German physical printing codes are ready.", "Deutsche physische Druckcodes sind bereit.")
     CatalogUpdatePhase.FAILED -> message ?: appText("German printing update stopped.", "Update der deutschen Drucke wurde angehalten.")
 }
 @Composable
 private fun artworkMessage(phase: ArtworkPackPhase?, completed: Int?, total: Int?, message: String?): String = when (phase) {
-    null -> appText("Optional: download one English image for every catalog card. The app requires 3.5 GiB free space and limits the cache to 4 GiB.", "Optional: LÃ¤dt ein englisches Bild fÃ¼r jede Katalogkarte herunter. Die App benÃ¶tigt 3,5 GiB freien Speicher und begrenzt den Cache auf 4 GiB.")
+    null -> appText("Optional: download one English image for every catalog card. The app requires 3.5 GiB free space and limits the cache to 4 GiB.", "Optional: Lädt ein englisches Bild für jede Katalogkarte herunter. Die App benötigt 3,5 GiB freien Speicher und begrenzt den Cache auf 4 GiB.")
     ArtworkPackPhase.QUEUED, ArtworkPackPhase.RUNNING -> appText("Downloading offline images: ${completed ?: 0} / ${total ?: 0}.", "Offline-Bilder werden heruntergeladen: ${completed ?: 0} / ${total ?: 0}.")
     ArtworkPackPhase.RETRYING -> appText("Image download will resume when connected.", "Bilddownload wird bei Verbindung fortgesetzt.")
     ArtworkPackPhase.SUCCEEDED -> appText("Offline English images are ready: ${completed ?: 0} cards.", "Offline-englische Bilder sind bereit: ${completed ?: 0} Karten.")
@@ -175,7 +175,7 @@ private fun artworkMessage(phase: ArtworkPackPhase?, completed: Int?, total: Int
 @Composable
 private fun artworkAction(phase: ArtworkPackPhase?): String = when (phase) {
     null -> appText("Download offline card images", "Offline-Kartenbilder herunterladen")
-    ArtworkPackPhase.SUCCEEDED -> appText("Check cached images", "Gespeicherte Bilder prÃ¼fen")
+    ArtworkPackPhase.SUCCEEDED -> appText("Check cached images", "Gespeicherte Bilder prüfen")
     ArtworkPackPhase.QUOTA_REACHED -> appText("Retry after freeing space", "Nach Speicherfreigabe wiederholen")
     else -> appText("Resume image download", "Bilddownload fortsetzen")
 }

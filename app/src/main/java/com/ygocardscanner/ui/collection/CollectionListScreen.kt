@@ -109,7 +109,7 @@ fun CollectionListScreen(
                                         layoutMenuExpanded = false
                                     },
                                     trailingIcon = {
-                                        if (state.layout == layout) Text(appText("âœ“", "âœ“"))
+                                        if (state.layout == layout) Text(appText("✓", "✓"))
                                     },
                                 )
                             }
@@ -141,12 +141,12 @@ fun CollectionListScreen(
                 singleLine = true,
             )
             when {
-                state.isLoading -> LoadingState(appText("Loading your local collectionâ€¦", "Lokale Sammlung wird geladenâ€¦"))
+                state.isLoading -> LoadingState(appText("Loading your local collection…", "Lokale Sammlung wird geladen…"))
                 state.errorMessage != null -> ErrorState(state.errorMessage.orEmpty(), viewModel::retry)
                 state.entries.isEmpty() -> EmptyState(
                     title = if (state.query.isBlank()) appText("Your collection is empty", "Deine Sammlung ist leer") else appText("No cards found", "Keine Karten gefunden"),
-                    message = if (state.query.isBlank()) appText("Add a catalog card or record an unknown printing manually.", "FÃ¼ge eine Katalogkarte hinzu oder erfasse einen unbekannten Druck manuell.") else appText("Try a card name, passcode, set code, or note.", "Versuche einen Kartennamen, Passcode, Set-Code oder eine Notiz."),
-                    actionLabel = if (state.query.isBlank()) appText("Add a card", "Karte hinzufÃ¼gen") else null,
+                    message = if (state.query.isBlank()) appText("Add a catalog card or record an unknown printing manually.", "Füge eine Katalogkarte hinzu oder erfasse einen unbekannten Druck manuell.") else appText("Try a card name, passcode, set code, or note.", "Versuche einen Kartennamen, Passcode, Set-Code oder eine Notiz."),
+                    actionLabel = if (state.query.isBlank()) appText("Add a card", "Karte hinzufügen") else null,
                     onAction = if (state.query.isBlank()) onAddCard else null,
                 )
                 else -> CollectionEntries(
@@ -212,16 +212,16 @@ private fun CollectionEntryRow(entry: CollectionEntrySummary, onClick: () -> Uni
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(entry.cardName, style = MaterialTheme.typography.titleMedium)
-                Text(listOfNotNull(entry.setCode, entry.rarity, entry.edition.localizedLabel()).joinToString(" Â· "), modifier = Modifier.padding(top = 4.dp), style = MaterialTheme.typography.bodyMedium)
+                Text(listOfNotNull(entry.setCode, entry.rarity, entry.edition.localizedLabel()).joinToString(" · "), modifier = Modifier.padding(top = 4.dp), style = MaterialTheme.typography.bodyMedium)
                 val quantityLabel = if (entry.isUnknownPrinting) {
                     appText(
-                        "${entry.quantity} Ã— ${entry.condition.localizedLabel()} Â· Unknown printing",
-                        "${entry.quantity} Ã— ${entry.condition.localizedLabel()} Â· Unbekannter Druck",
+                        "${entry.quantity} × ${entry.condition.localizedLabel()} · Unknown printing",
+                        "${entry.quantity} × ${entry.condition.localizedLabel()} · Unbekannter Druck",
                     )
                 } else {
                     appText(
-                        "${entry.quantity} Ã— ${entry.condition.localizedLabel()}",
-                        "${entry.quantity} Ã— ${entry.condition.localizedLabel()}",
+                        "${entry.quantity} × ${entry.condition.localizedLabel()}",
+                        "${entry.quantity} × ${entry.condition.localizedLabel()}",
                     )
                 }
                 Text(
@@ -241,9 +241,9 @@ private fun CompactCollectionEntryRow(entry: CollectionEntrySummary, onClick: ()
         Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(entry.cardName, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(listOfNotNull(entry.setCode, entry.rarity).joinToString(" Â· "), style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(listOfNotNull(entry.setCode, entry.rarity).joinToString(" · "), style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
-            Text(appText("${entry.quantity} Ã— ${entry.condition.localizedLabel()}", "${entry.quantity} Ã— ${entry.condition.localizedLabel()}"), modifier = Modifier.padding(start = 8.dp), style = MaterialTheme.typography.labelMedium, maxLines = 1)
+            Text(appText("${entry.quantity} × ${entry.condition.localizedLabel()}", "${entry.quantity} × ${entry.condition.localizedLabel()}"), modifier = Modifier.padding(start = 8.dp), style = MaterialTheme.typography.labelMedium, maxLines = 1)
         }
     }
 }
@@ -254,7 +254,7 @@ private fun CollectionEntryArtwork(artwork: CardArtworkDetail?, cardName: String
     val shape = RoundedCornerShape(6.dp)
     Box(modifier = modifier.width(64.dp).height(92.dp).clip(shape).background(MaterialTheme.colorScheme.surfaceVariant).border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape), contentAlignment = Alignment.Center) {
         if (bitmap != null) {
-            Image(bitmap = bitmap.asImageBitmap(), contentDescription = appText("English artwork for $cardName", "Englisches Kartenbild fÃ¼r $cardName"), contentScale = ContentScale.Crop, modifier = Modifier.matchParentSize().clickable { artwork?.localFileName?.let(onArtworkClick) })
+            Image(bitmap = bitmap.asImageBitmap(), contentDescription = appText("English artwork for $cardName", "Englisches Kartenbild für $cardName"), contentScale = ContentScale.Crop, modifier = Modifier.matchParentSize().clickable { artwork?.localFileName?.let(onArtworkClick) })
         } else {
             val label = when (artwork?.downloadState) {
                 CardArtworkDownloadState.QUEUED, CardArtworkDownloadState.DOWNLOADING -> appText("Loading\nimage", "Bild wird\ngeladen")
@@ -270,7 +270,7 @@ private fun CollectionArtworkTile(entry: CollectionEntrySummary, onClick: () -> 
     val bitmap = collectionArtworkBitmap(entry.artwork?.localFileName)
     val shape = RoundedCornerShape(8.dp)
     Box(modifier = Modifier.fillMaxWidth().aspectRatio(0.68f).clip(shape).background(MaterialTheme.colorScheme.surfaceVariant).border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape).clickable(onClick = onClick), contentAlignment = Alignment.Center) {
-        bitmap?.let { Image(bitmap = it.asImageBitmap(), contentDescription = appText("Open ${entry.cardName}", "${entry.cardName} Ã¶ffnen"), contentScale = ContentScale.Fit, modifier = Modifier.matchParentSize()) }
+        bitmap?.let { Image(bitmap = it.asImageBitmap(), contentDescription = appText("Open ${entry.cardName}", "${entry.cardName} öffnen"), contentScale = ContentScale.Fit, modifier = Modifier.matchParentSize()) }
     }
 }
 

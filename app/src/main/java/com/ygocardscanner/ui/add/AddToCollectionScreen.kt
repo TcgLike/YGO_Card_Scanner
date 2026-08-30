@@ -96,8 +96,8 @@ fun AddToCollectionScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (selected == null) appText("Add to collection", "Zur Sammlung hinzufÃƒÂ¼gen") else appText("Confirm card", "Karte bestÃƒÂ¤tigen")) },
-                navigationIcon = { TextButton(onClick = { if (selected == null) onBack() else { selected = null; viewModel.clearSelectedArtwork() } }) { Text(appText("Back", "ZurÃƒÂ¼ck")) } },
+                title = { Text(if (selected == null) appText("Add to collection", "Zur Sammlung hinzufügen") else appText("Confirm card", "Karte bestätigen")) },
+                navigationIcon = { TextButton(onClick = { if (selected == null) onBack() else { selected = null; viewModel.clearSelectedArtwork() } }) { Text(appText("Back", "Zurück")) } },
             )
         },
     ) { innerPadding ->
@@ -132,7 +132,7 @@ fun AddToCollectionScreen(
                         style = MaterialTheme.typography.headlineSmall,
                     )
                     Text(
-                        listOfNotNull(printing.setCode, printing.setName).joinToString(" Ã‚Â· "),
+                        listOfNotNull(printing.setCode, printing.setName).joinToString(" · "),
                         modifier = Modifier.padding(horizontal = 16.dp),
                         style = MaterialTheme.typography.bodyMedium,
                     )
@@ -192,7 +192,7 @@ fun AddToCollectionScreen(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                         enabled = !state.isSaving,
                     ) {
-                        Text(if (state.isSaving) appText("Addingâ€¦", "Wird hinzugefÃ¼gtâ€¦") else appText("Add to collection", "Zur Sammlung hinzufÃ¼gen"))
+                        Text(if (state.isSaving) appText("Adding…", "Wird hinzugefügt…") else appText("Add to collection", "Zur Sammlung hinzufügen"))
                     }
                 }
             }
@@ -241,16 +241,16 @@ private fun CatalogPicker(
             }
         }
         when {
-            state.isLoading -> LoadingState(appText("Searching your local card catalogâ€¦", "Lokaler Kartenkatalog wird durchsuchtâ€¦"))
+            state.isLoading -> LoadingState(appText("Searching your local card catalog…", "Lokaler Kartenkatalog wird durchsucht…"))
             state.errorMessage != null -> ErrorState(state.errorMessage, onRetry)
             state.query.isBlank() -> EmptyState(
                 title = appText("Search the card catalog", "Kartenkatalog durchsuchen"),
-                message = appText("Enter a card name, passcode, or set code. Download the catalog if it is not available yet.", "Gib einen Kartennamen, Passcode oder Set-Code ein. Lade den Katalog herunter, falls er noch nicht verfÃ¼gbar ist."),
+                message = appText("Enter a card name, passcode, or set code. Download the catalog if it is not available yet.", "Gib einen Kartennamen, Passcode oder Set-Code ein. Lade den Katalog herunter, falls er noch nicht verfügbar ist."),
             )
             state.printings.isEmpty() -> EmptyState(
                 title = appText("No catalog cards found", "Keine Katalogkarten gefunden"),
-                message = appText("Try another local search, download an update, or add an unknown printing manually.", "Versuche eine andere lokale Suche, lade ein Update herunter oder fÃ¼ge einen unbekannten Druck manuell hinzu."),
-                actionLabel = appText("Add unknown printing", "Unbekannten Druck hinzufÃƒÂ¼gen"),
+                message = appText("Try another local search, download an update, or add an unknown printing manually.", "Versuche eine andere lokale Suche, lade ein Update herunter oder füge einen unbekannten Druck manuell hinzu."),
+                actionLabel = appText("Add unknown printing", "Unbekannten Druck hinzufügen"),
                 onAction = onManualUnknownPrinting,
             )
             else -> LazyColumn {
@@ -262,7 +262,7 @@ private fun CatalogPicker(
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(printing.displayName, style = MaterialTheme.typography.titleMedium)
                             Text(
-                                listOfNotNull(printing.setCode, printing.setName, printing.rarity).joinToString(" Ã‚Â· "),
+                                listOfNotNull(printing.setCode, printing.setName, printing.rarity).joinToString(" · "),
                                 modifier = Modifier.padding(top = 4.dp),
                             )
                             printing.referencePrice?.let { price ->
@@ -368,16 +368,16 @@ private fun AddArtworkPreview(
     if (bitmap != null) {
         Image(
             bitmap = requireNotNull(bitmap).asImageBitmap(),
-            contentDescription = appText("English artwork for $cardName", "Englisches Kartenbild fÃ¼r $cardName"),
+            contentDescription = appText("English artwork for $cardName", "Englisches Kartenbild für $cardName"),
             contentScale = ContentScale.Fit,
             modifier = Modifier.fillMaxWidth().height(260.dp).padding(horizontal = 16.dp, vertical = 8.dp),
         )
     } else {
         val message = when (artwork.downloadState) {
-            CardArtworkDownloadState.NOT_DOWNLOADED -> appText("Preparing the local English card imageâ€¦", "Lokales englisches Kartenbild wird vorbereitetâ€¦")
+            CardArtworkDownloadState.NOT_DOWNLOADED -> appText("Preparing the local English card image…", "Lokales englisches Kartenbild wird vorbereitet…")
             CardArtworkDownloadState.QUEUED -> appText("Card image download is queued.", "Kartenbild-Download ist vorgemerkt.")
-            CardArtworkDownloadState.DOWNLOADING -> appText("Downloading the card image to this deviceâ€¦", "Kartenbild wird auf dieses GerÃ¤t heruntergeladenâ€¦")
-            CardArtworkDownloadState.AVAILABLE -> appText("The saved card image is unavailable.", "Das gespeicherte Kartenbild ist nicht verfÃ¼gbar.")
+            CardArtworkDownloadState.DOWNLOADING -> appText("Downloading the card image to this device…", "Kartenbild wird auf dieses Gerät heruntergeladen…")
+            CardArtworkDownloadState.AVAILABLE -> appText("The saved card image is unavailable.", "Das gespeicherte Kartenbild ist nicht verfügbar.")
             CardArtworkDownloadState.FAILED -> artwork.message ?: appText("The card image could not be downloaded.", "Das Kartenbild konnte nicht heruntergeladen werden.")
         }
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {

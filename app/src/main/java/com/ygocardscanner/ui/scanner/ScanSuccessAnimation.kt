@@ -98,7 +98,7 @@ private fun SuccessCard(success: LiveScanSuccess, modifier: Modifier = Modifier)
         if (bitmap != null) {
             Image(
                 bitmap = requireNotNull(bitmap).asImageBitmap(),
-                contentDescription = appText("Recently scanned ${success.cardName}", "KÃ¼rzlich gescannt: ${success.cardName}"),
+                contentDescription = appText("Recently scanned ${success.cardName}", "Kürzlich gescannt: ${success.cardName}"),
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.fillMaxSize(),
             )

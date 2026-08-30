@@ -75,7 +75,7 @@ fun CardDetailScreen(
         topBar = {
             TopAppBar(
                 title = { Text(appText("Card detail", "Kartendetails")) },
-                navigationIcon = { TextButton(onClick = onBack) { Text(appText("Back", "ZurÃƒÂ¼ck")) } },
+                navigationIcon = { TextButton(onClick = onBack) { Text(appText("Back", "Zurück")) } },
             )
         },
     ) { innerPadding ->
@@ -84,8 +84,8 @@ fun CardDetailScreen(
             state.errorMessage != null && state.entry == null -> ErrorState(state.errorMessage.orEmpty(), viewModel::retry)
             state.entry == null -> EmptyState(
                 title = appText("Entry not found", "Eintrag nicht gefunden"),
-                message = appText("It may have been removed from this device.", "Er wurde mÃƒÂ¶glicherweise von diesem GerÃƒÂ¤t entfernt."),
-                actionLabel = appText("Back to collection", "ZurÃƒÂ¼ck zur Sammlung"),
+                message = appText("It may have been removed from this device.", "Er wurde möglicherweise von diesem Gerät entfernt."),
+                actionLabel = appText("Back to collection", "Zurück zur Sammlung"),
                 onAction = onBack,
             )
             else -> EntryDetailContent(
@@ -119,7 +119,7 @@ fun CardDetailScreen(
         AlertDialog(
             onDismissRequest = { showDeleteConfirmation = false },
             title = { Text(appText("Remove card entry?", "Karteneintrag entfernen?")) },
-            text = { Text(appText("This removes this inventory entry from this device. It does not alter the catalog.", "Dies entfernt diesen Sammlungseintrag von diesem GerÃƒÂ¤t. Der Katalog bleibt unverÃƒÂ¤ndert.")) },
+            text = { Text(appText("This removes this inventory entry from this device. It does not alter the catalog.", "Dies entfernt diesen Sammlungseintrag von diesem Gerät. Der Katalog bleibt unverändert.")) },
             confirmButton = {
                 TextButton(onClick = { showDeleteConfirmation = false; viewModel.deleteEntry() }) {
                     Text(appText("Remove", "Entfernen"))
@@ -184,7 +184,7 @@ private fun EntryDetailContent(
                     OutlinedButton(
                         onClick = { onQuantityChanged(entry.quantity - 1) },
                         enabled = !isSaving && entry.quantity > 1,
-                    ) { Text(appText("âˆ’1", "âˆ’1")) }
+                    ) { Text(appText("−1", "−1")) }
                     OutlinedButton(
                         onClick = { onQuantityChanged(entry.quantity + 1) },
                         modifier = Modifier.padding(start = 8.dp),
@@ -234,7 +234,7 @@ private fun PriceOverview(prices: List<com.ygocardscanner.model.PriceQuote>) {
         Text(
             appText(
                 "No local price data yet. Refresh the catalog to update public reference prices.",
-                "Noch keine lokalen Preisdaten. Aktualisiere den Katalog fÃƒÂ¼r ÃƒÂ¶ffentliche Preisreferenzen.",
+                "Noch keine lokalen Preisdaten. Aktualisiere den Katalog für öffentliche Preisreferenzen.",
             ),
             modifier = Modifier.padding(top = 4.dp),
             style = MaterialTheme.typography.bodyMedium,
@@ -260,7 +260,7 @@ private fun PriceOverview(prices: List<com.ygocardscanner.model.PriceQuote>) {
     Text(
         appText(
             "Public reference prices are approximate. They do not account for the card's condition, edition, language, or a specific listing unless marked for this set code.",
-            "Ãƒâ€“ffentliche Preisreferenzen sind nur NÃƒÂ¤herungswerte. Sie berÃƒÂ¼cksichtigen Zustand, Auflage, Sprache oder ein bestimmtes Angebot nicht, auÃƒÅ¸er sie sind fÃƒÂ¼r diesen Set-Code markiert.",
+            "Öffentliche Preisreferenzen sind nur Näherungswerte. Sie berücksichtigen Zustand, Auflage, Sprache oder ein bestimmtes Angebot nicht, außer sie sind für diesen Set-Code markiert.",
         ),
         modifier = Modifier.padding(top = 8.dp),
         style = MaterialTheme.typography.bodySmall,
@@ -295,7 +295,7 @@ private fun ArtworkContent(
     if (bitmap != null) {
         Image(
             bitmap = requireNotNull(bitmap).asImageBitmap(),
-            contentDescription = appText("English artwork for $cardName", "Englisches Kartenbild fÃ¼r $cardName"),
+            contentDescription = appText("English artwork for $cardName", "Englisches Kartenbild für $cardName"),
             contentScale = ContentScale.Fit,
             modifier = Modifier.fillMaxWidth().height(260.dp).padding(top = 12.dp).clickable { artwork.localFileName?.let(onOpenArtwork) },
         )
