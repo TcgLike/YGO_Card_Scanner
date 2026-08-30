@@ -1,0 +1,52 @@
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for sharing an idea for YGO Card Scanner. Use this category to discuss possible improvements before they are planned or implemented.
+
+        For a reproducible problem, please open a [bug report](../../issues/new/choose) instead. Do not include private collection data, backups, credentials, or personal information.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe the situation or need behind the request.
+      placeholder: I find it difficult to ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed solution
+      description: Explain how you think the app could help. Mock-ups or examples are welcome.
+      placeholder: It would be useful if the app could ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What workarounds or other approaches have you tried?
+      placeholder: I currently ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add screenshots, examples, or other context that would help explain the idea. Please remove personal collection information first.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: acknowledgements
+    attributes:
+      label: Before posting
+      options:
+        - label: I searched existing discussions for a similar idea.
+          required: true
+        - label: I understand that opening a discussion does not guarantee that the feature will be added.
+          required: true

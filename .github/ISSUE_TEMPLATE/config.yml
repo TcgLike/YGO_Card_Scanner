@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Feature requests and ideas
+    url: https://github.com/TcgLike/YGO_Card_Scanner/discussions/new?category=ideas
+    about: Share and discuss proposed improvements in GitHub Discussions.
+  - name: Questions and general discussion
+    url: https://github.com/TcgLike/YGO_Card_Scanner/discussions
+    about: Please use GitHub Discussions for questions, feedback, and general conversation.
