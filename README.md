@@ -14,7 +14,8 @@ This project is independent and is not affiliated with or endorsed by Konami or 
 - The optional camera scanner uses CameraX plus bundled offline Latin OCR to read card titles, set codes, and passcodes. It matches only the local Room catalog: exact set code, then passcode, then fuzzy English/German name. Camera frames and recognized text are never saved.
 - Live scan remains open after each reviewed card is added. The same card must leave the frame before OCR re-arms, preventing accidental duplicate additions; Bulk photo still identifies multiple cards in one photographed image and presents them as a confirmation queue.
 - The confirmation step shows the selected card's locally cached English artwork. A user can also opt in to download one primary English artwork per catalog card; files stay in app-private storage and the UI never hotlinks image URLs.
-- The collection list and detail screens read only from Room. The Collection toolbar offers a persisted local view switcher: detailed cards, compact text-only rows, or artwork-only tiles.`n- The Collection toolbar also opens an all-cards catalog browser backed only by active Room catalog records. It has the same three layouts and a check mark when any positive-quantity local inventory entry owns that canonical card; it never downloads artwork or catalog data while browsing.
+- The collection list and detail screens read only from Room. The Collection toolbar offers a persisted local view switcher: detailed cards, compact text-only rows, or artwork-only tiles.
+- The Collection toolbar also opens an all-cards catalog browser backed only by active Room catalog records. It has the same three layouts and a check mark when any positive-quantity local inventory entry owns that canonical card; it never downloads artwork or catalog data while browsing.
 - The update worker uses constrained, unique WorkManager work and never performs a network request from a Compose screen or ViewModel.
 - Catalog replacement is atomic and inventory-safe: catalog rows that disappear are retained as inactive records, while collection rows and their snapshots are never deleted or overwritten.
 
@@ -47,6 +48,7 @@ A normal user-requested **Download / refresh English + German catalog** also ref
 - German printing-backup rows have no invented set price. Their catalog-result fallback, if present, is explicitly labelled as a card-level Cardmarket reference.
 
 Prices are optional catalog metadata. Refreshing catalog/price data upserts those snapshots but never deletes or overwrites inventory entries.
+
 ### Important language and printing assumption
 
 YGOPRODeck provides current English catalog data and the German localizations it has available. Its German `card_sets` responses repeat English-style set codes and do not provide verified German physical set codes or edition data. The app therefore does **not** invent German printing records: imported catalog printings are English/provider printings with an explicit `unknown` edition. German localized search and display work where the provider supplies a German text; English is the fallback otherwise.
@@ -64,11 +66,15 @@ The default YGOPRODeck catalog remains the primary source. Users may opt in unde
 - The optional source is YGOJSON's public `aggregate.zip` release. It is about 35 MB compressed at the time this was implemented and is downloaded only after the user explicitly enables it and selects its update action.
 - It reads only passcodes plus German set prefixes, printing suffixes, rarity, and edition metadata. It does not import community card images, prices, or replace the primary card/text catalog.
 - Its rows are joined only to active primary-catalog cards by passcode. A malformed download or a source card that cannot be matched is rejected/skipped; inventory is never modified.
+
 - Disabling the setting removes this source from new local search and scanner candidates. Its retained catalog rows and any collection entries that use them are not deleted.
+
 - YGOJSON is an independent community dataset assembled from YGOPRODeck, YAML Yugi, and Yugipedia. The project is MIT-licensed, while upstream/community content can carry separate terms and attribution requirements. Re-check its current release, data quality, and licensing before a public release: <https://github.com/iconmaster5326/YGOJSON>.
+
 ## Live-scan feedback
 
 After a confirmed Live scan, the camera stays open and waits for the previous card to leave view before re-arming. Settings includes **Live scan feedback**, which controls a short, non-blocking card-to-deck acknowledgement animation. It is enabled by default, lasts about 1.25 seconds, and uses only the card artwork already cached in app-private storage; otherwise it shows a local text placeholder. It never downloads an image or sends camera content anywhere.
+
 ## Settings, language, and downloads
 
 Open **Settings** from the Collection screen to choose English or Deutsch for the app UI, refresh the catalog, or start/resume the optional offline artwork pack. The language choice is stored only in the app-private preference store and immediately changes the catalog-search language used by Room.
@@ -76,6 +82,7 @@ Open **Settings** from the Collection screen to choose English or Deutsch for th
 **Download / refresh English + German catalog** always schedules a forced provider refresh. It downloads both provider languages and is the repair action for installations whose catalog was created before German localized card text was available. A refresh never deletes or overwrites collection entries.
 
 The artwork control is resumable WorkManager work. It can continue while the app is not open, subject to Android's normal background-work, battery, storage, and network constraints. Selecting it again safely starts or resumes the saved download state.
+
 ## Privacy and data handling
 
 - Personal collection data remains in the app-private Room database on the device.
