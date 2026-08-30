@@ -65,9 +65,11 @@ import com.ygocardscanner.ui.localization.formattedAmount
 fun AddToCollectionScreen(
     viewModel: AddToCollectionViewModel,
     canScan: Boolean,
+    canImportDeck: Boolean,
     englishOnly: Boolean,
     onBack: () -> Unit,
     onManualUnknownPrinting: () -> Unit,
+    onImportDeck: () -> Unit,
     onScanCard: () -> Unit,
     onAdded: () -> Unit,
 ) {
@@ -108,6 +110,8 @@ fun AddToCollectionScreen(
                     validationMessage = null
                 },
                 onManualUnknownPrinting = onManualUnknownPrinting,
+                canImportDeck = canImportDeck,
+                onImportDeck = onImportDeck,
                 canScan = canScan,
                 onScanCard = onScanCard,
                 onRetry = viewModel::retry,
@@ -200,7 +204,9 @@ private fun CatalogPicker(
     onSelect: (CatalogPrintingSummary) -> Unit,
     onManualUnknownPrinting: () -> Unit,
     canScan: Boolean,
+    canImportDeck: Boolean,
     onScanCard: () -> Unit,
+    onImportDeck: () -> Unit,
     onRetry: () -> Unit,
 ) {
     Column(modifier = modifier) {
@@ -216,6 +222,11 @@ private fun CatalogPicker(
             if (canScan) {
                 TextButton(onClick = onScanCard) {
                     Text(appText("Scan a card", "Karte scannen"))
+                }
+            }
+            if (canImportDeck) {
+                TextButton(onClick = onImportDeck) {
+                    Text("Import a deck")
                 }
             }
             TextButton(onClick = onManualUnknownPrinting) {

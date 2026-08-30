@@ -23,6 +23,38 @@ interface InventoryDao {
     )
     suspend fun updateQuantity(entryId: String, quantity: Int, updatedAtEpochMillis: Long): Int
 
+    @Query(
+        """
+        SELECT * FROM inventory_entries
+        WHERE card_id = :cardId
+            AND (printing_id = :printingId OR (printing_id IS NULL AND :printingId IS NULL))
+            AND language_code = :languageCode
+            AND condition_code = :conditionCode
+            AND edition_code = :editionCode
+            AND COALESCE(rarity_code, '') = COALESCE(:rarityCode, '')
+            AND notes = :notes
+        ORDER BY created_at_epoch_millis
+        LIMIT 1
+        """,
+    )
+    suspend fun findMatchingDeckImportEntry(
+        cardId: String,
+        printingId: String?,
+        languageCode: String,
+        rarityCode: String?,
+        editionCode: String,
+        conditionCode: String,
+        notes: String,
+    ): InventoryEntry?
+
+    @Query(
+        """
+        UPDATE inventory_entries
+        SET quantity = quantity + :quantityDelta, updated_at_epoch_millis = :updatedAtEpochMillis
+        WHERE entry_id = :entryId
+        """,
+    )
+    suspend fun incrementQuantity(entryId: String, quantityDelta: Int, updatedAtEpochMillis: Long): Int
     @Query("UPDATE inventory_entries SET condition_code = :conditionCode, updated_at_epoch_millis = :updatedAtEpochMillis WHERE entry_id = :entryId")
     suspend fun updateCondition(entryId: String, conditionCode: String, updatedAtEpochMillis: Long): Int
     @Query("DELETE FROM inventory_entries WHERE entry_id = :entryId")

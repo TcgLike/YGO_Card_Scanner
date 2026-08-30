@@ -101,6 +101,13 @@ Open **Settings** from the Collection screen to choose English or Deutsch for th
 
 The artwork control is resumable WorkManager work. It can continue while the app is not open, subject to Android's normal background-work, battery, storage, and network constraints. Selecting it again safely starts or resumes the saved download state.
 
+## Yu-Gi-Oh! deck import
+
+In **Yu-Gi-Oh!** mode, choose **Add** then **Import a deck** to import a local `.ydk` file or paste a `ydke://` code. Both formats contain card passcodes and are parsed entirely on-device; the importer does not upload the file or make a network request. `.ydk` is the common EDOPro/YGOPro/DuelingBook deck format, while YDKe is the shareable simulator-code form.
+
+The review screen preserves Main, Extra, and Side quantities, combines them into the physical-card total, and resolves each passcode against the already-downloaded local catalog. A deck file does not identify a physical printing, language, rarity, edition, or condition. **Unknown printing** is therefore the safe default; users may choose a known local printing per card instead. Unrecognized passcodes block confirmation, and the approved batch is committed atomically so a failed import cannot leave a partial deck in the collection. Repeating an identical import increments its matching inventory quantities.
+
+Custom-card XML, name-only deck lists, remote deck URLs, and Pokémon deck import are intentionally out of scope for this milestone.
 ## Privacy and data handling
 
 - Personal collection data remains in the app-private Room database on the device.

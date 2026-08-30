@@ -98,3 +98,12 @@ data class CatalogCardRow(
     @ColumnInfo(name = "is_owned")
     val isOwned: Boolean,
 )
+
+data class DeckImportCardRow(
+    @ColumnInfo(name = "card_id")
+    val cardId: String,
+    @ColumnInfo(name = "passcode")
+    val passcode: String,
+    @ColumnInfo(name = "display_name")
+    val displayName: String,
+)

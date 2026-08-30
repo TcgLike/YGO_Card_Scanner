@@ -22,6 +22,8 @@ import com.ygocardscanner.ui.collection.CollectionListScreen
 import com.ygocardscanner.ui.collection.CollectionListViewModel
 import com.ygocardscanner.ui.detail.CardDetailScreen
 import com.ygocardscanner.ui.detail.CardDetailViewModel
+import com.ygocardscanner.ui.deckimport.YgoDeckImportScreen
+import com.ygocardscanner.ui.deckimport.YgoDeckImportViewModel
 import com.ygocardscanner.ui.localization.LocalAppLanguage
 import com.ygocardscanner.ui.manual.ManualAddScreen
 import com.ygocardscanner.ui.manual.ManualAddViewModel
@@ -82,6 +84,11 @@ private fun WorkspaceNavigation(
             )
         }
     }
+    val deckImportFactory = workspace.deckImportRepository?.let { repository ->
+        remember(workspace) {
+            viewModelFactory { YgoDeckImportViewModel(repository, container.languageSettings) }
+        }
+    }
     val manualFactory = remember(workspace) {
         viewModelFactory { ManualAddViewModel(workspace.inventoryRepository) }
     }
@@ -122,12 +129,24 @@ private fun WorkspaceNavigation(
             AddToCollectionScreen(
                 viewModel = viewModel,
                 canScan = workspace.supportsScanner,
+                canImportDeck = deckImportFactory != null,
                 englishOnly = workspace.game == CardGame.POKEMON,
                 onBack = { navController.popBackStack() },
                 onManualUnknownPrinting = { navController.navigate(Destinations.MANUAL) },
+                onImportDeck = { if (deckImportFactory != null) navController.navigate(Destinations.DECK_IMPORT) },
                 onScanCard = { if (workspace.supportsScanner) navController.navigate(Destinations.SCANNER) },
                 onAdded = { navController.popBackStack(Destinations.COLLECTION, inclusive = false) },
             )
+        }
+        if (deckImportFactory != null) {
+            composable(Destinations.DECK_IMPORT) {
+                val viewModel: YgoDeckImportViewModel = viewModel(key = "deck-import-$workspaceKey", factory = deckImportFactory)
+                YgoDeckImportScreen(
+                    viewModel = viewModel,
+                    onBack = { navController.popBackStack() },
+                    onImported = { navController.popBackStack(Destinations.COLLECTION, inclusive = false) },
+                )
+            }
         }
         if (workspace.supportsScanner) {
             composable(Destinations.SCANNER) {

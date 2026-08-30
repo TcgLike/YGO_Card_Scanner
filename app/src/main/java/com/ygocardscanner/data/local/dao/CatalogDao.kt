@@ -50,6 +50,28 @@ interface CatalogDao {
     )
     suspend fun getActiveCardPasscodes(sourceId: String): List<CardPasscodeRow>
 
+    @Query(
+        """
+        SELECT c.card_id AS card_id,
+            c.passcode AS passcode,
+            COALESCE(preferred.name, english.name, c.canonical_name) AS display_name
+        FROM cards AS c
+        LEFT JOIN card_texts AS preferred
+            ON preferred.card_id = c.card_id
+            AND preferred.language_code = :languageCode
+            AND preferred.is_active = 1
+        LEFT JOIN card_texts AS english
+            ON english.card_id = c.card_id
+            AND english.language_code = 'en'
+            AND english.is_active = 1
+        WHERE c.is_active = 1 AND c.passcode = :passcode
+        LIMIT 1
+        """,
+    )
+    suspend fun getActiveCardForDeckImport(
+        passcode: String,
+        languageCode: String,
+    ): com.ygocardscanner.data.local.query.DeckImportCardRow?
     @Query("SELECT * FROM catalog_metadata WHERE source_id = :sourceId LIMIT 1")
     suspend fun getMetadata(sourceId: String): CatalogMetadata?
 

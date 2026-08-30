@@ -1,5 +1,6 @@
 package com.ygocardscanner.di
 
+import com.ygocardscanner.data.deckimport.yugioh.YgoDeckImportRepository
 import com.ygocardscanner.data.repository.CardArtworkRepository
 import com.ygocardscanner.data.repository.CatalogRepository
 import com.ygocardscanner.data.repository.CatalogViewerRepository
@@ -21,6 +22,7 @@ data class CardWorkspace(
     val artworkPackScheduler: FullArtworkDownloadScheduler,
     val artworkUpdateScheduler: CardArtworkUpdateScheduler,
     val scannerRepository: CardScannerRepository? = null,
+    val deckImportRepository: YgoDeckImportRepository? = null,
 ) {
     val supportsScanner: Boolean get() = scannerRepository != null
 }
