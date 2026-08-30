@@ -1,8 +1,8 @@
 package com.ygocardscanner.data.repository
 
 import androidx.room.withTransaction
-import com.ygocardscanner.data.catalog.GermanPrintingPayload
-import com.ygocardscanner.data.catalog.GermanPrintingSource
+import com.ygocardscanner.data.catalog.yugioh.GermanPrintingPayload
+import com.ygocardscanner.data.catalog.yugioh.GermanPrintingSource
 import com.ygocardscanner.data.local.AppDatabase
 import com.ygocardscanner.data.local.entity.CatalogMetadata
 import com.ygocardscanner.data.local.entity.CatalogUpdateState

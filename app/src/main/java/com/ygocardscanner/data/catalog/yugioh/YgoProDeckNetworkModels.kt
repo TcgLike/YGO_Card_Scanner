@@ -1,5 +1,4 @@
-package com.ygocardscanner.data.catalog.network
-
+package com.ygocardscanner.data.catalog.yugioh
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonPrimitive

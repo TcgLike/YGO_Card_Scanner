@@ -1,13 +1,16 @@
 package com.ygocardscanner.data.catalog
 
-import com.ygocardscanner.data.catalog.network.YgoProDeckApiClient
-import com.ygocardscanner.data.catalog.network.YgoProDeckCardDto
-import com.ygocardscanner.data.catalog.network.YgoProDeckCardImageDto
-import com.ygocardscanner.data.catalog.network.YgoProDeckCardPageDto
-import com.ygocardscanner.data.catalog.network.YgoProDeckCardSetDto
-import com.ygocardscanner.data.catalog.network.YgoProDeckDatabaseVersionDto
-import com.ygocardscanner.data.catalog.network.YgoProDeckLanguage
-import com.ygocardscanner.data.catalog.network.YgoProDeckPageMetaDto
+import com.ygocardscanner.data.catalog.yugioh.DevelopmentCatalogSource
+import com.ygocardscanner.data.catalog.yugioh.YgoProDeckCatalogSource
+
+import com.ygocardscanner.data.catalog.yugioh.YgoProDeckApiClient
+import com.ygocardscanner.data.catalog.yugioh.YgoProDeckCardDto
+import com.ygocardscanner.data.catalog.yugioh.YgoProDeckCardImageDto
+import com.ygocardscanner.data.catalog.yugioh.YgoProDeckCardPageDto
+import com.ygocardscanner.data.catalog.yugioh.YgoProDeckCardSetDto
+import com.ygocardscanner.data.catalog.yugioh.YgoProDeckDatabaseVersionDto
+import com.ygocardscanner.data.catalog.yugioh.YgoProDeckLanguage
+import com.ygocardscanner.data.catalog.yugioh.YgoProDeckPageMetaDto
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -130,7 +133,7 @@ class YgoProDeckCatalogSourceTest {
                                 id = 42,
                                 name = "English card",
                                 cardImages = listOf(
-                                    com.ygocardscanner.data.catalog.network.YgoProDeckCardImageDto(
+                                    com.ygocardscanner.data.catalog.yugioh.YgoProDeckCardImageDto(
                                         id = 42,
                                         imageUrl = "https://images.ygoprodeck.com/images/cards/42.jpg",
                                     ),
@@ -146,7 +149,7 @@ class YgoProDeckCatalogSourceTest {
                                 id = 42,
                                 name = "German card",
                                 cardImages = listOf(
-                                    com.ygocardscanner.data.catalog.network.YgoProDeckCardImageDto(
+                                    com.ygocardscanner.data.catalog.yugioh.YgoProDeckCardImageDto(
                                         id = 99,
                                         imageUrl = "https://images.ygoprodeck.com/images/cards/99.jpg",
                                     ),

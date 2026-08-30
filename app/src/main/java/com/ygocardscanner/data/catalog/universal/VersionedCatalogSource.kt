@@ -1,5 +1,4 @@
-package com.ygocardscanner.data.catalog
-
+package com.ygocardscanner.data.catalog.universal
 /**
  * Optional capability for sources that can cheaply report whether their upstream catalog changed.
  *

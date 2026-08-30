@@ -1,5 +1,5 @@
-package com.ygocardscanner.data.catalog
-
+package com.ygocardscanner.data.catalog.yugioh
+import com.ygocardscanner.data.catalog.universal.CatalogRevision
 import com.ygocardscanner.data.util.CatalogNormalizers
 import java.io.BufferedInputStream
 import java.io.Closeable

@@ -1,5 +1,4 @@
-package com.ygocardscanner.data.catalog.network
-
+package com.ygocardscanner.data.catalog.yugioh
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL

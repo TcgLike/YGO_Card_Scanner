@@ -1,5 +1,7 @@
 package com.ygocardscanner.data.catalog
 
+import com.ygocardscanner.data.catalog.yugioh.YgoJsonGermanPrintingParser
+
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.zip.ZipEntry

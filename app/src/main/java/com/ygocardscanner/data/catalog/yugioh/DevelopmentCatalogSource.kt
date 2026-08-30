@@ -1,7 +1,7 @@
-package com.ygocardscanner.data.catalog
-
+package com.ygocardscanner.data.catalog.yugioh
 import android.content.Context
-import com.ygocardscanner.data.catalog.network.CatalogPayload
+import com.ygocardscanner.data.catalog.universal.CatalogPayload
+import com.ygocardscanner.data.catalog.universal.CatalogSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

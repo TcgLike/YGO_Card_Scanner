@@ -1,6 +1,5 @@
-package com.ygocardscanner.data.catalog
-
-import com.ygocardscanner.data.catalog.network.CatalogPayload
+package com.ygocardscanner.data.catalog.universal
+import com.ygocardscanner.data.catalog.universal.CatalogPayload
 import com.ygocardscanner.data.local.entity.Card
 import com.ygocardscanner.data.local.entity.CardArtwork
 import com.ygocardscanner.data.local.entity.CardText
@@ -207,4 +206,4 @@ object CatalogMapper {
 
     private fun String.required(label: String): String =
         trim().also { require(it.isNotEmpty()) { "$label must not be blank." } }
-}
+}

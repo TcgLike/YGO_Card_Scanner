@@ -46,10 +46,10 @@ abstract class AppDatabase : RoomDatabase() {
     companion object {
         const val DATABASE_NAME = "ygo-card-scanner.db"
 
-        fun create(context: Context): AppDatabase = Room.databaseBuilder(
+        fun create(context: Context, databaseName: String = DATABASE_NAME): AppDatabase = Room.databaseBuilder(
             context.applicationContext,
             AppDatabase::class.java,
-            DATABASE_NAME,
+            databaseName,
         ).addMigrations(
             AppDatabaseMigrations.MIGRATION_1_2,
             AppDatabaseMigrations.MIGRATION_2_3,

@@ -1,10 +1,10 @@
 package com.ygocardscanner.data.repository
 
 import androidx.room.withTransaction
-import com.ygocardscanner.data.catalog.CatalogMapper
-import com.ygocardscanner.data.catalog.CatalogSource
-import com.ygocardscanner.data.catalog.VersionedCatalogSource
-import com.ygocardscanner.data.catalog.network.CatalogPayload
+import com.ygocardscanner.data.catalog.universal.CatalogMapper
+import com.ygocardscanner.data.catalog.universal.CatalogSource
+import com.ygocardscanner.data.catalog.universal.VersionedCatalogSource
+import com.ygocardscanner.data.catalog.universal.CatalogPayload
 import com.ygocardscanner.data.local.AppDatabase
 import com.ygocardscanner.data.local.entity.CatalogUpdateState
 import com.ygocardscanner.data.util.CatalogNormalizers

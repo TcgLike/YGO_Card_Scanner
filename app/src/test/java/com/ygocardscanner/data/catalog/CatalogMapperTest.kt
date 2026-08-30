@@ -1,10 +1,12 @@
 package com.ygocardscanner.data.catalog
 
-import com.ygocardscanner.data.catalog.network.CatalogCardDto
-import com.ygocardscanner.data.catalog.network.CatalogCardTextDto
-import com.ygocardscanner.data.catalog.network.CatalogPayload
-import com.ygocardscanner.data.catalog.network.CatalogPrintingDto
-import com.ygocardscanner.data.catalog.network.CatalogPriceDto
+import com.ygocardscanner.data.catalog.universal.CatalogMapper
+
+import com.ygocardscanner.data.catalog.universal.CatalogCardDto
+import com.ygocardscanner.data.catalog.universal.CatalogCardTextDto
+import com.ygocardscanner.data.catalog.universal.CatalogPayload
+import com.ygocardscanner.data.catalog.universal.CatalogPrintingDto
+import com.ygocardscanner.data.catalog.universal.CatalogPriceDto
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Test
@@ -36,7 +38,7 @@ class CatalogMapperTest {
         val payload = samplePayload().copy(
             cards = listOf(
                 originalCard.copy(
-                    artwork = com.ygocardscanner.data.catalog.network.CatalogCardArtworkDto(
+                    artwork = com.ygocardscanner.data.catalog.universal.CatalogCardArtworkDto(
                         providerArtworkId = "89631139",
                         imageUrl = "https://images.ygoprodeck.com/images/cards/89631139.jpg",
                     ),

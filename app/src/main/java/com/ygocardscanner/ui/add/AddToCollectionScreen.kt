@@ -64,6 +64,8 @@ import com.ygocardscanner.ui.localization.formattedAmount
 @Composable
 fun AddToCollectionScreen(
     viewModel: AddToCollectionViewModel,
+    canScan: Boolean,
+    englishOnly: Boolean,
     onBack: () -> Unit,
     onManualUnknownPrinting: () -> Unit,
     onScanCard: () -> Unit,
@@ -106,6 +108,7 @@ fun AddToCollectionScreen(
                     validationMessage = null
                 },
                 onManualUnknownPrinting = onManualUnknownPrinting,
+                canScan = canScan,
                 onScanCard = onScanCard,
                 onRetry = viewModel::retry,
             )
@@ -135,6 +138,7 @@ fun AddToCollectionScreen(
                         onQuantityChange = { quantity = it },
                         language = language,
                         onLanguageChange = { language = it },
+                        allowGermanLanguage = !englishOnly,
                         rarity = rarity,
                         onRarityChange = { rarity = it },
                         edition = edition,
@@ -195,6 +199,7 @@ private fun CatalogPicker(
     onQueryChange: (String) -> Unit,
     onSelect: (CatalogPrintingSummary) -> Unit,
     onManualUnknownPrinting: () -> Unit,
+    canScan: Boolean,
     onScanCard: () -> Unit,
     onRetry: () -> Unit,
 ) {
@@ -208,8 +213,10 @@ private fun CatalogPicker(
             singleLine = true,
         )
         Row(modifier = Modifier.padding(horizontal = 8.dp)) {
-            TextButton(onClick = onScanCard) {
-                Text(appText("Scan a card", "Karte scannen"))
+            if (canScan) {
+                TextButton(onClick = onScanCard) {
+                    Text(appText("Scan a card", "Karte scannen"))
+                }
             }
             TextButton(onClick = onManualUnknownPrinting) {
                 Text(appText("Add an unknown printing manually", "Unbekannten Druck manuell hinzufügen"))
@@ -270,6 +277,7 @@ fun InventoryFields(
     onQuantityChange: (String) -> Unit,
     language: CardLanguage,
     onLanguageChange: (CardLanguage) -> Unit,
+    allowGermanLanguage: Boolean,
     rarity: String,
     onRarityChange: (String) -> Unit,
     edition: CardEdition,
@@ -287,8 +295,12 @@ fun InventoryFields(
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
     )
-    ChoiceRow("Language", language.label) {
-        onLanguageChange(if (language == CardLanguage.ENGLISH) CardLanguage.GERMAN else CardLanguage.ENGLISH)
+    if (allowGermanLanguage) {
+        ChoiceRow("Language", language.label) {
+            onLanguageChange(if (language == CardLanguage.ENGLISH) CardLanguage.GERMAN else CardLanguage.ENGLISH)
+        }
+    } else {
+        ChoiceRow("Language", "English") {}
     }
     OutlinedTextField(
         value = rarity,

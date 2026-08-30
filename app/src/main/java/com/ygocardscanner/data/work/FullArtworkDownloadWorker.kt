@@ -17,6 +17,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.ygocardscanner.data.repository.ArtworkPackBatchResult
 import com.ygocardscanner.data.repository.CardArtworkRepository
+import com.ygocardscanner.model.CardGame
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CancellationException
@@ -32,7 +33,7 @@ class FullArtworkDownloadWorker(
         setForeground(foregroundInfo())
         when (artworkRepository.processNextFullPackBatch()) {
             ArtworkPackBatchResult.Continue -> {
-                enqueueContinuation(applicationContext)
+                enqueueContinuation(applicationContext, CardGame.fromCode(inputData.getString(CatalogUpdateWorker.KEY_GAME)))
                 Result.success()
             }
             ArtworkPackBatchResult.Complete -> Result.success()
@@ -72,7 +73,7 @@ class FullArtworkDownloadWorker(
         private const val NOTIFICATION_ID = 4101
         private const val MAX_TRANSIENT_ATTEMPTS = 3
 
-        fun request() = OneTimeWorkRequestBuilder<FullArtworkDownloadWorker>()
+        fun request(game: CardGame = CardGame.YUGIOH) = OneTimeWorkRequestBuilder<FullArtworkDownloadWorker>()
             .setConstraints(
                 Constraints.Builder()
                     .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -80,13 +81,19 @@ class FullArtworkDownloadWorker(
                     .build(),
             )
             .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
+            .setInputData(androidx.work.workDataOf(CatalogUpdateWorker.KEY_GAME to game.code))
             .build()
 
-        fun enqueueContinuation(context: Context) {
+        fun uniqueWorkName(game: CardGame): String = when (game) {
+            CardGame.YUGIOH -> UNIQUE_WORK_NAME
+            CardGame.POKEMON -> "pokemon-$UNIQUE_WORK_NAME"
+        }
+
+        fun enqueueContinuation(context: Context, game: CardGame = CardGame.YUGIOH) {
             WorkManager.getInstance(context.applicationContext).enqueueUniqueWork(
-                UNIQUE_WORK_NAME,
+                uniqueWorkName(game),
                 ExistingWorkPolicy.APPEND_OR_REPLACE,
-                request(),
+                request(game),
             )
         }
     }

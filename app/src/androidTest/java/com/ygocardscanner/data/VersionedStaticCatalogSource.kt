@@ -1,9 +1,9 @@
 package com.ygocardscanner.data
 
-import com.ygocardscanner.data.catalog.CatalogRevision
-import com.ygocardscanner.data.catalog.CatalogSource
-import com.ygocardscanner.data.catalog.VersionedCatalogSource
-import com.ygocardscanner.data.catalog.network.CatalogPayload
+import com.ygocardscanner.data.catalog.universal.CatalogRevision
+import com.ygocardscanner.data.catalog.universal.CatalogSource
+import com.ygocardscanner.data.catalog.universal.VersionedCatalogSource
+import com.ygocardscanner.data.catalog.universal.CatalogPayload
 
 /** Test-only public-catalog stand-in with version and legacy-source transition behavior. */
 internal class VersionedStaticCatalogSource(

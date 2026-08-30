@@ -4,8 +4,8 @@ import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.ygocardscanner.data.catalog.CatalogMapper
-import com.ygocardscanner.data.catalog.DevelopmentCatalogSource
+import com.ygocardscanner.data.catalog.universal.CatalogMapper
+import com.ygocardscanner.data.catalog.yugioh.DevelopmentCatalogSource
 import com.ygocardscanner.data.local.AppDatabase
 import com.ygocardscanner.data.local.AppDatabaseMigrations
 import com.ygocardscanner.data.repository.RoomCatalogRepository

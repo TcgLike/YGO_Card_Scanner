@@ -1,6 +1,6 @@
 package com.ygocardscanner.data.repository
 
-import com.ygocardscanner.data.catalog.network.CatalogPayload
+import com.ygocardscanner.data.catalog.universal.CatalogPayload
 import com.ygocardscanner.model.CardLanguage
 import com.ygocardscanner.model.CatalogPrintingSummary
 import kotlinx.coroutines.flow.Flow

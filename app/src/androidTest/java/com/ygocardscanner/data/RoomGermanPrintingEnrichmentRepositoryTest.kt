@@ -4,10 +4,10 @@ import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.ygocardscanner.data.catalog.CatalogRevision
-import com.ygocardscanner.data.catalog.GermanPrintingPayload
-import com.ygocardscanner.data.catalog.GermanPrintingRecord
-import com.ygocardscanner.data.catalog.GermanPrintingSource
+import com.ygocardscanner.data.catalog.universal.CatalogRevision
+import com.ygocardscanner.data.catalog.yugioh.GermanPrintingPayload
+import com.ygocardscanner.data.catalog.yugioh.GermanPrintingRecord
+import com.ygocardscanner.data.catalog.yugioh.GermanPrintingSource
 import com.ygocardscanner.data.repository.RoomCatalogRepository
 import com.ygocardscanner.data.repository.RoomGermanPrintingEnrichmentRepository
 import com.ygocardscanner.data.repository.RoomInventoryRepository

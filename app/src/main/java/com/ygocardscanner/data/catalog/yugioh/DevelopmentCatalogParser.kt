@@ -1,6 +1,5 @@
-package com.ygocardscanner.data.catalog
-
-import com.ygocardscanner.data.catalog.network.CatalogPayload
+package com.ygocardscanner.data.catalog.yugioh
+import com.ygocardscanner.data.catalog.universal.CatalogPayload
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 

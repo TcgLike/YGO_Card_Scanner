@@ -6,7 +6,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.work.ListenableWorker
 import androidx.work.testing.TestListenableWorkerBuilder
 import androidx.work.workDataOf
-import com.ygocardscanner.data.catalog.network.CatalogPayload
+import com.ygocardscanner.data.catalog.universal.CatalogPayload
 import com.ygocardscanner.data.repository.CardArtworkRepository
 import com.ygocardscanner.data.repository.CatalogRefreshResult
 import com.ygocardscanner.data.repository.CatalogRepository

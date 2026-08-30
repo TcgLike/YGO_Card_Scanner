@@ -1,5 +1,4 @@
-package com.ygocardscanner.data.catalog.network
-
+package com.ygocardscanner.data.catalog.universal
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -7,7 +6,7 @@ import kotlinx.serialization.Serializable
  * Transport-only catalog representation.
  *
  * These models deliberately do not reference Room entities. A future public catalog provider
- * can deserialize into the same shape and then use [com.ygocardscanner.data.catalog.CatalogMapper]
+ * can deserialize into the same shape and then use [com.ygocardscanner.data.catalog.universal.CatalogMapper]
  * to create database rows.
  */
 @Serializable

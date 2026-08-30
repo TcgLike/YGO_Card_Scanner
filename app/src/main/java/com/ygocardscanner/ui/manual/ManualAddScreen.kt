@@ -32,6 +32,7 @@ import com.ygocardscanner.ui.localization.appText
 @Composable
 fun ManualAddScreen(
     viewModel: ManualAddViewModel,
+    englishOnly: Boolean,
     onBack: () -> Unit,
     onAdded: () -> Unit,
 ) {
@@ -88,6 +89,7 @@ fun ManualAddScreen(
                     onQuantityChange = { quantity = it },
                     language = language,
                     onLanguageChange = { language = it },
+                    allowGermanLanguage = !englishOnly,
                     rarity = rarity,
                     onRarityChange = { rarity = it },
                     edition = edition,

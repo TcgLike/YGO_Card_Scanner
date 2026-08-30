@@ -27,9 +27,27 @@ Compose UI -> ViewModel -> Repository -> Room
 
 Network responses are transport-only models. They are validated and mapped to Room before the UI can observe them.
 
+Pokémon is implemented as an **English-only MVP** using the public Pokémon TCG API v2. It has its own app-private Room database, artwork directory, and WorkManager names; switching games cannot read, modify, or replace Yu-Gi-Oh! records. German Pokémon catalog data, variants/finishes, and camera scanning remain later milestones. The source assumptions are recorded in [docs/pokemon-source-spike.md](docs/pokemon-source-spike.md).
+
+## Catalog source layout
+
+Catalog code is deliberately separated by game:
+
+```text
+app/src/main/java/com/ygocardscanner/data/catalog/
+├── universal/  # shared source contract, network DTOs, and Room mapper
+├── pokemon/    # Pokémon TCG API client, DTOs, and English-only mapper
+└── yugioh/     # YGOPRODeck, YGOJSON backup, and development catalog sources
+```
+
+Only `universal` code is allowed to be shared by both games. Game-specific sources depend on the universal contract but never on each other.
+
 ## Public catalog
 
-The app currently uses the documented public [YGOPRODeck API v7](https://ygoprodeck.com/api-guide/) behind `CatalogSource`.
+The app uses public sources behind a shared `CatalogSource` contract:
+
+- **Yu-Gi-Oh!**: [YGOPRODeck API v7](https://ygoprodeck.com/api-guide/), including its existing English/German catalog behavior.
+- **Pokémon English-only MVP**: Pokémon TCG API v2 (`https://api.pokemontcg.io/v2/cards`), fetched in pages of at most 250 records. The public unauthenticated request limit is respected by spacing pages; a full first download currently takes several minutes. German Pokémon names/codes are intentionally not inferred or fabricated.
 
 - Select **Download catalog** on the Add to collection screen for the first installation, or **Check for updates** later. The app does not silently download the catalog at startup.
 - A lightweight provider revision is checked first. If it is unchanged, the full catalog is not downloaded again.
@@ -77,7 +95,7 @@ After a confirmed Live scan, the camera stays open and waits for the previous ca
 
 ## Settings, language, and downloads
 
-Open **Settings** from the Collection screen to choose English or Deutsch for the app UI, refresh the catalog, or start/resume the optional offline artwork pack. The language choice is stored only in the app-private preference store and immediately changes the catalog-search language used by Room.
+Open **Settings** from the Collection screen to choose English or Deutsch for the app UI, refresh the catalog, or start/resume the optional offline artwork pack. Tap the game name in the Collection toolbar to switch between the isolated Yu-Gi-Oh! and Pokémon workspaces. The language choice is stored only in the app-private preference store and immediately changes the catalog-search language used by Room.
 
 **Download / refresh English + German catalog** always schedules a forced provider refresh. It downloads both provider languages and is the repair action for installations whose catalog was created before German localized card text was available. A refresh never deletes or overwrites collection entries.
 

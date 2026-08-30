@@ -13,9 +13,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /** Keeps public catalog artwork in app-private files. Remote URLs never reach Compose UI. */
-class CardArtworkFileStore(context: Context) {
+class CardArtworkFileStore(
+    context: Context,
+    private val directoryName: String = DIRECTORY_NAME,
+    private val providerImageHost: String = PROVIDER_IMAGE_HOST,
+) {
     private val filesDirectory = context.applicationContext.filesDir
-    private val directory = File(filesDirectory, DIRECTORY_NAME)
+    private val directory = File(filesDirectory, directoryName)
 
     fun resolve(fileName: String?): File? {
         if (fileName.isNullOrBlank() || fileName.contains('/') || fileName.contains('\\')) return null
@@ -113,7 +117,7 @@ class CardArtworkFileStore(context: Context) {
         } catch (_: Exception) {
             throw IllegalArgumentException("The catalog returned an invalid artwork URL.")
         }
-        require(uri.scheme.equals("https", ignoreCase = true) && uri.host == PROVIDER_IMAGE_HOST) {
+        require(uri.scheme.equals("https", ignoreCase = true) && uri.host == providerImageHost) {
             "The catalog returned an unsupported artwork source."
         }
     }

@@ -42,6 +42,7 @@ class CatalogUpdateWorker(
     companion object {
         const val UNIQUE_WORK_NAME = "public-catalog-update"
         const val KEY_FORCE = "force"
+        const val KEY_GAME = "card_game"
 
         private const val MAX_TRANSIENT_ATTEMPTS = 5
         private const val RETRY_NETWORK_FAILURE_MESSAGE =

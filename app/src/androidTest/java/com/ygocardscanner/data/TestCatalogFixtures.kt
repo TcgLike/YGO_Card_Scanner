@@ -1,10 +1,10 @@
 package com.ygocardscanner.data
 
-import com.ygocardscanner.data.catalog.CatalogSource
-import com.ygocardscanner.data.catalog.network.CatalogCardDto
-import com.ygocardscanner.data.catalog.network.CatalogCardTextDto
-import com.ygocardscanner.data.catalog.network.CatalogPayload
-import com.ygocardscanner.data.catalog.network.CatalogPrintingDto
+import com.ygocardscanner.data.catalog.universal.CatalogSource
+import com.ygocardscanner.data.catalog.universal.CatalogCardDto
+import com.ygocardscanner.data.catalog.universal.CatalogCardTextDto
+import com.ygocardscanner.data.catalog.universal.CatalogPayload
+import com.ygocardscanner.data.catalog.universal.CatalogPrintingDto
 
 internal fun testCatalog(
     sourceId: String = "test-source",
