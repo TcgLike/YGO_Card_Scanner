@@ -125,6 +125,7 @@ private fun WorkspaceNavigation(
                 onBack = { navController.popBackStack() },
                 onManualUnknownPrinting = { navController.navigate(Destinations.MANUAL) },
                 onImportDeck = { navController.navigate(Destinations.DECK_IMPORT) },
+                onBrowseOfficialDecks = { navController.navigate(Destinations.OFFICIAL_DECKS) },
                 onScanCard = { navController.navigate(Destinations.SCANNER) },
                 onAdded = { navController.popBackStack(Destinations.COLLECTION, inclusive = false) },
             )
