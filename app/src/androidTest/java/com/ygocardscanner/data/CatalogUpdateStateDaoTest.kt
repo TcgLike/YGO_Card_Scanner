@@ -77,3 +77,4 @@ class CatalogUpdateStateDaoTest {
         assertNull(secondary.lastAttemptAtEpochMillis)
     }
 }
+

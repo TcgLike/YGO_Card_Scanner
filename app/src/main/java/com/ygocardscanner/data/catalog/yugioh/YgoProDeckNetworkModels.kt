@@ -75,3 +75,4 @@ data class YgoProDeckDatabaseVersionDto(
     @SerialName("last_update")
     val lastUpdate: String? = null,
 )
+

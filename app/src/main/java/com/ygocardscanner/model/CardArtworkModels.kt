@@ -20,3 +20,4 @@ data class CardArtworkDetail(
     val downloadState: CardArtworkDownloadState,
     val message: String? = null,
 )
+

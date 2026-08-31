@@ -19,3 +19,4 @@ class CatalogNormalizersTest {
         assertEquals("weisser drache", CatalogNormalizers.name("Weißer Drache"))
     }
 }
+

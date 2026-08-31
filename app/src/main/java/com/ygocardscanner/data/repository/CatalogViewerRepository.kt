@@ -47,3 +47,4 @@ class RoomCatalogViewerRepository(database: AppDatabase) : CatalogViewerReposito
         }
     }
 }
+

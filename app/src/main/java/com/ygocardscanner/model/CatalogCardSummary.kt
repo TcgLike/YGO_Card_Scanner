@@ -9,3 +9,4 @@ data class CatalogCardSummary(
     /** True when any positive-quantity local inventory entry references this canonical card. */
     val isOwned: Boolean,
 )
+

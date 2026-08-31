@@ -51,3 +51,4 @@ data class Printing(
     @ColumnInfo(name = "updated_at_epoch_millis")
     val updatedAtEpochMillis: Long,
 )
+

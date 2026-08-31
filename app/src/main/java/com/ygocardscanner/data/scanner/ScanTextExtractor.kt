@@ -28,3 +28,4 @@ object ScanTextExtractor {
 
     private const val MAX_NAME_CANDIDATES = 8
 }
+

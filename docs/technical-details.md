@@ -89,3 +89,4 @@ The verification suite covers catalog parsing and merging, Room migrations, upda
 YGO Card Scanner is independent and is not affiliated with or endorsed by Konami or any Yu-Gi-Oh! rights holder. Yu-Gi-Oh! content and external data sources may be subject to their own terms, attribution requirements, and intellectual-property rights.
 
 The optional German-printing source is [YGOJSON](https://github.com/iconmaster5326/YGOJSON), an MIT-licensed community dataset assembled from YGOPRODeck, YAML Yugi, and Yugipedia. Re-check the current availability, data quality, attribution requirements, and upstream terms before redistributing or relying on external catalog content.
+

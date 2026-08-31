@@ -193,3 +193,4 @@ class RoomInventoryRepositoryTest {
         notes = notes,
     )
 }
+

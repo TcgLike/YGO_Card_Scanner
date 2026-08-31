@@ -12,3 +12,4 @@ enum class CollectionLayout(val code: String) {
             entries.firstOrNull { it.code == value } ?: DETAILED
     }
 }
+

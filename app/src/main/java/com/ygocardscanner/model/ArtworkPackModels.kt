@@ -26,3 +26,4 @@ data class ArtworkPackStatus(
     val cachedBytes: Long,
     val message: String?,
 )
+

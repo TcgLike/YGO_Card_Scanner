@@ -10,6 +10,7 @@ import com.ygocardscanner.data.catalog.yugioh.YgoProDeckCatalogSource
 import com.ygocardscanner.data.deckimport.yugioh.RoomYgoDeckAvailabilityRepository
 import com.ygocardscanner.data.deckimport.yugioh.RoomYgoDeckImportRepository
 import com.ygocardscanner.data.local.AppDatabase
+import com.ygocardscanner.data.officialdecks.yugioh.RoomOfficialDeckRepository
 import com.ygocardscanner.data.repository.CardArtworkRepository
 import com.ygocardscanner.data.repository.CatalogRepository
 import com.ygocardscanner.data.repository.GermanPrintingEnrichmentRepository
@@ -59,6 +60,7 @@ class AppContainer(context: Context) {
             scannerRepository = RoomCardScannerRepository(ygoDatabase),
             deckImportRepository = RoomYgoDeckImportRepository(ygoDatabase),
             deckAvailabilityRepository = RoomYgoDeckAvailabilityRepository(ygoDatabase),
+            officialDeckRepository = RoomOfficialDeckRepository(applicationContext, ygoDatabase),
         )
     }
 

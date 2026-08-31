@@ -24,3 +24,4 @@ interface InventoryRepository {
 
     suspend fun deleteEntry(entryId: String)
 }
+

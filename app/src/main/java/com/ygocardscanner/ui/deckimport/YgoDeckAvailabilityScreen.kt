@@ -122,3 +122,4 @@ private suspend fun readDeckDocument(context: Context, uri: Uri): String = withC
     context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
         ?: error("The selected deck file could not be opened.")
 }
+

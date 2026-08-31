@@ -227,3 +227,4 @@ class RoomCatalogRepository(
         const val SEARCH_RESULT_LIMIT = 100
     }
 }
+

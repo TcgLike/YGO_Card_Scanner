@@ -110,3 +110,4 @@ class HttpYgoProDeckApiClient(
         const val DEFAULT_READ_TIMEOUT_MILLIS = 30_000
     }
 }
+

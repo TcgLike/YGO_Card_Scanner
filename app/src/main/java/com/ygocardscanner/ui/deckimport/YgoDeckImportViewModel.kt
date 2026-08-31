@@ -2,7 +2,10 @@ package com.ygocardscanner.ui.deckimport
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ygocardscanner.data.deckimport.yugioh.YgoDeckDocument
 import com.ygocardscanner.data.deckimport.yugioh.YgoDeckImportCard
+import com.ygocardscanner.data.officialdecks.yugioh.OfficialDeckRepository
+import com.ygocardscanner.data.officialdecks.yugioh.OfficialDeckImportRecipe
 import com.ygocardscanner.data.deckimport.yugioh.YgoDeckImportPreview
 import com.ygocardscanner.data.deckimport.yugioh.YgoDeckImportRepository
 import com.ygocardscanner.data.deckimport.yugioh.YgoDeckImportRequest
@@ -25,6 +28,8 @@ data class YgoDeckImportUiState(
     val selectedPrintingIds: Map<String, String?> = emptyMap(),
     val condition: CardCondition = CardCondition.NEAR_MINT,
     val notes: String = "",
+    val officialRecipe: OfficialDeckImportRecipe? = null,
+    val selectedOfficialBonusPasscodes: Map<String, String?> = emptyMap(),
     val errorMessage: String? = null,
 ) {
     val unresolvedCards: List<YgoDeckImportCard> get() = preview?.cards.orEmpty().filterNot(YgoDeckImportCard::isResolved)
@@ -37,36 +42,21 @@ sealed interface YgoDeckImportEvent { data object Imported : YgoDeckImportEvent 
 class YgoDeckImportViewModel(
     private val repository: YgoDeckImportRepository,
     private val languageSettings: AppLanguageSettings,
+    private val officialDeckRepository: OfficialDeckRepository,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(YgoDeckImportUiState())
     val uiState = _uiState
     private val _events = MutableSharedFlow<YgoDeckImportEvent>()
     val events = _events
 
-    fun preview(sourceLabel: String, rawInput: String, baseCodeInput: String = "") {
+fun preview(sourceLabel: String, rawInput: String, baseCodeInput: String = "") {
         viewModelScope.launch {
-            _uiState.update {
-                it.copy(
-                    isLoading = true,
-                    errorMessage = null,
-                    preview = null,
+            try {
+                previewDocument(
                     sourceLabel = sourceLabel,
+                    document = YgoDeckParsers.parse(sourceLabel, rawInput),
                     baseCodeInput = baseCodeInput,
                 )
-            }
-            try {
-                val document = YgoDeckParsers.parse(sourceLabel, rawInput)
-                val result = repository.preview(document, languageSettings.language.value, baseCodeInput)
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        preview = result,
-                        // A base-code match is selected only when it is unique. Ambiguous candidates stay safe/unknown.
-                        selectedPrintingIds = result.cards.associate { card ->
-                            card.passcode to card.matchingBaseCodePrintingIds.singleOrNull()
-                        },
-                    )
-                }
             } catch (error: Throwable) {
                 if (error is CancellationException) throw error
                 _uiState.update { it.copy(isLoading = false, errorMessage = error.message ?: "The deck could not be read.") }
@@ -74,8 +64,73 @@ class YgoDeckImportViewModel(
         }
     }
 
+    fun previewOfficialDeck(variantId: String) {
+        viewModelScope.launch {
+            try {
+                val recipe = officialDeckRepository.recipe(variantId)
+                if (recipe.bonusGroups.isEmpty()) {
+                    previewDocument(sourceLabel = recipe.sourceLabel, document = recipe.document(), baseCodeInput = "")
+                } else {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = null,
+                            preview = null,
+                            sourceLabel = recipe.sourceLabel,
+                            officialRecipe = recipe,
+                            selectedOfficialBonusPasscodes = recipe.bonusGroups.associate { group -> group.id to null },
+                        )
+                    }
+                }
+            } catch (error: Throwable) {
+                if (error is CancellationException) throw error
+                _uiState.update { it.copy(isLoading = false, errorMessage = error.message ?: "The official deck could not be read.") }
+            }
+        }
+    }
+
+    private suspend fun previewDocument(sourceLabel: String, document: YgoDeckDocument, baseCodeInput: String) {
+        _uiState.update {
+            it.copy(
+                isLoading = true,
+                errorMessage = null,
+                preview = null,
+                sourceLabel = sourceLabel,
+                baseCodeInput = baseCodeInput,
+                officialRecipe = null,
+                selectedOfficialBonusPasscodes = emptyMap(),
+            )
+        }
+        val result = repository.preview(document, languageSettings.language.value, baseCodeInput)
+        _uiState.update {
+            it.copy(
+                isLoading = false,
+                preview = result,
+                selectedPrintingIds = result.cards.associate { card ->
+                    card.passcode to card.matchingBaseCodePrintingIds.singleOrNull()
+                },
+            )
+        }
+    }
     fun clearPreview() {
-        _uiState.update { it.copy(preview = null, selectedPrintingIds = emptyMap(), errorMessage = null) }
+        _uiState.update { it.copy(preview = null, selectedPrintingIds = emptyMap(), officialRecipe = null, selectedOfficialBonusPasscodes = emptyMap(), errorMessage = null) }
+    }
+
+    fun selectOfficialBonus(groupId: String, passcode: String?) {
+        _uiState.update { it.copy(selectedOfficialBonusPasscodes = it.selectedOfficialBonusPasscodes + (groupId to passcode)) }
+    }
+
+    fun reviewOfficialRecipe() {
+        val state = _uiState.value
+        val recipe = state.officialRecipe ?: return
+        viewModelScope.launch {
+            try {
+                previewDocument(recipe.sourceLabel, recipe.document(state.selectedOfficialBonusPasscodes), "")
+            } catch (error: Throwable) {
+                if (error is CancellationException) throw error
+                _uiState.update { it.copy(isLoading = false, errorMessage = error.message ?: "The official deck could not be read.") }
+            }
+        }
     }
 
     fun reportReadError(message: String) {
@@ -121,3 +176,4 @@ class YgoDeckImportViewModel(
         }
     }
 }
+

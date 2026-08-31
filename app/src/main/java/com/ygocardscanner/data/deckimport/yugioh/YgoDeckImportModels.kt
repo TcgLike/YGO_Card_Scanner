@@ -76,3 +76,4 @@ internal data class ResolvedDeckImportAttributes(
     val rarity: String?,
     val edition: CardEdition,
 )
+

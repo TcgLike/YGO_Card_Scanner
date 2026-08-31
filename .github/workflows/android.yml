@@ -32,6 +32,8 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - name: Verify official deck data
+        run: python3 scripts/verify_official_deck_data.py
 
       - name: Verify UI localization tokens
         run: python3 scripts/verify_ui_text_tokens.py

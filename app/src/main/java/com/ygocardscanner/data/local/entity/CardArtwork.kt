@@ -41,3 +41,4 @@ data class CardArtwork(
     @ColumnInfo(name = "updated_at_epoch_millis")
     val updatedAtEpochMillis: Long,
 )
+

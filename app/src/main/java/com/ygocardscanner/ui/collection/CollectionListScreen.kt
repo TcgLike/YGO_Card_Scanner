@@ -289,3 +289,4 @@ private fun layoutLabel(layout: CollectionLayout): String = when (layout) {
     CollectionLayout.COMPACT -> appText("Compact list", "Kompakte Liste")
     CollectionLayout.ARTWORK_TILES -> appText("Artwork tiles", "Bildkacheln")
 }
+

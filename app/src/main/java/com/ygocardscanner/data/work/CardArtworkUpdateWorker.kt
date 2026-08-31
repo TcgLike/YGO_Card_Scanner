@@ -40,3 +40,4 @@ class CardArtworkUpdateWorker(
         private const val MAX_TRANSIENT_ATTEMPTS = 3
     }
 }
+

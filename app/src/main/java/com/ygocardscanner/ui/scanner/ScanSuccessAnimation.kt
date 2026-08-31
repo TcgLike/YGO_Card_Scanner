@@ -113,3 +113,4 @@ private fun SuccessCard(success: LiveScanSuccess, modifier: Modifier = Modifier)
         }
     }
 }
+

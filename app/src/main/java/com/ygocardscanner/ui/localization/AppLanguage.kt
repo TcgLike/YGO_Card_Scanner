@@ -30,3 +30,4 @@ object UiText {
     val ImportDeck = UiTextToken("Import a deck", "Deck importieren")
     val AddUnknownPrinting = UiTextToken("Add an unknown printing manually", "Unbekannten Druck manuell hinzufügen")
 }
+

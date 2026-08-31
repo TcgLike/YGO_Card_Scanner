@@ -47,3 +47,4 @@ internal class StaticCatalogSource(
 
     override suspend fun loadCatalog(): CatalogPayload = payload
 }
+

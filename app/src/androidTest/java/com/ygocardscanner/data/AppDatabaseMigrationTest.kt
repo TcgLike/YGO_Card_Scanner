@@ -159,4 +159,21 @@ class AppDatabaseMigrationTest {
                 assertEquals("price_snapshots", cursor.getString(0))
             }
         }
-    }}
+    
+    @Test
+    fun migratesV6ToOfficialDeckSchemaWithoutTouchingInventoryTables() {
+        helper.createDatabase(databaseName, 6).close()
+
+        helper.runMigrationsAndValidate(
+            databaseName,
+            7,
+            true,
+            AppDatabaseMigrations.MIGRATION_6_7,
+        ).use { database ->
+            database.query("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'official_deck_products'").use { cursor ->
+                assertTrue(cursor.moveToFirst())
+                assertEquals("official_deck_products", cursor.getString(0))
+            }
+        }
+    }}}
+

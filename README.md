@@ -37,7 +37,26 @@ The catalog download is optional but needed before local search, card matching, 
 
 ## Further reading
 
-- [Technical details](docs/technical-details.md) — architecture, local storage, catalog sources, scan matching, builds, and tests.
+- [Technical details](docs/technical-details.md) Ã¢â‚¬â€ architecture, local storage, catalog sources, scan matching, builds, and tests.
 - [Contributing guide](CONTRIBUTING.md)
 - [Security policy](SECURITY.md)
 - [MIT License](LICENSE)
+
+
+## Official deck library
+
+The deck-import screen includes an **Official deck library**. It installs a versioned, curated offline list into the app-private database and then reuses the normal import review, so nothing reaches the collection until it is confirmed.
+
+The bundled library contains 20 modern complete official Structure Deck lists (from Structure Deck: Fire Kings through Machine Reactor Structure Deck), plus the original Yugi Muto, Seto Kaiba, and Codebreaker decks. It also supports Structure Deck: Soulburner with its verified duplicate Volcanic Shell, and Blue-Eyes White Destiny plus both all-foil Chronicles products. Those three 51-card products import their fixed base and explicitly ask the user to choose the actual random bonus card (or safely skip it); the app never guesses a bonus. Yugi's Legendary Decks remains a placeholder until its three independent deck lists and quantities have been individually verified.
+
+Product identity and total counts are checked against official Yu-Gi-Oh! product information. Passcodes are curated from the same public card-catalog provider already used by the app, then stored locally in `app/src/main/assets/official-decks/official-decks-v1.json`. The app does not scrape or query Konami's card database at runtime. The box visuals are generic local illustrations, not product packaging images.
+
+## Build and verify
+
+With JDK 17 available, run:
+
+```powershell
+.\gradlew.bat assembleDebug lintDebug testDebugUnitTest
+```
+
+The debug APK is written under `app/build/outputs/apk/debug/`.

@@ -17,3 +17,4 @@ data class CatalogRevision(
     val revision: String,
     val contentHash: String? = null,
 )
+

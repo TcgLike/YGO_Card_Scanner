@@ -48,3 +48,4 @@ class GermanPrintingUpdateWorker(
             "German printing update could not be validated. Installed catalog data is unchanged."
     }
 }
+

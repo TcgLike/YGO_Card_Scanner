@@ -248,3 +248,4 @@ class RoomInventoryRepository(
         const val LOCAL_CATALOG_REVISION = "local"
     }
 }
+

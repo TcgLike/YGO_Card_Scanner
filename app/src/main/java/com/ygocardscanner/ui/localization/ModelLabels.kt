@@ -28,3 +28,4 @@ fun CardLanguage.localizedLabel(): String = when (this) {
     CardLanguage.ENGLISH -> appText("English", "Englisch")
     CardLanguage.GERMAN -> appText("German", "Deutsch")
 }
+

@@ -108,3 +108,4 @@ class CatalogUpdateWorkerTest {
         override suspend fun replaceCatalog(payload: CatalogPayload) = Unit
     }
 }
+

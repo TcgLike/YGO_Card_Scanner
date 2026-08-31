@@ -16,3 +16,4 @@ class YgoCardScannerApplication : Application(), Configuration.Provider {
             .setMinimumLoggingLevel(Log.INFO)
             .build()
 }
+

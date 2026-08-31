@@ -179,3 +179,4 @@ private fun artworkAction(phase: ArtworkPackPhase?): String = when (phase) {
     ArtworkPackPhase.QUOTA_REACHED -> appText("Retry after freeing space", "Nach Speicherfreigabe wiederholen")
     else -> appText("Resume image download", "Bilddownload fortsetzen")
 }
+

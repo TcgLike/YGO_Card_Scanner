@@ -79,3 +79,4 @@ data class CatalogCardArtworkDto(
     @SerialName("image_url")
     val imageUrl: String,
 )
+

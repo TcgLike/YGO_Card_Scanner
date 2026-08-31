@@ -25,3 +25,4 @@ class DevelopmentCatalogSource(
         const val ASSET_NAME = "development_catalog.json"
     }
 }
+

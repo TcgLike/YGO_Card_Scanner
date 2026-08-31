@@ -349,3 +349,4 @@ internal object YgoJsonGermanPrintingParser {
     private const val LIMITED_EDITION_CODE = "limited"
     private const val UNKNOWN_EDITION_CODE = "unknown"
 }
+

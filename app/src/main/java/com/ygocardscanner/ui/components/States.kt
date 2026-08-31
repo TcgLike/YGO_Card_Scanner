@@ -60,3 +60,4 @@ fun ErrorState(message: String, onRetry: () -> Unit) {
         onAction = onRetry,
     )
 }
+

@@ -109,3 +109,4 @@ class ScannerViewModelTest {
         override suspend fun markFailed(cardId: String) = Unit
     }
 }
+

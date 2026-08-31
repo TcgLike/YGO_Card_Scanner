@@ -29,6 +29,8 @@ import com.ygocardscanner.ui.localization.LocalAppLanguage
 import com.ygocardscanner.ui.manual.ManualAddScreen
 import com.ygocardscanner.ui.manual.ManualAddViewModel
 import com.ygocardscanner.ui.navigation.Destinations
+import com.ygocardscanner.ui.officialdecks.OfficialDeckLibraryScreen
+import com.ygocardscanner.ui.officialdecks.OfficialDeckLibraryViewModel
 import com.ygocardscanner.ui.scanner.CardScannerScreen
 import com.ygocardscanner.ui.scanner.ScannerViewModel
 import com.ygocardscanner.ui.settings.SettingsScreen
@@ -72,7 +74,10 @@ private fun WorkspaceNavigation(
         }
     }
     val deckImportFactory = remember(workspace) {
-        viewModelFactory { YgoDeckImportViewModel(workspace.deckImportRepository, container.languageSettings) }
+        viewModelFactory { YgoDeckImportViewModel(workspace.deckImportRepository, container.languageSettings, workspace.officialDeckRepository) }
+    }
+    val officialDeckLibraryFactory = remember(workspace) {
+        viewModelFactory { OfficialDeckLibraryViewModel(workspace.officialDeckRepository) }
     }
     val deckAvailabilityFactory = remember(workspace) {
         viewModelFactory { YgoDeckAvailabilityViewModel(workspace.deckAvailabilityRepository, container.languageSettings) }
@@ -124,12 +129,36 @@ private fun WorkspaceNavigation(
                 onAdded = { navController.popBackStack(Destinations.COLLECTION, inclusive = false) },
             )
         }
+composable(Destinations.OFFICIAL_DECKS) {
+            val viewModel: OfficialDeckLibraryViewModel = viewModel(key = "official-decks-$workspaceKey", factory = officialDeckLibraryFactory)
+            OfficialDeckLibraryScreen(
+                viewModel = viewModel,
+                onBack = { navController.popBackStack() },
+                onVariantSelected = { navController.navigate(Destinations.officialDeckImport(it)) },
+            )
+        }
+        composable(
+            route = Destinations.OFFICIAL_DECK_IMPORT_PATTERN,
+            arguments = listOf(navArgument("variantId") { type = NavType.StringType }),
+        ) { backStackEntry ->
+            val variantId = requireNotNull(backStackEntry.arguments?.getString("variantId"))
+            val viewModel: YgoDeckImportViewModel = viewModel(key = "official-deck-import-$workspaceKey-$variantId", factory = deckImportFactory)
+            YgoDeckImportScreen(
+                viewModel = viewModel,
+                onBack = { navController.popBackStack() },
+                onImported = { navController.popBackStack(Destinations.COLLECTION, inclusive = false) },
+                officialVariantId = variantId,
+                onBrowseOfficialDecks = { navController.navigate(Destinations.OFFICIAL_DECKS) },
+            )
+        }
         composable(Destinations.DECK_IMPORT) {
             val viewModel: YgoDeckImportViewModel = viewModel(key = "deck-import-$workspaceKey", factory = deckImportFactory)
             YgoDeckImportScreen(
                 viewModel = viewModel,
                 onBack = { navController.popBackStack() },
                 onImported = { navController.popBackStack(Destinations.COLLECTION, inclusive = false) },
+                officialVariantId = null,
+                onBrowseOfficialDecks = { navController.navigate(Destinations.OFFICIAL_DECKS) },
             )
         }
         composable(Destinations.DECK_AVAILABILITY) {
@@ -193,3 +222,4 @@ private fun WorkspaceNavigation(
         }
     }
 }
+

@@ -39,7 +39,7 @@ class RoomCatalogViewerRepositoryTest {
 
             val beforeAdding = viewer.observeCards("", CardLanguage.GERMAN).first()
             assertEquals(1, beforeAdding.size)
-            assertEquals("BlauÃ¤ugiger w. Drache", beforeAdding.single().displayName)
+            assertEquals("Blau?ugiger w. Drache", beforeAdding.single().displayName)
             assertFalse(beforeAdding.single().isOwned)
 
             inventory.addKnownPrinting(
@@ -60,3 +60,4 @@ class RoomCatalogViewerRepositoryTest {
         }
     }
 }
+

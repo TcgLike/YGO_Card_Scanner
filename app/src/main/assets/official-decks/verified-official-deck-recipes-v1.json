@@ -1,0 +1,43 @@
+{
+  "revision": "2026.08.31.3",
+  "recipes": [
+    {
+      "product": { "id": "structure-blue-eyes-white-destiny", "title": "Structure Deck: Blue-Eyes White Destiny", "type": "structure", "releaseDate": "2025-02-13", "coverStyle": "blue-eyes" },
+      "variant": { "id": "structure-blue-eyes-white-destiny-english", "title": "Structure Deck: Blue-Eyes White Destiny", "fixedCardCount": 50, "totalCardCount": 51, "completeBoxContents": true },
+      "baseRanges": [
+        { "prefix": "SDWD-EN", "start": 1, "end": 33, "section": "MAIN" },
+        { "prefix": "SDWD-EN", "start": 34, "end": 40, "section": "EXTRA" },
+        { "prefix": "SDWD-EN", "start": 41, "end": 42, "section": "MAIN" },
+        { "prefix": "SDWD-EN", "start": 43, "end": 43, "section": "EXTRA" }
+      ],
+      "quantityOverrides": { "SDWD-EN013": 3, "SDWD-EN015": 2, "SDWD-EN018": 2, "SDWD-EN021": 2, "SDWD-EN022": 2, "SDWD-EN025": 2 },
+      "bonusGroups": [{ "id": "random-bonus", "label": "Random bonus card (optional)", "candidates": [
+        { "setCode": "SDWD-EN041", "displayName": "Maiden of White" },
+        { "setCode": "SDWD-EN042", "displayName": "Wishes for Eyes of Blue" },
+        { "setCode": "SDWD-EN043", "displayName": "Blue-Eyes Ultimate Spirit Dragon" }
+      ] }]
+    },
+    {
+      "product": { "id": "structure-soulburner", "title": "Structure Deck: Soulburner", "type": "structure", "releaseDate": "2019-02-14", "coverStyle": "soulburner" },
+      "variant": { "id": "structure-soulburner-english", "title": "Structure Deck: Soulburner", "fixedCardCount": 46, "totalCardCount": 46, "completeBoxContents": true },
+      "baseRanges": [ { "prefix": "SDSB-EN", "start": 1, "end": 39, "section": "MAIN" }, { "prefix": "SDSB-EN", "start": 40, "end": 45, "section": "EXTRA" } ],
+      "quantityOverrides": { "SDSB-EN021": 2 }
+    },
+    {
+      "product": { "id": "chronicles-fallen-virtuous", "title": "THE CHRONICLES DECK: The Fallen & The Virtuous (All-Foil Edition)", "type": "structure", "releaseDate": "2025-10-24", "coverStyle": "fallen-virtuous" },
+      "variant": { "id": "chronicles-fallen-virtuous-english", "title": "THE CHRONICLES DECK: The Fallen & The Virtuous (All-Foil Edition)", "fixedCardCount": 50, "totalCardCount": 51, "completeBoxContents": true },
+      "baseRanges": [ { "prefix": "CH01-EN", "start": 1, "end": 40, "section": "MAIN" }, { "prefix": "CH01-EN", "start": 41, "end": 50, "section": "EXTRA" } ],
+      "bonusGroups": [{ "id": "random-bonus", "label": "Random bonus card (optional)", "candidates": [
+        { "setCode": "CH01-EN014", "displayName": "Dogmatika Ecclesia, the Virtuous" }, { "setCode": "CH01-EN015", "displayName": "Dogmatika Fleurdelis, the Knighted" }, { "setCode": "CH01-EN019", "displayName": "The Fallen & The Virtuous" }, { "setCode": "CH01-EN029", "displayName": "Fusion Deployment" }, { "setCode": "CH01-EN030", "displayName": "Triple Tactics Thrust" }, { "setCode": "CH01-EN041", "displayName": "The Dragon that Devours the Dogma" }
+      ] }]
+    },
+    {
+      "product": { "id": "chronicles-spirit-charmers", "title": "THE CHRONICLES DECK: Spirit Charmers (All-Foil Edition)", "type": "structure", "releaseDate": "2026-01-23", "coverStyle": "spirit-charmers" },
+      "variant": { "id": "chronicles-spirit-charmers-english", "title": "THE CHRONICLES DECK: Spirit Charmers (All-Foil Edition)", "fixedCardCount": 50, "totalCardCount": 51, "completeBoxContents": true },
+      "baseRanges": [ { "prefix": "CH02-EN", "start": 1, "end": 40, "section": "MAIN" }, { "prefix": "CH02-EN", "start": 41, "end": 50, "section": "EXTRA" } ],
+      "bonusGroups": [{ "id": "random-bonus", "label": "Random bonus card (optional)", "candidates": [
+        { "setCode": "CH02-EN001", "displayName": "Eria the Water Charmer" }, { "setCode": "CH02-EN002", "displayName": "Hiita the Fire Charmer" }, { "setCode": "CH02-EN003", "displayName": "Wynn the Wind Charmer" }, { "setCode": "CH02-EN004", "displayName": "Aussa the Earth Charmer" }, { "setCode": "CH02-EN028", "displayName": "Spellbook of the Grand Circle" }, { "setCode": "CH02-EN041", "displayName": "Charmers of the Grand Circle" }
+      ] }]
+    }
+  ]
+}
