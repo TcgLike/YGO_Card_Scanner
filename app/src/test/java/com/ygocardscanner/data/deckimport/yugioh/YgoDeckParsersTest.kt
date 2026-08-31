@@ -48,3 +48,4 @@ class YgoDeckParsersTest {
         assertEquals("Line 1: card passcodes must appear under #main, #extra, or !side.", error.message)
     }
 }
+

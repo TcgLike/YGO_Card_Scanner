@@ -24,3 +24,4 @@ fun YgoCardScannerTheme(content: @Composable () -> Unit) {
         content = content,
     )
 }
+

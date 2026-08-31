@@ -10,3 +10,4 @@ interface CatalogSource {
 
     suspend fun loadCatalog(): CatalogPayload
 }
+

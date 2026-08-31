@@ -46,3 +46,4 @@ class GermanPrintingUpdateScheduler(
             "German printing update could not be scheduled. Installed catalog data is unchanged."
     }
 }
+

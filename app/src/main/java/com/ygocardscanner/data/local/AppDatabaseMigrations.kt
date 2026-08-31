@@ -131,4 +131,18 @@ object AppDatabaseMigrations {
             )
         }
     }
+
+    val MIGRATION_6_7 = object : Migration(6, 7) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("CREATE TABLE IF NOT EXISTS `official_deck_catalog_state` (`source_id` TEXT NOT NULL, `catalog_revision` TEXT NOT NULL, `installed_at_epoch_millis` INTEGER NOT NULL, PRIMARY KEY(`source_id`))")
+            database.execSQL("CREATE TABLE IF NOT EXISTS `official_deck_products` (`product_id` TEXT NOT NULL, `title` TEXT NOT NULL, `product_type` TEXT NOT NULL, `release_date` TEXT NOT NULL, `official_product_url` TEXT NOT NULL, `cover_style` TEXT NOT NULL, `source_note` TEXT NOT NULL, PRIMARY KEY(`product_id`))")
+            database.execSQL("CREATE INDEX IF NOT EXISTS `index_official_deck_products_product_type` ON `official_deck_products` (`product_type`)")
+            database.execSQL("CREATE INDEX IF NOT EXISTS `index_official_deck_products_release_date` ON `official_deck_products` (`release_date`)")
+            database.execSQL("CREATE TABLE IF NOT EXISTS `official_deck_variants` (`variant_id` TEXT NOT NULL, `product_id` TEXT NOT NULL, `title` TEXT NOT NULL, `total_card_count` INTEGER NOT NULL, `is_complete_box_contents` INTEGER NOT NULL, PRIMARY KEY(`variant_id`), FOREIGN KEY(`product_id`) REFERENCES `official_deck_products`(`product_id`) ON UPDATE NO ACTION ON DELETE CASCADE)")
+            database.execSQL("CREATE INDEX IF NOT EXISTS `index_official_deck_variants_product_id` ON `official_deck_variants` (`product_id`)")
+            database.execSQL("CREATE TABLE IF NOT EXISTS `official_deck_cards` (`variant_id` TEXT NOT NULL, `passcode` TEXT NOT NULL, `section_code` TEXT NOT NULL, `quantity` INTEGER NOT NULL, `option_group_id` TEXT NOT NULL, PRIMARY KEY(`variant_id`, `passcode`, `section_code`, `option_group_id`), FOREIGN KEY(`variant_id`) REFERENCES `official_deck_variants`(`variant_id`) ON UPDATE NO ACTION ON DELETE CASCADE)")
+            database.execSQL("CREATE INDEX IF NOT EXISTS `index_official_deck_cards_variant_id` ON `official_deck_cards` (`variant_id`)")
+            database.execSQL("CREATE INDEX IF NOT EXISTS `index_official_deck_cards_passcode` ON `official_deck_cards` (`passcode`)")
+        }
+    }
 }

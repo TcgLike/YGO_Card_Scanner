@@ -12,3 +12,4 @@ interface YgoDeckImportRepository {
     /** Validates every selection and writes the complete deck in a single transaction. */
     suspend fun importDeck(request: YgoDeckImportRequest): YgoDeckImportResult
 }
+

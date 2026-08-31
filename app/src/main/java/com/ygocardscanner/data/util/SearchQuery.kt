@@ -4,3 +4,4 @@ data class SearchQuery(
     val name: String,
     val compact: String,
 )
+

@@ -34,3 +34,4 @@ sealed interface CatalogRefreshResult {
     data object Updated : CatalogRefreshResult
     data object UpToDate : CatalogRefreshResult
 }
+

@@ -154,3 +154,4 @@ interface InventoryDao {
     )
     fun observeEntry(entryId: String): Flow<InventoryEntryDetailRow?>
 }
+

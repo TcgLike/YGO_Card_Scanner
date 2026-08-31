@@ -22,3 +22,4 @@ internal class VersionedStaticCatalogSource(
 
     override suspend fun loadCatalog(): CatalogPayload = payload.also { loadCalls += 1 }
 }
+

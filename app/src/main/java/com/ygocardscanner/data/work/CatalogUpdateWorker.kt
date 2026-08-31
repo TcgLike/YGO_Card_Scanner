@@ -52,3 +52,4 @@ class CatalogUpdateWorker(
             "Catalog update could not be validated. Your installed catalog is unchanged."
     }
 }
+

@@ -207,3 +207,4 @@ object CatalogMapper {
     private fun String.required(label: String): String =
         trim().also { require(it.isNotEmpty()) { "$label must not be blank." } }
 }
+

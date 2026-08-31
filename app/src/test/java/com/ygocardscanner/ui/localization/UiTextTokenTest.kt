@@ -13,3 +13,4 @@ class UiTextTokenTest {
         assertEquals("Sammlung", token.resolve(CardLanguage.GERMAN))
     }
 }
+

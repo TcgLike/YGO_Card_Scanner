@@ -81,3 +81,4 @@ class RoomCardScannerRepository(database: AppDatabase) : CardScannerRepository {
         const val MAX_CANDIDATES = 5
     }
 }
+

@@ -30,3 +30,4 @@ data class ArtworkPackState(
         const val MAX_SAFE_ERROR_TEXT_LENGTH = 240
     }
 }
+

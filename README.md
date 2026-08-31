@@ -12,6 +12,10 @@ YGO Card Scanner is an offline-first Android app for organizing a physical Yu-Gi
 - **Import a deck list.** Import a local `.ydk` file or paste a `ydke://` deck code, review the cards, and add the required quantities to your collection.
 - **Check deck availability.** Use **Can I build it?** to compare an imported deck list with the cards already in your collection without changing anything.
 
+## Project status
+
+This is a personal hobby project, built primarily for my own collection and learning. I am a software developer, but this is not a full-time product or a promise to support every possible use case, card source, or feature request. I am happy to share it freely and welcome constructive feedback, but development happens in my spare time and follows the needs of the project first.
+
 ## Your data stays on your device
 
 Your collection, notes, scan results, settings, and downloaded images are kept in the app's private storage on your device. The app has no login, account, cloud sync, analytics, advertising, or subscription service.
@@ -37,7 +41,25 @@ The catalog download is optional but needed before local search, card matching, 
 
 ## Further reading
 
-- [Technical details](docs/technical-details.md) — architecture, local storage, catalog sources, scan matching, builds, and tests.
+- [Technical details](docs/technical-details.md) architecture, local storage, catalog sources, scan matching, builds, and tests.
 - [Contributing guide](CONTRIBUTING.md)
 - [Security policy](SECURITY.md)
 - [MIT License](LICENSE)
+
+## Official deck library
+
+The deck-import screen includes an **Official deck library**. It installs a versioned, curated offline list into the app-private database and then reuses the normal import review, so nothing reaches the collection until it is confirmed.
+
+The bundled library contains 20 modern complete official Structure Deck lists (from Structure Deck: Fire Kings through Machine Reactor Structure Deck), plus the original Yugi Muto, Seto Kaiba, and Codebreaker decks. It also supports Structure Deck: Soulburner with its verified duplicate Volcanic Shell, and Blue-Eyes White Destiny plus both all-foil Chronicles products. Those three 51-card products import their fixed base and explicitly ask the user to choose the actual random bonus card (or safely skip it); the app never guesses a bonus. Yugi's Legendary Decks remains a placeholder until its three independent deck lists and quantities have been individually verified.
+
+Product identity and total counts are checked against official Yu-Gi-Oh! product information. Passcodes are curated from the same public card-catalog provider already used by the app, then stored locally in `app/src/main/assets/official-decks/official-decks-v1.json`. The app does not scrape or query Konami's card database at runtime. The box visuals are generic local illustrations, not product packaging images.
+
+## Build and verify
+
+With JDK 17 available, run:
+
+```powershell
+.\gradlew.bat assembleDebug lintDebug testDebugUnitTest
+```
+
+The debug APK is written under `app/build/outputs/apk/debug/`.

@@ -73,6 +73,7 @@ fun AddToCollectionScreen(
     onBack: () -> Unit,
     onManualUnknownPrinting: () -> Unit,
     onImportDeck: () -> Unit,
+    onBrowseOfficialDecks: () -> Unit,
     onScanCard: () -> Unit,
     onAdded: () -> Unit,
 ) {
@@ -116,6 +117,7 @@ fun AddToCollectionScreen(
                 onManualUnknownPrinting = onManualUnknownPrinting,
                 canImportDeck = canImportDeck,
                 onImportDeck = onImportDeck,
+                onBrowseOfficialDecks = onBrowseOfficialDecks,
                 canScan = canScan,
                 onScanCard = onScanCard,
                 onRetry = viewModel::retry,
@@ -211,6 +213,7 @@ private fun CatalogPicker(
     canImportDeck: Boolean,
     onScanCard: () -> Unit,
     onImportDeck: () -> Unit,
+    onBrowseOfficialDecks: () -> Unit,
     onRetry: () -> Unit,
 ) {
     Column(modifier = modifier) {
@@ -238,6 +241,14 @@ private fun CatalogPicker(
             }
             IconButton(onClick = onManualUnknownPrinting) {
                 Icon(Icons.Outlined.EditNote, contentDescription = appText(UiText.AddUnknownPrinting))
+            }
+        }
+        if (canImportDeck) {
+            TextButton(
+                onClick = onBrowseOfficialDecks,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            ) {
+                Text(appText("Official decks", "Offizielle Decks"))
             }
         }
         when {
@@ -386,3 +397,4 @@ private fun AddArtworkPreview(
         }
     }
 }
+

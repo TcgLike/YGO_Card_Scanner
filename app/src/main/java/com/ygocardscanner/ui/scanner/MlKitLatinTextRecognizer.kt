@@ -42,3 +42,4 @@ class MlKitLatinTextRecognizer : Closeable {
     }
     override fun close() = recognizer.close()
 }
+

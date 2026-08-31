@@ -42,3 +42,4 @@ class DevelopmentCatalogParserTest {
         assertTrue(payload.cards.single().texts.any { it.languageCode == "de" && it.name.contains("Blau") })
     }
 }
+

@@ -22,3 +22,4 @@ object CatalogNormalizers {
         .trim()
         .replace(Regex("\\s+"), " ")
 }
+

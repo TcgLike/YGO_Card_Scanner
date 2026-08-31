@@ -36,3 +36,4 @@ interface CatalogRepository {
      */
     suspend fun replaceCatalog(payload: CatalogPayload)
 }
+

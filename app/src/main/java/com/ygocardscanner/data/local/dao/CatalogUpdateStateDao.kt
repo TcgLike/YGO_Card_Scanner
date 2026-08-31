@@ -17,3 +17,4 @@ interface CatalogUpdateStateDao {
     @Query("SELECT * FROM catalog_update_state WHERE source_id = :sourceId LIMIT 1")
     fun observe(sourceId: String): Flow<CatalogUpdateState?>
 }
+

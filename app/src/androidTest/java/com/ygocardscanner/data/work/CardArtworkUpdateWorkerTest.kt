@@ -101,3 +101,4 @@ class CardArtworkUpdateWorkerTest {
         override suspend fun replaceCatalog(payload: CatalogPayload) = Unit
     }
 }
+

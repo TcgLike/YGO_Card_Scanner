@@ -55,3 +55,4 @@ data class PriceSnapshot(
     @ColumnInfo(name = "observed_at_epoch_millis")
     val observedAtEpochMillis: Long,
 )
+

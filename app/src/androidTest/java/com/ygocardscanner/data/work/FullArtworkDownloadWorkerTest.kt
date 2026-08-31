@@ -75,3 +75,4 @@ class FullArtworkDownloadWorkerTest {
         override suspend fun replaceCatalog(payload: CatalogPayload) = Unit
     }
 }
+

@@ -59,3 +59,4 @@ class YgoJsonGermanPrintingSourceTest {
         output.toByteArray()
     }
 }
+

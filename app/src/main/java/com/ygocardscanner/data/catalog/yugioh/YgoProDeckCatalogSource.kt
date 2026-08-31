@@ -245,3 +245,4 @@ class YgoProDeckCatalogSource(
         const val DEFAULT_PAGE_REQUEST_DELAY_MILLIS = 75L
     }
 }
+

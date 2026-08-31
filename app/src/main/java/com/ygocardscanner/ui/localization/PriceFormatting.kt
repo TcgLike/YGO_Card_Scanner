@@ -29,3 +29,4 @@ fun PriceQuote.formattedObservedAt(): String =
     DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(
         Date(observedAtEpochMillis),
     )
+

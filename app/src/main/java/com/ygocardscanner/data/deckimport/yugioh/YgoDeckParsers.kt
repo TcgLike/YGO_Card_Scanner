@@ -92,3 +92,4 @@ object YgoDeckParsers {
     private const val PASSCODE_LENGTH = 8
     private const val MAX_PASSCODE = 99_999_999L
 }
+

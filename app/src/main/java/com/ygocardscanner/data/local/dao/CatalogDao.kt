@@ -72,6 +72,22 @@ interface CatalogDao {
         passcode: String,
         languageCode: String,
     ): com.ygocardscanner.data.local.query.DeckImportCardRow?
+
+    @Query(
+        """
+        SELECT c.passcode AS passcode
+        FROM cards AS c
+        INNER JOIN printings AS p ON p.card_id = c.card_id
+        WHERE c.is_active = 1
+            AND p.is_active = 1
+            AND c.passcode IS NOT NULL
+            AND p.normalized_set_code = :normalizedSetCode
+        GROUP BY c.passcode
+        """,
+    )
+    suspend fun getActivePasscodesByNormalizedSetCode(
+        normalizedSetCode: String,
+    ): List<String?>
     @Query("SELECT * FROM catalog_metadata WHERE source_id = :sourceId LIMIT 1")
     suspend fun getMetadata(sourceId: String): CatalogMetadata?
 
@@ -379,3 +395,4 @@ interface CatalogDao {
         hasQuery: Boolean,
     ): Flow<List<com.ygocardscanner.data.local.query.CatalogCardRow>>
 }
+

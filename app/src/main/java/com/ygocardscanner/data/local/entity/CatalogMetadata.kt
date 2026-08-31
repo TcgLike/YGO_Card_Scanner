@@ -18,3 +18,4 @@ data class CatalogMetadata(
     @ColumnInfo(name = "last_error")
     val lastError: String?,
 )
+

@@ -20,3 +20,4 @@ interface GermanPrintingEnrichmentRepository {
 
     suspend fun markUpdateSucceeded()
 }
+

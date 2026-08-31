@@ -35,3 +35,4 @@ data class CardText(
     @ColumnInfo(name = "catalog_revision")
     val catalogRevision: String,
 )
+

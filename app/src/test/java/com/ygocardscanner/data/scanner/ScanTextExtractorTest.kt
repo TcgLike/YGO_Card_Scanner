@@ -28,3 +28,4 @@ class ScanTextExtractorTest {
         assertTrue(observation.nameCandidates.contains("Blauäugiger w. Drache"))
     }
 }
+
