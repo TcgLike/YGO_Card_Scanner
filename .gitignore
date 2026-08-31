@@ -19,6 +19,7 @@ keystore.properties
 # Android package outputs
 *.apk
 *.aab
+app/release/
 
 # Local collection data and backups
 *.db
