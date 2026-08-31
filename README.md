@@ -12,6 +12,10 @@ YGO Card Scanner is an offline-first Android app for organizing a physical Yu-Gi
 - **Import a deck list.** Import a local `.ydk` file or paste a `ydke://` deck code, review the cards, and add the required quantities to your collection.
 - **Check deck availability.** Use **Can I build it?** to compare an imported deck list with the cards already in your collection without changing anything.
 
+## Project status
+
+This is a personal hobby project, built primarily for my own collection and learning. I am a software developer, but this is not a full-time product or a promise to support every possible use case, card source, or feature request. I am happy to share it freely and welcome constructive feedback, but development happens in my spare time and follows the needs of the project first.
+
 ## Your data stays on your device
 
 Your collection, notes, scan results, settings, and downloaded images are kept in the app's private storage on your device. The app has no login, account, cloud sync, analytics, advertising, or subscription service.
@@ -37,11 +41,10 @@ The catalog download is optional but needed before local search, card matching, 
 
 ## Further reading
 
-- [Technical details](docs/technical-details.md) Ã¢â‚¬â€ architecture, local storage, catalog sources, scan matching, builds, and tests.
+- [Technical details](docs/technical-details.md) architecture, local storage, catalog sources, scan matching, builds, and tests.
 - [Contributing guide](CONTRIBUTING.md)
 - [Security policy](SECURITY.md)
 - [MIT License](LICENSE)
-
 
 ## Official deck library
 
